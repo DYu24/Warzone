@@ -8,6 +8,9 @@ using namespace std;
 
 namespace
 {
+    /*
+     * Skips lines of the input stream until the specified section is reached.
+     */
     void skipToSection(string section, ifstream &stream)
     {
         string line;
@@ -30,7 +33,6 @@ namespace
         string line;
         istringstream ss;
 
-        // Skip lines until we reach the continents section
         skipToSection("[continents]", stream);
 
         while (getline(stream, line) && line != "")
@@ -63,7 +65,6 @@ namespace
         string line;
         istringstream ss;
 
-        // Skip lines until we reach the continents section
         skipToSection("[countries]", stream);
         while (getline(stream, line) && line != "")
         {
@@ -94,7 +95,6 @@ namespace
         string line;
         istringstream ss;
 
-        // Skip lines until we reach the continents section
         skipToSection("[borders]", stream);
         while (getline(stream, line) && line != "")
         {

@@ -18,6 +18,8 @@ class Territory {
         void setNumberOfArmies(int &armies);
         vector<shared_ptr<Territory>> getAdjacentTerritories();
         void setAdjacentTerritories(vector<shared_ptr<Territory>> &territories);
+        const Territory& operator=(const Territory &territory);
+        friend ostream& operator<<(ostream &output, const Territory &territory);
         void addAdjacentTerritory(shared_ptr<Territory> territory);
 
     private:
@@ -37,6 +39,8 @@ class Continent {
         void setControlValue(int &value);
         vector<shared_ptr<Territory>> getTerritories();
         void setTerritories(vector<shared_ptr<Territory>> &territories);
+        const Continent& operator=(const Continent &continent);
+        friend ostream& operator<<(ostream &output, const Continent &continent);
         void addTerritory(shared_ptr<Territory> territory);
 
     private:
@@ -53,6 +57,8 @@ class Map {
         void setAdjacencyList(vector<shared_ptr<Territory>> &adjacencyList);
         vector<shared_ptr<Continent>> getContinents();
         void setContinents(vector<shared_ptr<Continent>> &continents);
+        const Map& operator=(const Map &map);
+        friend ostream& operator<<(ostream &output, const Map &map);
         bool validate();
 
     private:
