@@ -60,7 +60,7 @@ const Territory &Territory::operator=(const Territory &territory)
 
 ostream &operator<<(ostream &output, const Territory &territory)
 {
-    output << "[Territory]: " << territory.name_ << ", " << territory.numberOfArmies_ << " Armies, " << territory.adjacentTerritories_->size() << " Adjacent Territories";
+    output << "[Territory]: " << *territory.name_ << ", " << *territory.numberOfArmies_ << " Armies, " << territory.adjacentTerritories_->size() << " Adjacent Territories";
     return output;
 }
 
@@ -125,7 +125,7 @@ const Continent &Continent::operator=(const Continent &continent)
 
 ostream &operator<<(ostream &output, const Continent &continent)
 {
-    output << "[Continent]: " << continent.name_ << ", " << continent.controlValue_ << " Control Value, " << continent.territories_->size() << " Territories";
+    output << "[Continent]: " << *continent.name_ << ", " << *continent.controlValue_ << " Control Value, " << continent.territories_->size() << " Territories";
     return output;
 }
 

@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj"
   "CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj"
+  "CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj"
   "libWarzoneLib.a"
   "libWarzoneLib.pdb"
 )

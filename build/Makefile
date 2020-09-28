@@ -167,6 +167,19 @@ MapLoaderDriver/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MapLoaderDriver.dir\build.make CMakeFiles/MapLoaderDriver.dir/build
 .PHONY : MapLoaderDriver/fast
 
+#=============================================================================
+# Target rules for targets named OrdersDriver
+
+# Build rule for target.
+OrdersDriver: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 OrdersDriver
+.PHONY : OrdersDriver
+
+# fast build rule for target.
+OrdersDriver/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\OrdersDriver.dir\build.make CMakeFiles/OrdersDriver.dir/build
+.PHONY : OrdersDriver/fast
+
 src/map/Map.obj: src/map/Map.cpp.obj
 
 .PHONY : src/map/Map.obj
@@ -275,6 +288,60 @@ src/map_loader/MapLoaderDriver.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MapLoaderDriver.dir\build.make CMakeFiles/MapLoaderDriver.dir/src/map_loader/MapLoaderDriver.cpp.s
 .PHONY : src/map_loader/MapLoaderDriver.cpp.s
 
+src/orders/Orders.obj: src/orders/Orders.cpp.obj
+
+.PHONY : src/orders/Orders.obj
+
+# target to build an object file
+src/orders/Orders.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj
+.PHONY : src/orders/Orders.cpp.obj
+
+src/orders/Orders.i: src/orders/Orders.cpp.i
+
+.PHONY : src/orders/Orders.i
+
+# target to preprocess a source file
+src/orders/Orders.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.i
+.PHONY : src/orders/Orders.cpp.i
+
+src/orders/Orders.s: src/orders/Orders.cpp.s
+
+.PHONY : src/orders/Orders.s
+
+# target to generate assembly for a file
+src/orders/Orders.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.s
+.PHONY : src/orders/Orders.cpp.s
+
+src/orders/OrdersDriver.obj: src/orders/OrdersDriver.cpp.obj
+
+.PHONY : src/orders/OrdersDriver.obj
+
+# target to build an object file
+src/orders/OrdersDriver.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\OrdersDriver.dir\build.make CMakeFiles/OrdersDriver.dir/src/orders/OrdersDriver.cpp.obj
+.PHONY : src/orders/OrdersDriver.cpp.obj
+
+src/orders/OrdersDriver.i: src/orders/OrdersDriver.cpp.i
+
+.PHONY : src/orders/OrdersDriver.i
+
+# target to preprocess a source file
+src/orders/OrdersDriver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\OrdersDriver.dir\build.make CMakeFiles/OrdersDriver.dir/src/orders/OrdersDriver.cpp.i
+.PHONY : src/orders/OrdersDriver.cpp.i
+
+src/orders/OrdersDriver.s: src/orders/OrdersDriver.cpp.s
+
+.PHONY : src/orders/OrdersDriver.s
+
+# target to generate assembly for a file
+src/orders/OrdersDriver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\OrdersDriver.dir\build.make CMakeFiles/OrdersDriver.dir/src/orders/OrdersDriver.cpp.s
+.PHONY : src/orders/OrdersDriver.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -285,6 +352,7 @@ help:
 	@echo ... rebuild_cache
 	@echo ... MapDriver
 	@echo ... MapLoaderDriver
+	@echo ... OrdersDriver
 	@echo ... WarzoneLib
 	@echo ... src/map/Map.obj
 	@echo ... src/map/Map.i
@@ -298,6 +366,12 @@ help:
 	@echo ... src/map_loader/MapLoaderDriver.obj
 	@echo ... src/map_loader/MapLoaderDriver.i
 	@echo ... src/map_loader/MapLoaderDriver.s
+	@echo ... src/orders/Orders.obj
+	@echo ... src/orders/Orders.i
+	@echo ... src/orders/Orders.s
+	@echo ... src/orders/OrdersDriver.obj
+	@echo ... src/orders/OrdersDriver.i
+	@echo ... src/orders/OrdersDriver.s
 .PHONY : help
 
 

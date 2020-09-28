@@ -6,19 +6,17 @@
 
 #IncludeRegexTransform: 
 
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.cpp
-Orders.h
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
-algorithm
--
-iterator
--
-
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
 iostream
 -
 list
 -
+memory
+-
+
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/OrdersDriver.cpp
+Orders.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
 memory
 -
 
