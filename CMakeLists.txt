@@ -1,11 +1,15 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(Warzone VERSION 0.1.0)
+cmake_minimum_required(VERSION 3.6)
+project(Warzone)
 
-include(CTest)
-enable_testing()
+file(GLOB RESOURCES "resources/*.map")
+file(GLOB HEADERS "src/**/*.h")
+file(GLOB SOURCES "src/**/*.cpp")
+list(FILTER SOURCES EXCLUDE REGEX ".+Driver.cpp")
 
-add_executable(Warzone main.cpp)
+add_library(WarzoneLib STATIC ${SOURCES} ${HEADERS} ${RESOURCES})
 
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
+add_executable(MapDriver ${PROJECT_SOURCE_DIR}/src/map/MapDriver.cpp)
+target_link_libraries(MapDriver WarzoneLib)
+
+add_executable(MapLoaderDriver ${PROJECT_SOURCE_DIR}/src/map_loader/MapLoaderDriver.cpp)
+target_link_libraries(MapLoaderDriver WarzoneLib)

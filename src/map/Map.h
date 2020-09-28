@@ -64,4 +64,7 @@ class Map {
     private:
         shared_ptr<vector<shared_ptr<Territory>>> adjacencyList_;
         shared_ptr<vector<shared_ptr<Continent>>> continents_;
+        bool checkGraphValidity();
+        bool checkContinentsValidity();
+        bool checkTerritoriesValidity();
 };

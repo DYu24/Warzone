@@ -75,27 +75,27 @@ include CMakeFiles/Warzone.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Warzone.dir/flags.make
 
-CMakeFiles/Warzone.dir/main.cpp.obj: CMakeFiles/Warzone.dir/flags.make
-CMakeFiles/Warzone.dir/main.cpp.obj: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Warzone.dir/main.cpp.obj"
-	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\Warzone.dir\main.cpp.obj -c "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\main.cpp"
+CMakeFiles/Warzone.dir/src/main.cpp.obj: CMakeFiles/Warzone.dir/flags.make
+CMakeFiles/Warzone.dir/src/main.cpp.obj: ../src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Warzone.dir/src/main.cpp.obj"
+	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\Warzone.dir\src\main.cpp.obj -c "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\src\main.cpp"
 
-CMakeFiles/Warzone.dir/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Warzone.dir/main.cpp.i"
-	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\main.cpp" > CMakeFiles\Warzone.dir\main.cpp.i
+CMakeFiles/Warzone.dir/src/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Warzone.dir/src/main.cpp.i"
+	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\src\main.cpp" > CMakeFiles\Warzone.dir\src\main.cpp.i
 
-CMakeFiles/Warzone.dir/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Warzone.dir/main.cpp.s"
-	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\main.cpp" -o CMakeFiles\Warzone.dir\main.cpp.s
+CMakeFiles/Warzone.dir/src/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Warzone.dir/src/main.cpp.s"
+	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\src\main.cpp" -o CMakeFiles\Warzone.dir\src\main.cpp.s
 
 # Object files for target Warzone
 Warzone_OBJECTS = \
-"CMakeFiles/Warzone.dir/main.cpp.obj"
+"CMakeFiles/Warzone.dir/src/main.cpp.obj"
 
 # External object files for target Warzone
 Warzone_EXTERNAL_OBJECTS =
 
-Warzone.exe: CMakeFiles/Warzone.dir/main.cpp.obj
+Warzone.exe: CMakeFiles/Warzone.dir/src/main.cpp.obj
 Warzone.exe: CMakeFiles/Warzone.dir/build.make
 Warzone.exe: CMakeFiles/Warzone.dir/linklibs.rsp
 Warzone.exe: CMakeFiles/Warzone.dir/objects1.rsp

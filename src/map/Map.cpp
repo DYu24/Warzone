@@ -1,6 +1,9 @@
 #include "Map.h"
+#include <algorithm>
 #include <iostream>
+#include <queue>
 #include <string>
+#include <unordered_set>
 #include <vector>
 using namespace std;
 
@@ -8,14 +11,14 @@ using namespace std;
 ===================================
  Implementation for Territory class
 ===================================
- */ 
+ */
 
 // Constructors
-Territory::Territory(): name_(new string("")), numberOfArmies_(new int(0)), adjacentTerritories_(new vector<shared_ptr<Territory>>()) {}
+Territory::Territory() : name_(new string("")), numberOfArmies_(new int(0)), adjacentTerritories_(new vector<shared_ptr<Territory>>()) {}
 
-Territory::Territory(string *name): name_(name), numberOfArmies_(new int(0)), adjacentTerritories_(new vector<shared_ptr<Territory>>()) {}
+Territory::Territory(string *name) : name_(name), numberOfArmies_(new int(0)), adjacentTerritories_(new vector<shared_ptr<Territory>>()) {}
 
-Territory::Territory(const Territory &territory): name_(territory.name_), numberOfArmies_(territory.numberOfArmies_), adjacentTerritories_(territory.adjacentTerritories_) {}
+Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_), adjacentTerritories_(territory.adjacentTerritories_) {}
 
 // Getters and Setters
 string Territory::getName()
@@ -49,14 +52,16 @@ void Territory::setAdjacentTerritories(vector<shared_ptr<Territory>> &territorie
 }
 
 // Operator overloading
-const Territory& Territory::operator=(const Territory &territory)
+const Territory &Territory::operator=(const Territory &territory)
 {
     name_ = territory.name_;
     numberOfArmies_ = territory.numberOfArmies_;
     adjacentTerritories_ = territory.adjacentTerritories_;
+    return *this;
 }
 
-ostream& operator<<(ostream &output, const Territory &territory) {
+ostream &operator<<(ostream &output, const Territory &territory)
+{
     output << "[Territory]: " << territory.name_ << ", " << territory.numberOfArmies_ << " Armies, " << territory.adjacentTerritories_->size() << " Adjacent Territories";
     return output;
 }
@@ -71,7 +76,7 @@ void Territory::addAdjacentTerritory(shared_ptr<Territory> territory)
 ===================================
  Implementation for Continent class
 ===================================
- */ 
+ */
 
 // Constructors
 Continent::Continent() : name_(new string("")), controlValue_(new int(0)), territories_(new vector<shared_ptr<Territory>>()) {}
@@ -112,14 +117,16 @@ void Continent::setTerritories(vector<shared_ptr<Territory>> &territories)
 }
 
 // Operator overloading
-const Continent& Continent::operator=(const Continent &continent)
+const Continent &Continent::operator=(const Continent &continent)
 {
     name_ = continent.name_;
     controlValue_ = continent.controlValue_;
     territories_ = continent.territories_;
+    return *this;
 }
 
-ostream& operator<<(ostream &output, const Continent &continent) {
+ostream &operator<<(ostream &output, const Continent &continent)
+{
     output << "[Continent]: " << continent.name_ << ", " << continent.controlValue_ << " Control Value, " << continent.territories_->size() << " Territories";
     return output;
 }
@@ -134,12 +141,12 @@ void Continent::addTerritory(shared_ptr<Territory> territory)
 ===================================
  Implementation for Map class
 ===================================
- */ 
+ */
 
 // Constructors
-Map::Map(): adjacencyList_(new vector<shared_ptr<Territory>>()), continents_(new vector<shared_ptr<Continent>>()) {}
+Map::Map() : adjacencyList_(new vector<shared_ptr<Territory>>()), continents_(new vector<shared_ptr<Continent>>()) {}
 
-Map::Map(const Map &map): adjacencyList_(map.adjacencyList_), continents_(map.continents_) {}
+Map::Map(const Map &map) : adjacencyList_(map.adjacencyList_), continents_(map.continents_) {}
 
 // Getters and Setters
 vector<shared_ptr<Territory>> Map::getAdjacencyList()
@@ -163,13 +170,15 @@ void Map::setContinents(vector<shared_ptr<Continent>> &continents)
 }
 
 // Operator overloading
-const Map& Map::operator=(const Map &map)
+const Map &Map::operator=(const Map &map)
 {
     adjacencyList_ = map.adjacencyList_;
     continents_ = map.continents_;
+    return *this;
 }
 
-ostream& operator<<(ostream &output, const Map &map) {
+ostream &operator<<(ostream &output, const Map &map)
+{
     output << "[Map]: " << map.adjacencyList_->size() << " Territories, " << map.continents_->size() << " Continents";
     return output;
 }
@@ -182,5 +191,112 @@ ostream& operator<<(ostream &output, const Map &map) {
  */
 bool Map::validate()
 {
+    return checkGraphValidity() && checkContinentsValidity() && checkTerritoriesValidity();
+}
+
+/*
+ * Helper method to validate that the map is a connected graph.
+ * This can be done by traversing the graph and comparing the size of visitied territories
+ * to the size of all territories.
+ * 
+ * Graph traversal implemented using Breadth-First Search.
+ */
+bool Map::checkGraphValidity()
+{
+    unordered_set<shared_ptr<Territory>> visitedTerritories;
+    queue<shared_ptr<Territory>> territoryQueue;
+    territoryQueue.push(adjacencyList_->front());
+
+    while (!territoryQueue.empty())
+    {
+        shared_ptr<Territory> current = territoryQueue.front();
+        territoryQueue.pop();
+        visitedTerritories.insert(current);
+
+        for (auto const &territory : current->getAdjacentTerritories())
+        {
+            // If the territory hasn't been visited, add it to the queue
+            if (visitedTerritories.find(territory) == visitedTerritories.end())
+            {
+                territoryQueue.push(territory);
+            }
+        }
+    }
+
+    return visitedTerritories.size() == adjacencyList_->size();
+}
+
+/*
+ * Helper method to validate that the map's continents are connected subgraphs.
+ */
+bool Map::checkContinentsValidity()
+{
+    vector<shared_ptr<Continent>> continents = getContinents();
+
+    for (auto const &continent : continents)
+    {
+        unordered_set<shared_ptr<Territory>> visitedTerritories;
+        queue<shared_ptr<Territory>> territoryQueue;
+
+        vector<shared_ptr<Territory>> continentMembers = continent->getTerritories();
+        territoryQueue.push(continentMembers.front());
+
+        while (!territoryQueue.empty())
+        {
+            shared_ptr<Territory> current = territoryQueue.front();
+            territoryQueue.pop();
+            visitedTerritories.insert(current);
+
+            // If the territory isn't a member of the set of all territories, then continent is not a subgraph
+            if (find(adjacencyList_->begin(), adjacencyList_->end(), current) == adjacencyList_->end())
+            {
+                return false;
+            }
+
+            for (auto const &territory : current->getAdjacentTerritories())
+            {
+                bool visited = visitedTerritories.find(territory) != visitedTerritories.end();
+                bool inCurrentContinent = find(continentMembers.begin(), continentMembers.end(), territory) != continentMembers.end();
+                if (inCurrentContinent && !visited)
+                {
+                    territoryQueue.push(territory);
+                }
+            }
+        }
+
+        // If the visited territories of the continent is not the same as all its territories, then continent is not connected
+        if (continentMembers.size() != visitedTerritories.size())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/*
+ * Helper method to validate that the map's territories all belong to only one continent.
+ */
+bool Map::checkTerritoriesValidity()
+{
+    vector<shared_ptr<Continent>> continents = getContinents();
+    unordered_set<shared_ptr<Territory>> visitedTerritories;
+
+    for (auto const &continent : continents)
+    {
+        for (auto const &territory : continent->getTerritories())
+        {
+            if (visitedTerritories.find(territory) == visitedTerritories.end())
+            {
+                visitedTerritories.insert(territory);
+            }
+            else
+            {
+                // A continent has a territory that already belongs to another continent.
+                return false;
+            }
+        }
+    }
+
     return true;
 }

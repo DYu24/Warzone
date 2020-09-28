@@ -1,7 +1,22 @@
 [
 {
   "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
-  "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\Warzone.dir\\main.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\main.cpp\"",
-  "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/main.cpp"
+  "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\WarzoneLib.dir\\src\\map\\Map.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\map\\Map.cpp\"",
+  "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.cpp"
+},
+{
+  "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
+  "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\WarzoneLib.dir\\src\\map_loader\\MapLoader.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\map_loader\\MapLoader.cpp\"",
+  "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoader.cpp"
+},
+{
+  "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
+  "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\MapDriver.dir\\src\\map\\MapDriver.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\map\\MapDriver.cpp\"",
+  "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/MapDriver.cpp"
+},
+{
+  "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
+  "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\MapLoaderDriver.dir\\src\\map_loader\\MapLoaderDriver.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\map_loader\\MapLoaderDriver.cpp\"",
+  "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoaderDriver.cpp"
 }
 ]

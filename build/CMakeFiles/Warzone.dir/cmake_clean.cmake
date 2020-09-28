@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/Warzone.dir/main.cpp.obj"
+  "CMakeFiles/Warzone.dir/src/main.cpp.obj"
   "Warzone.exe"
   "Warzone.exe.manifest"
   "Warzone.pdb"
