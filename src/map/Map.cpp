@@ -2,9 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <queue>
-#include <string>
 #include <unordered_set>
-#include <vector>
 using namespace std;
 
 /* 
@@ -14,9 +12,9 @@ using namespace std;
  */
 
 // Constructors
-Territory::Territory() : name_(new string("")), numberOfArmies_(new int(0)), adjacentTerritories_(new vector<shared_ptr<Territory>>()) {}
+Territory::Territory() : name_(make_shared<string>()), numberOfArmies_(make_shared<int>(0)), adjacentTerritories_(make_shared<vector<shared_ptr<Territory>>>()) {}
 
-Territory::Territory(string *name) : name_(name), numberOfArmies_(new int(0)), adjacentTerritories_(new vector<shared_ptr<Territory>>()) {}
+Territory::Territory(string *name) : name_(name), numberOfArmies_(make_shared<int>(0)), adjacentTerritories_(make_shared<vector<shared_ptr<Territory>>>()) {}
 
 Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_), adjacentTerritories_(territory.adjacentTerritories_) {}
 
@@ -79,9 +77,9 @@ void Territory::addAdjacentTerritory(shared_ptr<Territory> territory)
  */
 
 // Constructors
-Continent::Continent() : name_(new string("")), controlValue_(new int(0)), territories_(new vector<shared_ptr<Territory>>()) {}
+Continent::Continent() : name_(make_shared<string>()), controlValue_(make_shared<int>(0)), territories_(make_shared<vector<shared_ptr<Territory>>>()) {}
 
-Continent::Continent(string *name, int *controlValue) : name_(name), controlValue_(controlValue), territories_(new vector<shared_ptr<Territory>>()) {}
+Continent::Continent(string *name, int *controlValue) : name_(name), controlValue_(controlValue), territories_(make_shared<vector<shared_ptr<Territory>>>()) {}
 
 Continent::Continent(const Continent &continent) : name_(continent.name_), controlValue_(continent.controlValue_), territories_(continent.territories_) {}
 
@@ -144,7 +142,7 @@ void Continent::addTerritory(shared_ptr<Territory> territory)
  */
 
 // Constructors
-Map::Map() : adjacencyList_(new vector<shared_ptr<Territory>>()), continents_(new vector<shared_ptr<Continent>>()) {}
+Map::Map() : adjacencyList_(make_shared<vector<shared_ptr<Territory>>>()), continents_(make_shared<vector<shared_ptr<Continent>>>()) {}
 
 Map::Map(const Map &map) : adjacencyList_(map.adjacencyList_), continents_(map.continents_) {}
 
