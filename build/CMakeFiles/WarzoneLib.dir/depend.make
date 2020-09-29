@@ -3,13 +3,20 @@
 
 CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj: ../src/map/Map.cpp
 CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj: ../src/map/Map.h
+CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj: ../src/orders/Orders.h
 CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj: ../src/player/Player.h
 
 CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj: ../src/map/Map.h
 CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj: ../src/map_loader/MapLoader.cpp
 CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj: ../src/map_loader/MapLoader.h
+CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj: ../src/orders/Orders.h
 CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj: ../src/player/Player.h
 
 CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj: ../src/orders/Orders.cpp
 CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj: ../src/orders/Orders.h
+
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj: ../src/map/Map.h
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj: ../src/orders/Orders.h
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj: ../src/player/Player.cpp
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj: ../src/player/Player.h
 

@@ -5,6 +5,8 @@
 #include <vector>
 using namespace std;
 
+enum OrderType { DEPLOY, ADVANCE, BOMB, BLOCKADE, AIRLIFT, NEGOTIATE };
+
 class Order
 {
 public:

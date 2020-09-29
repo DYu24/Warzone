@@ -6,17 +6,43 @@
 
 #IncludeRegexTransform: 
 
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.cpp
-Orders.h
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
-algorithm
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
+../player/Player.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
+memory
 -
-iterator
+string
+-
+vector
 -
 
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
 iostream
 -
+memory
+-
+vector
+-
+
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.cpp
+../orders/Orders.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
+Player.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
+algorithm
+-
+iostream
+-
+iterator
+-
+set
+-
+
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
+../map/Map.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
+../orders/Orders.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
 memory
 -
 vector

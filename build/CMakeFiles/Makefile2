@@ -71,6 +71,7 @@ CMAKE_BINARY_DIR = "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\b
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
+all: CMakeFiles/PlayerDriver.dir/all
 all: CMakeFiles/WarzoneLib.dir/all
 all: CMakeFiles/MapDriver.dir/all
 all: CMakeFiles/MapLoaderDriver.dir/all
@@ -84,6 +85,7 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
+clean: CMakeFiles/PlayerDriver.dir/clean
 clean: CMakeFiles/WarzoneLib.dir/clean
 clean: CMakeFiles/MapDriver.dir/clean
 clean: CMakeFiles/MapLoaderDriver.dir/clean
@@ -92,18 +94,45 @@ clean: CMakeFiles/OrdersDriver.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/PlayerDriver.dir
+
+# All Build rule for target.
+CMakeFiles/PlayerDriver.dir/all: CMakeFiles/WarzoneLib.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\PlayerDriver.dir\build.make CMakeFiles/PlayerDriver.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\PlayerDriver.dir\build.make CMakeFiles/PlayerDriver.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=7,8 "Built target PlayerDriver"
+.PHONY : CMakeFiles/PlayerDriver.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/PlayerDriver.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 7
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/PlayerDriver.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 0
+.PHONY : CMakeFiles/PlayerDriver.dir/rule
+
+# Convenience name for target.
+PlayerDriver: CMakeFiles/PlayerDriver.dir/rule
+
+.PHONY : PlayerDriver
+
+# clean rule for target.
+CMakeFiles/PlayerDriver.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\PlayerDriver.dir\build.make CMakeFiles/PlayerDriver.dir/clean
+.PHONY : CMakeFiles/PlayerDriver.dir/clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/WarzoneLib.dir
 
 # All Build rule for target.
 CMakeFiles/WarzoneLib.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=7,8,9,10 "Built target WarzoneLib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=9,10,11,12,13 "Built target WarzoneLib"
 .PHONY : CMakeFiles/WarzoneLib.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/WarzoneLib.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 4
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 5
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/WarzoneLib.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 0
 .PHONY : CMakeFiles/WarzoneLib.dir/rule
@@ -130,7 +159,7 @@ CMakeFiles/MapDriver.dir/all: CMakeFiles/WarzoneLib.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MapDriver.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 6
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/MapDriver.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 0
 .PHONY : CMakeFiles/MapDriver.dir/rule
@@ -157,7 +186,7 @@ CMakeFiles/MapLoaderDriver.dir/all: CMakeFiles/WarzoneLib.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MapLoaderDriver.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 6
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/MapLoaderDriver.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 0
 .PHONY : CMakeFiles/MapLoaderDriver.dir/rule
@@ -184,7 +213,7 @@ CMakeFiles/OrdersDriver.dir/all: CMakeFiles/WarzoneLib.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/OrdersDriver.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 6
+	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 7
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/OrdersDriver.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" 0
 .PHONY : CMakeFiles/OrdersDriver.dir/rule

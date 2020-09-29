@@ -16,22 +16,6 @@ string
 vector
 -
 
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoader.h
-../map/Map.h
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
-iostream
--
-
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoaderDriver.cpp
-MapLoader.h
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoader.h
-utility
--
-string
--
-vector
--
-
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
 iostream
 -
@@ -48,5 +32,15 @@ C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
 memory
 -
 vector
+-
+
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/PlayerDriver.cpp
+../map/Map.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
+../orders/Orders.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
+Player.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
+memory
 -
 

@@ -3,5 +3,6 @@
 
 CMakeFiles/MapDriver.dir/src/map/MapDriver.cpp.obj: ../src/map/Map.h
 CMakeFiles/MapDriver.dir/src/map/MapDriver.cpp.obj: ../src/map/MapDriver.cpp
+CMakeFiles/MapDriver.dir/src/map/MapDriver.cpp.obj: ../src/orders/Orders.h
 CMakeFiles/MapDriver.dir/src/map/MapDriver.cpp.obj: ../src/player/Player.h
 

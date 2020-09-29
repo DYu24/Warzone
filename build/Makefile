@@ -129,6 +129,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named PlayerDriver
+
+# Build rule for target.
+PlayerDriver: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 PlayerDriver
+.PHONY : PlayerDriver
+
+# fast build rule for target.
+PlayerDriver/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\PlayerDriver.dir\build.make CMakeFiles/PlayerDriver.dir/build
+.PHONY : PlayerDriver/fast
+
+#=============================================================================
 # Target rules for targets named WarzoneLib
 
 # Build rule for target.
@@ -342,6 +355,60 @@ src/orders/OrdersDriver.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\OrdersDriver.dir\build.make CMakeFiles/OrdersDriver.dir/src/orders/OrdersDriver.cpp.s
 .PHONY : src/orders/OrdersDriver.cpp.s
 
+src/player/Player.obj: src/player/Player.cpp.obj
+
+.PHONY : src/player/Player.obj
+
+# target to build an object file
+src/player/Player.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj
+.PHONY : src/player/Player.cpp.obj
+
+src/player/Player.i: src/player/Player.cpp.i
+
+.PHONY : src/player/Player.i
+
+# target to preprocess a source file
+src/player/Player.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.i
+.PHONY : src/player/Player.cpp.i
+
+src/player/Player.s: src/player/Player.cpp.s
+
+.PHONY : src/player/Player.s
+
+# target to generate assembly for a file
+src/player/Player.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.s
+.PHONY : src/player/Player.cpp.s
+
+src/player/PlayerDriver.obj: src/player/PlayerDriver.cpp.obj
+
+.PHONY : src/player/PlayerDriver.obj
+
+# target to build an object file
+src/player/PlayerDriver.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\PlayerDriver.dir\build.make CMakeFiles/PlayerDriver.dir/src/player/PlayerDriver.cpp.obj
+.PHONY : src/player/PlayerDriver.cpp.obj
+
+src/player/PlayerDriver.i: src/player/PlayerDriver.cpp.i
+
+.PHONY : src/player/PlayerDriver.i
+
+# target to preprocess a source file
+src/player/PlayerDriver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\PlayerDriver.dir\build.make CMakeFiles/PlayerDriver.dir/src/player/PlayerDriver.cpp.i
+.PHONY : src/player/PlayerDriver.cpp.i
+
+src/player/PlayerDriver.s: src/player/PlayerDriver.cpp.s
+
+.PHONY : src/player/PlayerDriver.s
+
+# target to generate assembly for a file
+src/player/PlayerDriver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\PlayerDriver.dir\build.make CMakeFiles/PlayerDriver.dir/src/player/PlayerDriver.cpp.s
+.PHONY : src/player/PlayerDriver.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -353,6 +420,7 @@ help:
 	@echo ... MapDriver
 	@echo ... MapLoaderDriver
 	@echo ... OrdersDriver
+	@echo ... PlayerDriver
 	@echo ... WarzoneLib
 	@echo ... src/map/Map.obj
 	@echo ... src/map/Map.i
@@ -372,6 +440,12 @@ help:
 	@echo ... src/orders/OrdersDriver.obj
 	@echo ... src/orders/OrdersDriver.i
 	@echo ... src/orders/OrdersDriver.s
+	@echo ... src/player/Player.obj
+	@echo ... src/player/Player.i
+	@echo ... src/player/Player.s
+	@echo ... src/player/PlayerDriver.obj
+	@echo ... src/player/PlayerDriver.i
+	@echo ... src/player/PlayerDriver.s
 .PHONY : help
 
 

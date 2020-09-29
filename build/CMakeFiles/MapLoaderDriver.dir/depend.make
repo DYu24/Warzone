@@ -4,5 +4,6 @@
 CMakeFiles/MapLoaderDriver.dir/src/map_loader/MapLoaderDriver.cpp.obj: ../src/map/Map.h
 CMakeFiles/MapLoaderDriver.dir/src/map_loader/MapLoaderDriver.cpp.obj: ../src/map_loader/MapLoader.h
 CMakeFiles/MapLoaderDriver.dir/src/map_loader/MapLoaderDriver.cpp.obj: ../src/map_loader/MapLoaderDriver.cpp
+CMakeFiles/MapLoaderDriver.dir/src/map_loader/MapLoaderDriver.cpp.obj: ../src/orders/Orders.h
 CMakeFiles/MapLoaderDriver.dir/src/map_loader/MapLoaderDriver.cpp.obj: ../src/player/Player.h
 

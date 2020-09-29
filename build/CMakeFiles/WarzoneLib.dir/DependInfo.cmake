@@ -7,6 +7,7 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj"
   "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoader.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj"
   "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj"
+  "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

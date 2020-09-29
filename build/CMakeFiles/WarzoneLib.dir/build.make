@@ -114,11 +114,25 @@ CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.s"
 	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\src\orders\Orders.cpp" -o CMakeFiles\WarzoneLib.dir\src\orders\Orders.cpp.s
 
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj: CMakeFiles/WarzoneLib.dir/flags.make
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj: ../src/player/Player.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj"
+	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\WarzoneLib.dir\src\player\Player.cpp.obj -c "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\src\player\Player.cpp"
+
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.i"
+	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\src\player\Player.cpp" > CMakeFiles\WarzoneLib.dir\src\player\Player.cpp.i
+
+CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.s"
+	C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\src\player\Player.cpp" -o CMakeFiles\WarzoneLib.dir\src\player\Player.cpp.s
+
 # Object files for target WarzoneLib
 WarzoneLib_OBJECTS = \
 "CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj" \
 "CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj" \
-"CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj"
+"CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj" \
+"CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj"
 
 # External object files for target WarzoneLib
 WarzoneLib_EXTERNAL_OBJECTS =
@@ -126,9 +140,10 @@ WarzoneLib_EXTERNAL_OBJECTS =
 libWarzoneLib.a: CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj
 libWarzoneLib.a: CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj
 libWarzoneLib.a: CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj
+libWarzoneLib.a: CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj
 libWarzoneLib.a: CMakeFiles/WarzoneLib.dir/build.make
 libWarzoneLib.a: CMakeFiles/WarzoneLib.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX static library libWarzoneLib.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="C:\Users\derek\Documents\Projects\COMP 345 Project\Warzone\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX static library libWarzoneLib.a"
 	$(CMAKE_COMMAND) -P CMakeFiles\WarzoneLib.dir\cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\WarzoneLib.dir\link.txt --verbose=$(VERBOSE)
 
