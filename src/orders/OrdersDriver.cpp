@@ -20,8 +20,8 @@ int main()
         cout << endl;
     }
 
-    shared_ptr<Order> order = ordersList.getOrders().front();
-    ordersList.moveOrder(order, 5);
+    shared_ptr<Order> order = ordersList.getOrders()[1];
+    ordersList.moveOrder(order, 4);
     cout << "------" << "Orders list after moving an order: " << ordersList << "------" << endl;
     for (auto const &o : ordersList.getOrders())
     {

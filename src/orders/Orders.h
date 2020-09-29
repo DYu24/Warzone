@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include <list>
 #include <memory>
+#include <vector>
 using namespace std;
 
 class Order
@@ -24,14 +24,14 @@ public:
     OrdersList(const OrdersList &orders);
     const OrdersList &operator=(const OrdersList &orders);
     friend ostream &operator<<(ostream &output, const OrdersList &orders);
-    list<shared_ptr<Order>> getOrders();
-    void setOrders(list<shared_ptr<Order>> &orders);
+    vector<shared_ptr<Order>> getOrders();
+    void setOrders(vector<shared_ptr<Order>> &orders);
     void addOrder(shared_ptr<Order> order);
     void moveOrder(shared_ptr<Order> order, int target);
     void deleteOrder(shared_ptr<Order> order);
 
 private:
-    shared_ptr<list<shared_ptr<Order>>> orders_;
+    shared_ptr<vector<shared_ptr<Order>>> orders_;
 };
 
 class DeployOrder : public Order

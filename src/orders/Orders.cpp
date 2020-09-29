@@ -21,14 +21,13 @@ ostream &operator<<(ostream &output, const Order &order)
     return order.print_(output);
 }
 
-
 /* 
 ===================================
  Implementation for Order class
 ===================================
  */
 
-OrdersList::OrdersList() : orders_(make_shared<list<shared_ptr<Order>>>()) {}
+OrdersList::OrdersList() : orders_(make_shared<vector<shared_ptr<Order>>>()) {}
 
 OrdersList::OrdersList(const OrdersList &orders) : orders_(orders.orders_) {}
 
@@ -44,12 +43,12 @@ ostream &operator<<(ostream &output, const OrdersList &orders)
     return output;
 }
 
-list<shared_ptr<Order>> OrdersList::getOrders()
+vector<shared_ptr<Order>> OrdersList::getOrders()
 {
     return *orders_;
 }
 
-void OrdersList::setOrders(list<shared_ptr<Order>> &orders)
+void OrdersList::setOrders(vector<shared_ptr<Order>> &orders)
 {
     *orders_ = orders;
 }
@@ -61,23 +60,35 @@ void OrdersList::addOrder(shared_ptr<Order> order)
 
 void OrdersList::moveOrder(shared_ptr<Order> order, int target)
 {
-    if (target >= 0 && target <= orders_->size())
+    if (target >= 0 && target < orders_->size())
     {
         auto orderPosition = find(orders_->begin(), orders_->end(), order);
         auto targetPosition = next(orders_->begin(), target);
 
-        if (orderPosition != targetPosition)
+        if (targetPosition > orderPosition)
         {
-            orders_->splice(targetPosition, *orders_, orderPosition);
+            while (orderPosition != targetPosition)
+            {
+                swap(*orderPosition, *next(orderPosition, 1));
+                orderPosition++;
+            }
+        }
+
+        if (targetPosition < orderPosition)
+        {
+            while (orderPosition != targetPosition)
+            {
+                swap(*orderPosition, *prev(orderPosition, 1));
+                orderPosition--;
+            }
         }
     }
 }
 
 void OrdersList::deleteOrder(shared_ptr<Order> order)
 {
-    orders_->remove(order);
+    orders_->erase(remove(orders_->begin(), orders_->end(), order), orders_->end());
 }
-
 
 /* 
 ===================================
@@ -110,7 +121,6 @@ ostream &DeployOrder::print_(ostream &output) const
     return output;
 }
 
-
 /* 
 ===================================
  Implementation for AdvanceOrder class
@@ -141,7 +151,6 @@ ostream &AdvanceOrder::print_(ostream &output) const
     output << "This is an Advance order.";
     return output;
 }
-
 
 /* 
 ===================================
@@ -174,7 +183,6 @@ ostream &BombOrder::print_(ostream &output) const
     return output;
 }
 
-
 /* 
 ===================================
  Implementation for BlockadeOrder class
@@ -206,7 +214,6 @@ ostream &BlockadeOrder::print_(ostream &output) const
     return output;
 }
 
-
 /* 
 ===================================
  Implementation for AirliftOrder class
@@ -237,7 +244,6 @@ ostream &AirliftOrder::print_(ostream &output) const
     output << "This is an Airlift order.";
     return output;
 }
-
 
 /* 
 ===================================
