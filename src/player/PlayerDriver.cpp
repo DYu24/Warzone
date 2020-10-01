@@ -18,7 +18,7 @@ int main()
     t3->addAdjacentTerritory(t4);
     t4->addAdjacentTerritory(t3);
 
-    Player p1 = Player(make_shared<string>("Player 1"));
+    Player p1 = Player(make_unique<string>("Player 1"));
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
 

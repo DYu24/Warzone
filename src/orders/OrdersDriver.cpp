@@ -3,15 +3,19 @@
 
 int main()
 {
-    OrdersList ordersList;
-    ordersList.addOrder(make_shared<DeployOrder>());
-    ordersList.addOrder(make_shared<AdvanceOrder>());
-    ordersList.addOrder(make_shared<BombOrder>());
-    ordersList.addOrder(make_shared<BlockadeOrder>());
-    ordersList.addOrder(make_shared<AirliftOrder>());
-    ordersList.addOrder(make_shared<NegotiateOrder>());
+    shared_ptr<Territory> territory = make_shared<Territory>(new string("Quebec"));
+    shared_ptr<Territory> targetTerritory = make_shared<Territory>(new string("Ontario"));
 
-    cout << "------" << "Original orders list: " << ordersList << "------" << endl;
+    OrdersList ordersList;
+    ordersList.addOrder(make_unique<DeployOrder>(make_unique<int>(5), territory));
+    ordersList.addOrder(make_unique<AdvanceOrder>(make_unique<int>(5), territory, targetTerritory));
+    ordersList.addOrder(make_unique<BombOrder>(targetTerritory));
+    ordersList.addOrder(make_unique<BlockadeOrder>(territory));
+    ordersList.addOrder(make_unique<AirliftOrder>(make_unique<int>(10), territory, targetTerritory));
+    ordersList.addOrder(make_unique<NegotiateOrder>());
+
+    cout << "------"
+         << "Original orders list: " << ordersList << "------" << endl;
     for (auto const &o : ordersList.getOrders())
     {
         cout << *o << endl;
@@ -20,16 +24,17 @@ int main()
         cout << endl;
     }
 
-    shared_ptr<Order> order = ordersList.getOrders()[1];
-    ordersList.moveOrder(order, 4);
-    cout << "------" << "Orders list after moving an order: " << ordersList << "------" << endl;
+    ordersList.moveOrder(1, 4);
+    cout << "------"
+         << "Orders list after moving an order: " << ordersList << "------" << endl;
     for (auto const &o : ordersList.getOrders())
     {
         cout << *o << endl;
     }
 
-    ordersList.deleteOrder(order);
-    cout << "\n------" << "Orders list after deleting an order: " << ordersList << "------" << endl;
+    ordersList.deleteOrder(5);
+    cout << "\n------"
+         << "Orders list after deleting an order: " << ordersList << "------" << endl;
     for (auto const &o : ordersList.getOrders())
     {
         cout << *o << endl;

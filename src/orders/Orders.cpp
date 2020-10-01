@@ -23,17 +23,20 @@ ostream &operator<<(ostream &output, const Order &order)
 
 /* 
 ===================================
- Implementation for Order class
+ Implementation for OrdersList class
 ===================================
  */
 
-OrdersList::OrdersList() : orders_(make_shared<vector<shared_ptr<Order>>>()) {}
+OrdersList::OrdersList() : orders_(make_unique<vector<unique_ptr<Order>>>()) {}
 
-OrdersList::OrdersList(const OrdersList &orders) : orders_(orders.orders_) {}
+OrdersList::OrdersList(const OrdersList &orders)
+{
+    setOrders(*orders.orders_);
+}
 
 const OrdersList &OrdersList::operator=(const OrdersList &orders)
 {
-    orders_ = orders.orders_;
+    setOrders(*orders.orders_);
     return *this;
 }
 
@@ -43,27 +46,34 @@ ostream &operator<<(ostream &output, const OrdersList &orders)
     return output;
 }
 
-vector<shared_ptr<Order>> OrdersList::getOrders()
+vector<unique_ptr<Order>> &OrdersList::getOrders()
 {
     return *orders_;
 }
 
-void OrdersList::setOrders(vector<shared_ptr<Order>> &orders)
+void OrdersList::setOrders(vector<unique_ptr<Order>> &orders)
 {
-    *orders_ = orders;
-}
-
-void OrdersList::addOrder(shared_ptr<Order> order)
-{
-    orders_->push_back(order);
-}
-
-void OrdersList::moveOrder(shared_ptr<Order> order, int target)
-{
-    if (target >= 0 && target < orders_->size())
+    orders_ = make_unique<vector<unique_ptr<Order>>>();
+    for (auto const &orderPointer : orders)
     {
-        auto orderPosition = find(orders_->begin(), orders_->end(), order);
-        auto targetPosition = next(orders_->begin(), target);
+        orders_->push_back(orderPointer->clone());
+    }
+}
+
+void OrdersList::addOrder(unique_ptr<Order> &&order)
+{
+    orders_->push_back(move(order));
+}
+
+void OrdersList::moveOrder(int source, int destination)
+{
+    bool sourceInRange = source >= 0 && source < orders_->size();
+    bool destinationInRange = destination >= 0 && destination < orders_->size();
+
+    if (sourceInRange && destinationInRange)
+    {
+        auto orderPosition = next(orders_->begin(), source);
+        auto targetPosition = next(orders_->begin(), destination);
 
         if (targetPosition > orderPosition)
         {
@@ -85,9 +95,9 @@ void OrdersList::moveOrder(shared_ptr<Order> order, int target)
     }
 }
 
-void OrdersList::deleteOrder(shared_ptr<Order> order)
+void OrdersList::deleteOrder(int target)
 {
-    orders_->erase(remove(orders_->begin(), orders_->end(), order), orders_->end());
+    orders_->erase(orders_->begin() + target);
 }
 
 /* 
@@ -96,13 +106,27 @@ void OrdersList::deleteOrder(shared_ptr<Order> order)
 ===================================
  */
 
-DeployOrder::DeployOrder() {}
+DeployOrder::DeployOrder()
+    : numberOfArmies_(make_unique<int>(0)), destination_(make_shared<Territory>()) {}
 
-DeployOrder::DeployOrder(const DeployOrder &order) {}
+DeployOrder::DeployOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> destination)
+    : numberOfArmies_(move(numberOfArmies)), destination_(destination) {}
+
+DeployOrder::DeployOrder(const DeployOrder &order) : destination_(order.destination_)
+{
+    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+}
 
 const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
 {
+    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+    destination_ = order.destination_;
     return *this;
+}
+
+unique_ptr<Order> DeployOrder::clone() const
+{
+    return make_unique<DeployOrder>(*this);
 }
 
 bool DeployOrder::validate()
@@ -117,7 +141,7 @@ void DeployOrder::execute_()
 
 ostream &DeployOrder::print_(ostream &output) const
 {
-    output << "This is a Deploy order.";
+    output << "[DeployOrder] " << *numberOfArmies_ << " armies to " << destination_->getName();
     return output;
 }
 
@@ -127,13 +151,28 @@ ostream &DeployOrder::print_(ostream &output) const
 ===================================
  */
 
-AdvanceOrder::AdvanceOrder() {}
+AdvanceOrder::AdvanceOrder()
+    : numberOfArmies_(make_unique<int>(0)), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
 
-AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) {}
+AdvanceOrder::AdvanceOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
+    : numberOfArmies_(move(numberOfArmies)), source_(source), destination_(destination) {}
+
+AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : source_(order.source_), destination_(order.destination_)
+{
+    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+}
 
 const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
 {
+    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+    source_ = order.source_;
+    destination_ = order.destination_;
     return *this;
+}
+
+unique_ptr<Order> AdvanceOrder::clone() const
+{
+    return make_unique<AdvanceOrder>(*this);
 }
 
 bool AdvanceOrder::validate()
@@ -148,7 +187,7 @@ void AdvanceOrder::execute_()
 
 ostream &AdvanceOrder::print_(ostream &output) const
 {
-    output << "This is an Advance order.";
+    output << "[AdvanceOrder] " << *numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
     return output;
 }
 
@@ -158,13 +197,21 @@ ostream &AdvanceOrder::print_(ostream &output) const
 ===================================
  */
 
-BombOrder::BombOrder() {}
+BombOrder::BombOrder() : target_(make_shared<Territory>()) {}
 
-BombOrder::BombOrder(const BombOrder &order) {}
+BombOrder::BombOrder(shared_ptr<Territory> target) : target_(target) {}
+
+BombOrder::BombOrder(const BombOrder &order) : target_(order.target_) {}
 
 const BombOrder &BombOrder::operator=(const BombOrder &order)
 {
+    target_ = order.target_;
     return *this;
+}
+
+unique_ptr<Order> BombOrder::clone() const
+{
+    return make_unique<BombOrder>(*this);
 }
 
 bool BombOrder::validate()
@@ -179,7 +226,7 @@ void BombOrder::execute_()
 
 ostream &BombOrder::print_(ostream &output) const
 {
-    output << "This is a Bomb order.";
+    output << "[BombOrder] Target: " << target_->getName();
     return output;
 }
 
@@ -189,13 +236,21 @@ ostream &BombOrder::print_(ostream &output) const
 ===================================
  */
 
-BlockadeOrder::BlockadeOrder() {}
+BlockadeOrder::BlockadeOrder() : territory_(make_shared<Territory>()) {}
 
-BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) {}
+BlockadeOrder::BlockadeOrder(shared_ptr<Territory> territory) : territory_(territory) {}
+
+BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : territory_(order.territory_) {}
 
 const BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order)
 {
+    territory_ = order.territory_;
     return *this;
+}
+
+unique_ptr<Order> BlockadeOrder::clone() const
+{
+    return make_unique<BlockadeOrder>(*this);
 }
 
 bool BlockadeOrder::validate()
@@ -210,7 +265,7 @@ void BlockadeOrder::execute_()
 
 ostream &BlockadeOrder::print_(ostream &output) const
 {
-    output << "This is a Blockade order.";
+    output << "[BlockadeOrder] Territory: " << territory_->getName();
     return output;
 }
 
@@ -220,13 +275,28 @@ ostream &BlockadeOrder::print_(ostream &output) const
 ===================================
  */
 
-AirliftOrder::AirliftOrder() {}
+AirliftOrder::AirliftOrder()
+    : numberOfArmies_(make_unique<int>(0)), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
 
-AirliftOrder::AirliftOrder(const AirliftOrder &order) {}
+AirliftOrder::AirliftOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
+    : numberOfArmies_(move(numberOfArmies)), source_(source), destination_(destination) {}
+
+AirliftOrder::AirliftOrder(const AirliftOrder &order) : source_(order.source_), destination_(order.destination_)
+{
+    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+}
 
 const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
 {
+    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+    source_ = order.source_;
+    destination_ = order.destination_;
     return *this;
+}
+
+unique_ptr<Order> AirliftOrder::clone() const
+{
+    return make_unique<AirliftOrder>(*this);
 }
 
 bool AirliftOrder::validate()
@@ -241,7 +311,7 @@ void AirliftOrder::execute_()
 
 ostream &AirliftOrder::print_(ostream &output) const
 {
-    output << "This is an Airlift order.";
+    output << "[AirliftOrder] " << *numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
     return output;
 }
 
@@ -260,6 +330,11 @@ const NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order)
     return *this;
 }
 
+unique_ptr<Order> NegotiateOrder::clone() const
+{
+    return make_unique<NegotiateOrder>(*this);
+}
+
 bool NegotiateOrder::validate()
 {
     return true;
@@ -272,6 +347,6 @@ void NegotiateOrder::execute_()
 
 ostream &NegotiateOrder::print_(ostream &output) const
 {
-    output << "This is a Negotiate order.";
+    output << "[NegotiateOrder]";
     return output;
 }

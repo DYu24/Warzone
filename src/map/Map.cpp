@@ -290,7 +290,7 @@ bool Map::checkTerritoriesValidity()
             }
             else
             {
-                // A continent has a territory that already belongs to another continent.
+                // This continent has a territory that was already visited through another continent.
                 return false;
             }
         }
