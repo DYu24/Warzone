@@ -1,11 +1,14 @@
 #pragma once
 
+#include "../cards/Cards.h"
 #include "../map/Map.h"
 #include "../orders/Orders.h"
 #include <memory>
 #include <vector>
 using namespace std;
 
+class Card;
+class Hand;
 class Territory;
 class OrdersList;
 enum OrderType : short;
@@ -20,6 +23,9 @@ class Player
         friend ostream &operator<<(ostream &output, const Player &player);
         vector<shared_ptr<Territory>> getOwnedTerritories();
         OrdersList getOrdersList();
+        Hand getHand();
+        void setHand(Hand hand);
+        void addCardToHand(unique_ptr<Card> card);
         void addOwnedTerritory(shared_ptr<Territory> territory);
         void removeOwnedTerritory(shared_ptr<Territory> territory);
         vector<shared_ptr<Territory>> toDefend();
@@ -30,4 +36,5 @@ class Player
         unique_ptr<string> name_;
         unique_ptr<vector<shared_ptr<Territory>>> ownedTerritories_;
         unique_ptr<OrdersList> orders_;
+        unique_ptr<Hand> hand_;
 };

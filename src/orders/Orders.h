@@ -41,7 +41,7 @@ public:
     friend ostream &operator<<(ostream &output, const OrdersList &orders);
     vector<unique_ptr<Order>> &getOrders();
     void setOrders(vector<unique_ptr<Order>> &orders);
-    void addOrder(unique_ptr<Order> &&order);
+    void addOrder(unique_ptr<Order> order);
     void moveOrder(int source, int destination);
     void deleteOrder(int target);
 

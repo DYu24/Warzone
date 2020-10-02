@@ -181,6 +181,19 @@ MapLoaderDriver/fast:
 .PHONY : MapLoaderDriver/fast
 
 #=============================================================================
+# Target rules for targets named CardsDriver
+
+# Build rule for target.
+CardsDriver: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CardsDriver
+.PHONY : CardsDriver
+
+# fast build rule for target.
+CardsDriver/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\CardsDriver.dir\build.make CMakeFiles/CardsDriver.dir/build
+.PHONY : CardsDriver/fast
+
+#=============================================================================
 # Target rules for targets named OrdersDriver
 
 # Build rule for target.
@@ -192,6 +205,60 @@ OrdersDriver: cmake_check_build_system
 OrdersDriver/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\OrdersDriver.dir\build.make CMakeFiles/OrdersDriver.dir/build
 .PHONY : OrdersDriver/fast
+
+src/cards/Cards.obj: src/cards/Cards.cpp.obj
+
+.PHONY : src/cards/Cards.obj
+
+# target to build an object file
+src/cards/Cards.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/cards/Cards.cpp.obj
+.PHONY : src/cards/Cards.cpp.obj
+
+src/cards/Cards.i: src/cards/Cards.cpp.i
+
+.PHONY : src/cards/Cards.i
+
+# target to preprocess a source file
+src/cards/Cards.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/cards/Cards.cpp.i
+.PHONY : src/cards/Cards.cpp.i
+
+src/cards/Cards.s: src/cards/Cards.cpp.s
+
+.PHONY : src/cards/Cards.s
+
+# target to generate assembly for a file
+src/cards/Cards.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\WarzoneLib.dir\build.make CMakeFiles/WarzoneLib.dir/src/cards/Cards.cpp.s
+.PHONY : src/cards/Cards.cpp.s
+
+src/cards/CardsDriver.obj: src/cards/CardsDriver.cpp.obj
+
+.PHONY : src/cards/CardsDriver.obj
+
+# target to build an object file
+src/cards/CardsDriver.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\CardsDriver.dir\build.make CMakeFiles/CardsDriver.dir/src/cards/CardsDriver.cpp.obj
+.PHONY : src/cards/CardsDriver.cpp.obj
+
+src/cards/CardsDriver.i: src/cards/CardsDriver.cpp.i
+
+.PHONY : src/cards/CardsDriver.i
+
+# target to preprocess a source file
+src/cards/CardsDriver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\CardsDriver.dir\build.make CMakeFiles/CardsDriver.dir/src/cards/CardsDriver.cpp.i
+.PHONY : src/cards/CardsDriver.cpp.i
+
+src/cards/CardsDriver.s: src/cards/CardsDriver.cpp.s
+
+.PHONY : src/cards/CardsDriver.s
+
+# target to generate assembly for a file
+src/cards/CardsDriver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\CardsDriver.dir\build.make CMakeFiles/CardsDriver.dir/src/cards/CardsDriver.cpp.s
+.PHONY : src/cards/CardsDriver.cpp.s
 
 src/map/Map.obj: src/map/Map.cpp.obj
 
@@ -417,11 +484,18 @@ help:
 	@echo ... depend
 	@echo ... edit_cache
 	@echo ... rebuild_cache
+	@echo ... CardsDriver
 	@echo ... MapDriver
 	@echo ... MapLoaderDriver
 	@echo ... OrdersDriver
 	@echo ... PlayerDriver
 	@echo ... WarzoneLib
+	@echo ... src/cards/Cards.obj
+	@echo ... src/cards/Cards.i
+	@echo ... src/cards/Cards.s
+	@echo ... src/cards/CardsDriver.obj
+	@echo ... src/cards/CardsDriver.i
+	@echo ... src/cards/CardsDriver.s
 	@echo ... src/map/Map.obj
 	@echo ... src/map/Map.i
 	@echo ... src/map/Map.s

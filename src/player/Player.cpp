@@ -115,15 +115,16 @@ namespace
     }
 } // namespace
 
-Player::Player() : name_(make_unique<string>("unknown_player")), ownedTerritories_(make_unique<vector<shared_ptr<Territory>>>()), orders_(make_unique<OrdersList>()) {}
+Player::Player() : name_(make_unique<string>("unknown_player")), ownedTerritories_(make_unique<vector<shared_ptr<Territory>>>()), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
 
-Player::Player(unique_ptr<string> name) : name_(move(name)), ownedTerritories_(make_unique<vector<shared_ptr<Territory>>>()), orders_(make_unique<OrdersList>()) {}
+Player::Player(unique_ptr<string> name) : name_(move(name)), ownedTerritories_(make_unique<vector<shared_ptr<Territory>>>()), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
 
 Player::Player(const Player &player)
 {
     name_ = make_unique<string>(*player.name_);
     orders_ = make_unique<OrdersList>(*player.orders_);
-    ownedTerritories_ = make_unique<vector<shared_ptr<Territory>>>(*player.ownedTerritories_);
+    ownedTerritories_ = make_unique<vector<shared_ptr<Territory>>>(*player.ownedTerritories_);\
+    setHand(*player.hand_);
 }
 
 const Player &Player::operator=(const Player &player)
@@ -131,12 +132,13 @@ const Player &Player::operator=(const Player &player)
     name_ = make_unique<string>(*player.name_);
     orders_ = make_unique<OrdersList>(*player.orders_);
     ownedTerritories_ = make_unique<vector<shared_ptr<Territory>>>(*player.ownedTerritories_);
+    setHand(*player.hand_);
     return *this;
 }
 
 ostream &operator<<(ostream &output, const Player &player)
 {
-    output << "[Player] " << *player.name_ << " has " << player.ownedTerritories_->size() << " Territories, " << player.orders_->getOrders().size() << " Orders";
+    output << "[Player] " << *player.name_ << " has " << player.ownedTerritories_->size() << " Territories, " << player.orders_->getOrders().size() << " Orders, " << player.hand_->getCards().size() << " cards in Hand";
     return output;
 }
 
@@ -149,6 +151,26 @@ OrdersList Player::getOrdersList()
 {
     return *orders_;
 }
+
+Hand Player::getHand()
+{
+    return *hand_;
+}
+
+void Player::setHand(Hand hand)
+{
+    hand_ = make_unique<Hand>();
+    for (auto const &card : hand.getCards())
+    {
+        hand_->addCard(card->clone());
+    }
+}
+
+void Player::addCardToHand(unique_ptr<Card> card)
+{
+    hand_->addCard(move(card));
+}
+
 
 void Player::addOwnedTerritory(shared_ptr<Territory> territory)
 {

@@ -21,6 +21,7 @@ int main()
     Player p1 = Player(make_unique<string>("Player 1"));
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
+    p1.addCardToHand(make_unique<BombCard>());
 
     // Print the Player object
     cout << p1 << endl;
@@ -56,4 +57,6 @@ int main()
 
     cout << endl;
     cout << p1 << endl;
+
+    return 0;
 }

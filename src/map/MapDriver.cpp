@@ -81,4 +81,6 @@ int main()
     map5.getContinents().at(1)->addTerritory(t1);
     
     cout << boolalpha << "Map 5: VALID = " << map5.validate() << endl;
+
+    return 0;
 }

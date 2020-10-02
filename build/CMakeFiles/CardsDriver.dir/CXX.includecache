@@ -20,26 +20,16 @@ memory
 vector
 -
 
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/CardsDriver.cpp
+Cards.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/Cards.h
+memory
+-
+
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
 ../player/Player.h
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
 memory
--
-string
--
-vector
--
-
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoader.h
-../map/Map.h
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
-iostream
--
-
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoaderDriver.cpp
-MapLoader.h
-C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoader.h
-utility
 -
 string
 -

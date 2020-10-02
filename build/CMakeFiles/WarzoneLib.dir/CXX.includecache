@@ -6,6 +6,40 @@
 
 #IncludeRegexTransform: 
 
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/Cards.cpp
+Cards.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/Cards.h
+algorithm
+-
+time.h
+-
+
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/Cards.h
+../orders/Orders.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
+../player/Player.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
+iostream
+-
+list
+-
+memory
+-
+vector
+-
+
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.cpp
+Map.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
+algorithm
+-
+iostream
+-
+queue
+-
+unordered_set
+-
+
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
 ../player/Player.h
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
@@ -34,6 +68,14 @@ C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
 iostream
 -
 
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.cpp
+Orders.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
+algorithm
+-
+iterator
+-
+
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
 ../map/Map.h
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
@@ -44,7 +86,23 @@ memory
 vector
 -
 
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.cpp
+../orders/Orders.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.h
+Player.h
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
+algorithm
+-
+iostream
+-
+iterator
+-
+set
+-
+
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/player/Player.h
+../cards/Cards.h
+C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/Cards.h
 ../map/Map.h
 C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.h
 ../orders/Orders.h

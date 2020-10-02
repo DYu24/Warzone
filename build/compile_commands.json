@@ -6,6 +6,11 @@
 },
 {
   "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
+  "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\WarzoneLib.dir\\src\\cards\\Cards.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\cards\\Cards.cpp\"",
+  "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/Cards.cpp"
+},
+{
+  "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
   "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\WarzoneLib.dir\\src\\map\\Map.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\map\\Map.cpp\"",
   "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.cpp"
 },
@@ -33,6 +38,11 @@
   "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
   "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\MapLoaderDriver.dir\\src\\map_loader\\MapLoaderDriver.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\map_loader\\MapLoaderDriver.cpp\"",
   "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoaderDriver.cpp"
+},
+{
+  "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",
+  "command": "C:\\PROGRA~1\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\CardsDriver.dir\\src\\cards\\CardsDriver.cpp.obj -c \"C:\\Users\\derek\\Documents\\Projects\\COMP 345 Project\\Warzone\\src\\cards\\CardsDriver.cpp\"",
+  "file": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/CardsDriver.cpp"
 },
 {
   "directory": "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build",

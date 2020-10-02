@@ -4,6 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
+  "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/cards/Cards.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/cards/Cards.cpp.obj"
   "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map/Map.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj"
   "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/map_loader/MapLoader.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj"
   "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/src/orders/Orders.cpp" "C:/Users/derek/Documents/Projects/COMP 345 Project/Warzone/build/CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj"

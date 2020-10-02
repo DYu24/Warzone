@@ -60,7 +60,7 @@ void OrdersList::setOrders(vector<unique_ptr<Order>> &orders)
     }
 }
 
-void OrdersList::addOrder(unique_ptr<Order> &&order)
+void OrdersList::addOrder(unique_ptr<Order> order)
 {
     orders_->push_back(move(order));
 }
