@@ -25,7 +25,7 @@ namespace
      */
     void populateContinents(ifstream &stream, Map &map)
     {
-        vector<shared_ptr<Continent>> continents = map.getContinents();
+        vector<unique_ptr<Continent>> continents;
         string line;
         istringstream ss;
 
@@ -46,11 +46,11 @@ namespace
             string color;
             ss >> name >> continentValue >> color;
 
-            string *namePointer = new string(name);
-            int *continentValuePointer = new int(continentValue);
+            unique_ptr<string> namePointer = make_unique<string>(name);
+            unique_ptr<int> continentValuePointer = make_unique<int>(continentValue);
 
-            shared_ptr<Continent> continent = make_shared<Continent>(namePointer, continentValuePointer);
-            continents.push_back(continent);
+            unique_ptr<Continent> continent = make_unique<Continent>(move(namePointer), move(continentValuePointer));
+            continents.push_back(move(continent));
         }
 
         map.setContinents(continents);
@@ -62,7 +62,6 @@ namespace
     void populateTerritories(ifstream &stream, Map &map)
     {
         vector<shared_ptr<Territory>> territories = map.getAdjacencyList();
-        vector<shared_ptr<Continent>> continents = map.getContinents();
         string line;
         istringstream ss;
 
@@ -82,11 +81,10 @@ namespace
             int continent;
             ss >> index >> name >> continent;
 
-            shared_ptr<Territory> territory = make_shared<Territory>(new string(name));
+            shared_ptr<Territory> territory = make_shared<Territory>(make_unique<string>(name));
             territories.push_back(territory);
 
-            shared_ptr<Continent> continentPointer = continents.at(continent - 1);
-            continentPointer->addTerritory(territory);
+            map.getContinents().at(continent - 1)->addTerritory(territory);
         }
 
         map.setAdjacencyList(territories);

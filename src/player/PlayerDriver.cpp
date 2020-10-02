@@ -6,10 +6,10 @@
 int main()
 {
     // Setup
-    shared_ptr<Territory> t1 = make_shared<Territory>(Territory(new string("Territory1")));
-    shared_ptr<Territory> t2 = make_shared<Territory>(Territory(new string("Territory2")));
-    shared_ptr<Territory> t3 = make_shared<Territory>(Territory(new string("Territory3")));
-    shared_ptr<Territory> t4 = make_shared<Territory>(Territory(new string("Territory4")));
+    shared_ptr<Territory> t1 = make_shared<Territory>(Territory(make_unique<string>("Territory1")));
+    shared_ptr<Territory> t2 = make_shared<Territory>(Territory(make_unique<string>("Territory2")));
+    shared_ptr<Territory> t3 = make_shared<Territory>(Territory(make_unique<string>("Territory3")));
+    shared_ptr<Territory> t4 = make_shared<Territory>(Territory(make_unique<string>("Territory4")));
 
     t1->addAdjacentTerritory(t2);
     t2->addAdjacentTerritory(t1);

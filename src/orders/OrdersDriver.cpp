@@ -3,8 +3,8 @@
 
 int main()
 {
-    shared_ptr<Territory> territory = make_shared<Territory>(new string("Quebec"));
-    shared_ptr<Territory> targetTerritory = make_shared<Territory>(new string("Ontario"));
+    shared_ptr<Territory> territory = make_shared<Territory>(Territory(make_unique<string>("Quebec")));
+    shared_ptr<Territory> targetTerritory = make_shared<Territory>(Territory(make_unique<string>("Ontario")));
 
     OrdersList ordersList;
     ordersList.addOrder(make_unique<DeployOrder>(make_unique<int>(5), territory));

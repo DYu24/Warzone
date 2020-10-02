@@ -12,11 +12,16 @@ using namespace std;
  */
 
 // Constructors
-Territory::Territory() : name_(make_shared<string>()), numberOfArmies_(make_shared<int>(0)), adjacentTerritories_(make_shared<vector<shared_ptr<Territory>>>()) {}
+Territory::Territory() : name_(make_unique<string>()), numberOfArmies_(make_unique<int>(0)), adjacentTerritories_(make_unique<vector<shared_ptr<Territory>>>()) {}
 
-Territory::Territory(string *name) : name_(name), numberOfArmies_(make_shared<int>(0)), adjacentTerritories_(make_shared<vector<shared_ptr<Territory>>>()) {}
+Territory::Territory(unique_ptr<string> name) : name_(move(name)), numberOfArmies_(make_unique<int>(0)), adjacentTerritories_(make_unique<vector<shared_ptr<Territory>>>()) {}
 
-Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_), adjacentTerritories_(territory.adjacentTerritories_) {}
+Territory::Territory(const Territory &territory)
+{
+    name_ = make_unique<string>(*territory.name_);
+    numberOfArmies_ = make_unique<int>(*territory.numberOfArmies_);
+    adjacentTerritories_ = make_unique<vector<shared_ptr<Territory>>>(*territory.adjacentTerritories_);
+}
 
 // Getters and Setters
 string Territory::getName()
@@ -52,9 +57,9 @@ void Territory::setAdjacentTerritories(vector<shared_ptr<Territory>> &territorie
 // Operator overloading
 const Territory &Territory::operator=(const Territory &territory)
 {
-    name_ = territory.name_;
-    numberOfArmies_ = territory.numberOfArmies_;
-    adjacentTerritories_ = territory.adjacentTerritories_;
+    name_ = make_unique<string>(*territory.name_);
+    numberOfArmies_ = make_unique<int>(*territory.numberOfArmies_);
+    adjacentTerritories_ = make_unique<vector<shared_ptr<Territory>>>(*territory.adjacentTerritories_);
     return *this;
 }
 
@@ -77,11 +82,16 @@ void Territory::addAdjacentTerritory(shared_ptr<Territory> territory)
  */
 
 // Constructors
-Continent::Continent() : name_(make_shared<string>()), controlValue_(make_shared<int>(0)), territories_(make_shared<vector<shared_ptr<Territory>>>()) {}
+Continent::Continent() : name_(make_unique<string>()), controlValue_(make_unique<int>(0)), territories_(make_unique<vector<shared_ptr<Territory>>>()) {}
 
-Continent::Continent(string *name, int *controlValue) : name_(name), controlValue_(controlValue), territories_(make_shared<vector<shared_ptr<Territory>>>()) {}
+Continent::Continent(unique_ptr<string> name, unique_ptr<int> controlValue) : name_(move(name)), controlValue_(move(controlValue)), territories_(make_unique<vector<shared_ptr<Territory>>>()) {}
 
-Continent::Continent(const Continent &continent) : name_(continent.name_), controlValue_(continent.controlValue_), territories_(continent.territories_) {}
+Continent::Continent(const Continent &continent)
+{
+    name_ = make_unique<string>(*continent.name_);
+    controlValue_ = make_unique<int>(*continent.controlValue_);
+    territories_ = make_unique<vector<shared_ptr<Territory>>>(*continent.territories_);
+}
 
 // Getters and Setters
 string Continent::getName()
@@ -117,9 +127,9 @@ void Continent::setTerritories(vector<shared_ptr<Territory>> &territories)
 // Operator overloading
 const Continent &Continent::operator=(const Continent &continent)
 {
-    name_ = continent.name_;
-    controlValue_ = continent.controlValue_;
-    territories_ = continent.territories_;
+    name_ = make_unique<string>(*continent.name_);
+    controlValue_ = make_unique<int>(*continent.controlValue_);
+    territories_ = make_unique<vector<shared_ptr<Territory>>>(*continent.territories_);
     return *this;
 }
 
@@ -142,9 +152,13 @@ void Continent::addTerritory(shared_ptr<Territory> territory)
  */
 
 // Constructors
-Map::Map() : adjacencyList_(make_shared<vector<shared_ptr<Territory>>>()), continents_(make_shared<vector<shared_ptr<Continent>>>()) {}
+Map::Map() : adjacencyList_(make_unique<vector<shared_ptr<Territory>>>()), continents_(make_unique<vector<unique_ptr<Continent>>>()) {}
 
-Map::Map(const Map &map) : adjacencyList_(map.adjacencyList_), continents_(map.continents_) {}
+Map::Map(const Map &map)
+{
+    adjacencyList_ = make_unique<vector<shared_ptr<Territory>>>(*map.adjacencyList_);
+    setContinents(*map.continents_);
+}
 
 // Getters and Setters
 vector<shared_ptr<Territory>> Map::getAdjacencyList()
@@ -157,21 +171,25 @@ void Map::setAdjacencyList(vector<shared_ptr<Territory>> &adjacencyList)
     *adjacencyList_ = adjacencyList;
 }
 
-vector<shared_ptr<Continent>> Map::getContinents()
+vector<unique_ptr<Continent>> &Map::getContinents()
 {
     return *continents_;
 }
 
-void Map::setContinents(vector<shared_ptr<Continent>> &continents)
+void Map::setContinents(vector<unique_ptr<Continent>> &continents)
 {
-    *continents_ = continents;
+    continents_ = make_unique<vector<unique_ptr<Continent>>>();
+    for (auto const &continentPointer : continents)
+    {
+        continents_->push_back(make_unique<Continent>(*continentPointer));
+    }
 }
 
 // Operator overloading
 const Map &Map::operator=(const Map &map)
 {
-    adjacencyList_ = map.adjacencyList_;
-    continents_ = map.continents_;
+    adjacencyList_ = make_unique<vector<shared_ptr<Territory>>>(*map.adjacencyList_);
+    setContinents(*map.continents_);
     return *this;
 }
 
@@ -229,9 +247,7 @@ bool Map::checkGraphValidity()
  */
 bool Map::checkContinentsValidity()
 {
-    vector<shared_ptr<Continent>> continents = getContinents();
-
-    for (auto const &continent : continents)
+    for (auto const &continent : getContinents())
     {
         unordered_set<shared_ptr<Territory>> visitedTerritories;
         queue<shared_ptr<Territory>> territoryQueue;
@@ -245,7 +261,7 @@ bool Map::checkContinentsValidity()
             territoryQueue.pop();
             visitedTerritories.insert(current);
 
-            // If the territory isn't a member of the set of all territories, then continent is not a subgraph
+            // If the territory isn't a member of the set of all territories in the map, then continent is not a subgraph
             if (find(adjacencyList_->begin(), adjacencyList_->end(), current) == adjacencyList_->end())
             {
                 return false;
@@ -277,10 +293,9 @@ bool Map::checkContinentsValidity()
  */
 bool Map::checkTerritoriesValidity()
 {
-    vector<shared_ptr<Continent>> continents = getContinents();
     unordered_set<shared_ptr<Territory>> visitedTerritories;
 
-    for (auto const &continent : continents)
+    for (auto const &continent : getContinents())
     {
         for (auto const &territory : continent->getTerritories())
         {

@@ -6,13 +6,13 @@ using namespace std;
 
 int main()
 {
-    shared_ptr<Territory> t1 = make_shared<Territory>(Territory(new string("Territory1")));
-    shared_ptr<Territory> t2 = make_shared<Territory>(Territory(new string("Territory2")));
-    shared_ptr<Territory> t3 = make_shared<Territory>(Territory(new string("Territory3")));
-    shared_ptr<Territory> t4 = make_shared<Territory>(Territory(new string("Territory4")));
+    shared_ptr<Territory> t1 = make_shared<Territory>(Territory(make_unique<string>("Territory1")));
+    shared_ptr<Territory> t2 = make_shared<Territory>(Territory(make_unique<string>("Territory2")));
+    shared_ptr<Territory> t3 = make_shared<Territory>(Territory(make_unique<string>("Territory3")));
+    shared_ptr<Territory> t4 = make_shared<Territory>(Territory(make_unique<string>("Territory4")));
 
-    shared_ptr<Continent> c1 = make_shared<Continent>(Continent(new string("Continent1"), new int(3)));
-    shared_ptr<Continent> c2 = make_shared<Continent>(Continent(new string("Continent2"), new int(4)));
+    unique_ptr<Continent> c1 = make_unique<Continent>(Continent(make_unique<string>("Continent1"), make_unique<int>(3)));
+    unique_ptr<Continent> c2 = make_unique<Continent>(Continent(make_unique<string>("Continent2"), make_unique<int>(4)));
 
     // ====== Create a valid map ======
     t1->addAdjacentTerritory(t2);
@@ -27,7 +27,9 @@ int main()
     c1->addTerritory(t2);
     c2->addTerritory(t3);
     c2->addTerritory(t4);
-    vector<shared_ptr<Continent>> continents { c1, c2 };
+    vector<unique_ptr<Continent>> continents;
+    continents.push_back(move(c1));
+    continents.push_back(move(c2));
 
     Map map1;
     map1.setAdjacencyList(territories);
@@ -41,7 +43,7 @@ int main()
     map2.setAdjacencyList(territories);
     map2.setContinents(continents);
 
-    shared_ptr<Territory> t5 = make_shared<Territory>(Territory(new string("Territory5")));
+    shared_ptr<Territory> t5 = make_shared<Territory>(Territory(make_unique<string>("Territory5")));
     vector<shared_ptr<Territory>> adjacencyList = map2.getAdjacencyList();
     adjacencyList.push_back(t5);
     map2.setAdjacencyList(adjacencyList);
@@ -53,8 +55,8 @@ int main()
     map3.setAdjacencyList(territories);
     map3.setContinents(continents);
 
-    shared_ptr<Territory> t6 = make_shared<Territory>(Territory(new string("Territory6")));
-    c1->addTerritory(t6);
+    shared_ptr<Territory> t6 = make_shared<Territory>(Territory(make_unique<string>("Territory6")));
+    map3.getContinents().at(0)->addTerritory(t6);
     adjacencyList = map3.getAdjacencyList();
     adjacencyList.push_back(t6);
     map3.setAdjacencyList(adjacencyList);
@@ -66,8 +68,8 @@ int main()
     map4.setAdjacencyList(territories);
     map4.setContinents(continents);
 
-    shared_ptr<Territory> t7 = make_shared<Territory>(Territory(new string("Territory7")));
-    c1->addTerritory(t7);
+    shared_ptr<Territory> t7 = make_shared<Territory>(Territory(make_unique<string>("Territory7")));
+    map4.getContinents().at(0)->addTerritory(t7);
     
     cout << boolalpha << "Map 4: VALID = " << map4.validate() << endl;
 
@@ -76,7 +78,7 @@ int main()
     map5.setAdjacencyList(territories);
     map5.setContinents(continents);
 
-    c2->addTerritory(t1);
+    map5.getContinents().at(1)->addTerritory(t1);
     
     cout << boolalpha << "Map 5: VALID = " << map5.validate() << endl;
 }
