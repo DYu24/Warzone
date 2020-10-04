@@ -12,6 +12,8 @@ int main()
     // Valid maps
     maps.push_back(make_pair("canada", "CANADA MAP"));
     maps.push_back(make_pair("europass", "EUROPASS MAP"));
+    maps.push_back(make_pair("solar", "SOLAR MAP"));
+    maps.push_back(make_pair("NYC", "NEW YORK CITY MAP"));
 
     // Invalid maps
     maps.push_back(make_pair("disconnected_graph", "INVALID MAP: UNCONNECTED GRAPH"));
