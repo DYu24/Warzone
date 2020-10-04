@@ -69,11 +69,12 @@ ostream &operator<<(ostream &output, const Territory &territory)
     return output;
 }
 
-// Method to add an adjacent territory to the current territory
+// Add an adjacent territory to the current territory.
 void Territory::addAdjacentTerritory(shared_ptr<Territory> territory)
 {
     adjacentTerritories_->push_back(territory);
 }
+
 
 /* 
 ===================================
@@ -139,11 +140,12 @@ ostream &operator<<(ostream &output, const Continent &continent)
     return output;
 }
 
-// Method to add a territory to the current Continent
+// Add a territory to the current continent.
 void Continent::addTerritory(shared_ptr<Territory> territory)
 {
     territories_->push_back(territory);
 }
+
 
 /* 
 ===================================
@@ -200,7 +202,7 @@ ostream &operator<<(ostream &output, const Map &map)
 }
 
 /*
- * Method to check whether the map is valid or not according to the following:
+ * Check whether the map is valid or not according to the following:
  * 1. Map is a connected graph
  * 2. The continents are connected subgraphs
  * 3. Each territory belongs to only one continent
@@ -239,6 +241,7 @@ bool Map::checkGraphValidity()
         }
     }
 
+    // If # of visited territories < # of all territories, the map is not a connected graph
     return visitedTerritories.size() == adjacencyList_->size();
 }
 
@@ -278,7 +281,7 @@ bool Map::checkContinentsValidity()
             }
         }
 
-        // If the visited territories of the continent is not the same as all its territories, then continent is not connected
+        // If # of visited territories in the continent is not the same as # of its territories, then continent is not connected
         if (continentMembers.size() != visitedTerritories.size())
         {
             return false;
@@ -299,13 +302,14 @@ bool Map::checkTerritoriesValidity()
     {
         for (auto const &territory : continent->getTerritories())
         {
+            // If territory has not been visited, add to set
             if (visitedTerritories.find(territory) == visitedTerritories.end())
             {
                 visitedTerritories.insert(territory);
             }
             else
             {
-                // This continent has a territory that was already visited through another continent.
+                // This continent has a territory that was already visited through another continent
                 return false;
             }
         }

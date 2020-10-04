@@ -7,17 +7,7 @@
 
 namespace
 {
-    // vector<shared_ptr<Territory>> getUnownedTerritories(vector<shared_ptr<Territory>> v1, vector<shared_ptr<Territory>> v2)
-    // {
-    //     sort(v1.begin(), v1.end());
-    //     sort(v2.begin(), v2.end());
-
-    //     vector<shared_ptr<Territory>> difference;
-    //     set_difference(v1.begin(), v1.end(), v2.begin(), v2.end(), inserter(difference, difference.begin()));
-
-    //     return difference;
-    // }
-
+    // Build a DeployOrder from user input
     unique_ptr<DeployOrder> buildDeployOrder(Player &player)
     {
         vector<shared_ptr<Territory>> playerTerritories = player.getOwnedTerritories();
@@ -53,6 +43,7 @@ namespace
         return make_unique<DeployOrder>(make_unique<int>(armies), selectedTerritory);
     }
 
+    // Build an AdvanceOrder from user input
     unique_ptr<AdvanceOrder> buildAdvanceOrder(Player &player)
     {
         vector<shared_ptr<Territory>> playerTerritories = player.getOwnedTerritories();
@@ -113,12 +104,15 @@ namespace
 
         return make_unique<AdvanceOrder>(make_unique<int>(armies), source, target);
     }
-} // namespace
+}
 
+// Default constructor
 Player::Player() : name_(make_unique<string>("unknown_player")), ownedTerritories_(make_unique<vector<shared_ptr<Territory>>>()), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
 
+// Constructor
 Player::Player(unique_ptr<string> name) : name_(move(name)), ownedTerritories_(make_unique<vector<shared_ptr<Territory>>>()), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
 
+// Copy constructor
 Player::Player(const Player &player)
 {
     name_ = make_unique<string>(*player.name_);
@@ -127,6 +121,7 @@ Player::Player(const Player &player)
     setHand(*player.hand_);
 }
 
+// Assignment operator overloading
 const Player &Player::operator=(const Player &player)
 {
     name_ = make_unique<string>(*player.name_);
@@ -136,12 +131,14 @@ const Player &Player::operator=(const Player &player)
     return *this;
 }
 
+// Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Player &player)
 {
     output << "[Player] " << *player.name_ << " has " << player.ownedTerritories_->size() << " Territories, " << player.orders_->getOrders().size() << " Orders, " << player.hand_->getCards().size() << " cards in Hand";
     return output;
 }
 
+// Getters and setters
 vector<shared_ptr<Territory>> Player::getOwnedTerritories()
 {
     return *ownedTerritories_;
@@ -166,33 +163,38 @@ void Player::setHand(Hand hand)
     }
 }
 
+// Add a card to the Player's hand
 void Player::addCardToHand(unique_ptr<Card> card)
 {
     hand_->addCard(move(card));
 }
 
-
+// Add a territory to the Player's list of owned territories
 void Player::addOwnedTerritory(shared_ptr<Territory> territory)
 {
     ownedTerritories_->push_back(territory);
 }
 
+// Remove a territory from the Player's list of owned territories
 void Player::removeOwnedTerritory(shared_ptr<Territory> territory)
 {
     auto removeIterator = remove(ownedTerritories_->begin(), ownedTerritories_->end(), territory);
     ownedTerritories_->erase(removeIterator, ownedTerritories_->end());
 }
 
+// Return a list of territories to defend
 vector<shared_ptr<Territory>> Player::toDefend()
 {
     return *ownedTerritories_;
 }
 
+// Return a list of territories to attack
 vector<shared_ptr<Territory>> Player::toAttack()
 {
     return *ownedTerritories_;
 }
 
+// Create an Order and place it in the Player's list of orders
 void Player::issueOrder(OrderType type)
 {
     switch (type)

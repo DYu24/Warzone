@@ -6,6 +6,7 @@ using namespace std;
 
 int main()
 {
+    // Setup
     vector<pair<string, string>> maps;
 
     // Valid maps
@@ -17,18 +18,17 @@ int main()
     maps.push_back(make_pair("duplicated_territory", "INVALID MAP: TERRITORY BELONGING IN MORE THAN ONE CONTINENT"));
     maps.push_back(make_pair("disconnected_continent", "INVALID MAP: CONTINENT IS NOT A CONNECTED SUBGRAPH"));
 
-    for (auto const &m : maps)
+    for (auto const &mapPair : maps)
     {
         try
         {
-            cout << "-----" << m.second << "-----" << endl;
-            MapLoader::loadMap("resources/" + m.first + ".map");
-            cout << endl;
+            cout << "-----" << mapPair.second << "-----" << endl;
+            Map map = MapLoader::loadMap("resources/" + mapPair.first + ".map");
+            cout << map << "\n" << endl;
         }
         catch (char const *errorMessage)
         {
-            cout << errorMessage << "\n"
-                 << endl;
+            cout << errorMessage << "\n" << endl;
         }
     }
 

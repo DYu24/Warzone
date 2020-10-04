@@ -6,6 +6,7 @@ using namespace std;
 
 int main()
 {
+    // Setup
     shared_ptr<Territory> t1 = make_shared<Territory>(Territory(make_unique<string>("Territory1")));
     shared_ptr<Territory> t2 = make_shared<Territory>(Territory(make_unique<string>("Territory2")));
     shared_ptr<Territory> t3 = make_shared<Territory>(Territory(make_unique<string>("Territory3")));
@@ -38,11 +39,13 @@ int main()
     cout << boolalpha << "Map 1: VALID = " << map1.validate() << endl;
 
     // ====== Create invalid maps ======
+
     // ------ Map is not a connected graph ------
     Map map2;
     map2.setAdjacencyList(territories);
     map2.setContinents(continents);
 
+    // Add a lone territory
     shared_ptr<Territory> t5 = make_shared<Territory>(Territory(make_unique<string>("Territory5")));
     vector<shared_ptr<Territory>> adjacencyList = map2.getAdjacencyList();
     adjacencyList.push_back(t5);
@@ -50,11 +53,13 @@ int main()
 
     cout << boolalpha << "Map 2: VALID = " << map2.validate() << endl;
 
+
     // ------ Continent(s) is not a connected graph ------
     Map map3;
     map3.setAdjacencyList(territories);
     map3.setContinents(continents);
 
+    // Add a lone territory within a continent
     shared_ptr<Territory> t6 = make_shared<Territory>(Territory(make_unique<string>("Territory6")));
     map3.getContinents().at(0)->addTerritory(t6);
     adjacencyList = map3.getAdjacencyList();
@@ -62,6 +67,7 @@ int main()
     map3.setAdjacencyList(adjacencyList);
     
     cout << boolalpha << "Map 3: VALID = " << map3.validate() << endl;
+
 
     // ------ Continent(s) is not a subgraph of the Map ------
     Map map4;
@@ -72,6 +78,7 @@ int main()
     map4.getContinents().at(0)->addTerritory(t7);
     
     cout << boolalpha << "Map 4: VALID = " << map4.validate() << endl;
+
 
     // ------ Territory belonging to more than one continent ------
     Map map5;

@@ -3,6 +3,7 @@
 
 int main()
 {
+    // Setup
     shared_ptr<Territory> territory = make_shared<Territory>(Territory(make_unique<string>("Quebec")));
     shared_ptr<Territory> targetTerritory = make_shared<Territory>(Territory(make_unique<string>("Ontario")));
 
@@ -14,30 +15,30 @@ int main()
     ordersList.addOrder(make_unique<AirliftOrder>(make_unique<int>(10), territory, targetTerritory));
     ordersList.addOrder(make_unique<NegotiateOrder>());
 
-    cout << "------"
-         << "Original orders list: " << ordersList << "------" << endl;
-    for (auto const &o : ordersList.getOrders())
+    // Show the OrderList
+    cout << "------" << "Original orders list: " << ordersList << "------" << endl;
+    for (auto const &orderPointer : ordersList.getOrders())
     {
-        cout << *o << endl;
-        cout << boolalpha << "Order is valid: " << o->validate() << endl;
-        o->execute();
+        cout << *orderPointer << endl;
+        cout << boolalpha << "Order is valid: " << orderPointer->validate() << endl;
+        orderPointer->execute();
         cout << endl;
     }
 
+    // Show the OrderList after moving an order from index 1 to index 4
     ordersList.moveOrder(1, 4);
-    cout << "------"
-         << "Orders list after moving an order: " << ordersList << "------" << endl;
-    for (auto const &o : ordersList.getOrders())
+    cout << "------" << "Orders list after moving an order: " << ordersList << "------" << endl;
+    for (auto const &orderPointer : ordersList.getOrders())
     {
-        cout << *o << endl;
+        cout << *orderPointer << endl;
     }
 
+    // Show the OrderList after deleting an order at index 5
     ordersList.deleteOrder(5);
-    cout << "\n------"
-         << "Orders list after deleting an order: " << ordersList << "------" << endl;
-    for (auto const &o : ordersList.getOrders())
+    cout << "\n------" << "Orders list after deleting an order: " << ordersList << "------" << endl;
+    for (auto const &orderPointer : ordersList.getOrders())
     {
-        cout << *o << endl;
+        cout << *orderPointer << endl;
     }
 
     return 0;

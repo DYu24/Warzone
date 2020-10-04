@@ -13,10 +13,10 @@ class Order;
 class Card
 {
 public:
-    virtual unique_ptr<Order> play() = 0;
-    virtual unique_ptr<Card> clone() const = 0;
     virtual ~Card(){};
     friend ostream &operator<<(ostream &output, const Card &card);
+    virtual unique_ptr<Order> play() = 0;
+    virtual unique_ptr<Card> clone() const = 0;
 
 protected:
     virtual ostream &print_(ostream &output) const = 0;
@@ -31,8 +31,8 @@ public:
     friend ostream &operator<<(ostream &output, const Deck &deck);
     vector<unique_ptr<Card>> &getCards();
     void setCards(vector<unique_ptr<Card>> &cards);
-    unique_ptr<Card> draw();
     void addCard(unique_ptr<Card> card);
+    unique_ptr<Card> draw();
 
 private:
     unique_ptr<vector<unique_ptr<Card>>> cards_;

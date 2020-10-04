@@ -23,9 +23,10 @@ int main()
     p1.addOwnedTerritory(t2);
     p1.addCardToHand(make_unique<BombCard>());
 
-    // Print the Player object
+    // Show the Player object
     cout << p1 << endl;
 
+    // Show the list of territories to defend
     vector<shared_ptr<Territory>> toDefend = p1.toDefend();
     cout << "-----Calling Player.toDefend(): -----" << endl;
     for (auto const &territory : toDefend)
@@ -35,6 +36,7 @@ int main()
 
     cout << endl;
 
+    // Show the list of territories to attack
     vector<shared_ptr<Territory>> toAttack = p1.toAttack();
     cout << "-----Calling Player.toAttack(): -----" << endl;
     for (auto const &territory : toAttack)
@@ -44,6 +46,7 @@ int main()
 
     cout << endl;
 
+
     // Issue a Deploy order and then print the resulting Player object
     p1.issueOrder(DEPLOY);
 
@@ -51,6 +54,7 @@ int main()
     cout << p1 << endl;
 
     cout << endl;
+
 
     // Issue an Advance order and then print the resulting Player object
     p1.issueOrder(ADVANCE);

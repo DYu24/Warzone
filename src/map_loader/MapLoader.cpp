@@ -7,9 +7,7 @@ using namespace std;
 
 namespace
 {
-    /*
-     * Skips lines of the input stream until the specified section is reached.
-     */
+    // Skips lines of the input stream until the specified section is reached.
     void skipToSection(string section, ifstream &stream)
     {
         string line;
@@ -20,9 +18,7 @@ namespace
         }
     }
 
-    /*
-     * Reads the input `.map` file and populates the Map object with continents.
-     */
+    // Reads the input `.map` file and populates the Map object with continents.
     void populateContinents(ifstream &stream, Map &map)
     {
         vector<unique_ptr<Continent>> continents;
@@ -33,6 +29,7 @@ namespace
 
         while (getline(stream, line) && line != "")
         {
+            // Skip commented lines
             if (line.rfind(";", 0) == 0)
             {
                 continue;
@@ -56,9 +53,7 @@ namespace
         map.setContinents(continents);
     }
 
-    /*
-     * Reads the input `.map` file and populates the Map object with territories.
-     */
+    // Reads the input `.map` file and populates the Map object with territories.
     void populateTerritories(ifstream &stream, Map &map)
     {
         vector<shared_ptr<Territory>> territories = map.getAdjacencyList();
@@ -68,6 +63,7 @@ namespace
         skipToSection("[countries]", stream);
         while (getline(stream, line) && line != "")
         {
+            // Skip commented lines
             if (line.rfind(";", 0) == 0)
             {
                 continue;
@@ -90,9 +86,7 @@ namespace
         map.setAdjacencyList(territories);
     }
 
-    /*
-     * Reads the input `.map` file and connects the territories to each other.
-     */
+    // Reads the input `.map` file and connects the territories to each other.
     void populateBorders(ifstream &stream, Map &map)
     {
         vector<shared_ptr<Territory>> territories = map.getAdjacencyList();
@@ -102,6 +96,7 @@ namespace
         skipToSection("[borders]", stream);
         while (getline(stream, line) && line != "")
         {
+            // Skip commented lines
             if (line.rfind(";", 0) == 0)
             {
                 continue;
@@ -124,6 +119,7 @@ namespace
     }
 }
 
+// Read the input `.map` file and generate a Map instance.
 Map MapLoader::loadMap(string filename)
 {
     cout << "Loading map..." << endl;

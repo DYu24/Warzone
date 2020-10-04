@@ -11,20 +11,16 @@ class Territory;
 enum OrderType : short
 {
     DEPLOY,
-    ADVANCE,
-    BOMB,
-    BLOCKADE,
-    AIRLIFT,
-    NEGOTIATE
+    ADVANCE
 };
 
 class Order
 {
 public:
-    void execute();
+    virtual ~Order(){};
     friend ostream &operator<<(ostream &output, const Order &order);
     virtual unique_ptr<Order> clone() const = 0;
-    virtual ~Order(){};
+    void execute();
     virtual bool validate() = 0;
 
 protected:
@@ -147,9 +143,6 @@ private:
 class NegotiateOrder : public Order
 {
 public:
-    NegotiateOrder();
-    NegotiateOrder(const NegotiateOrder &order);
-    const NegotiateOrder &operator=(const NegotiateOrder &order);
     unique_ptr<Order> clone() const;
     bool validate();
 
