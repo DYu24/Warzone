@@ -19,6 +19,7 @@ int main()
     maps.push_back(make_pair("disconnected_graph", "INVALID MAP: UNCONNECTED GRAPH"));
     maps.push_back(make_pair("duplicated_territory", "INVALID MAP: TERRITORY BELONGING IN MORE THAN ONE CONTINENT"));
     maps.push_back(make_pair("disconnected_continent", "INVALID MAP: CONTINENT IS NOT A CONNECTED SUBGRAPH"));
+    maps.push_back(make_pair("empty", "INVALID MAP: EMPTY FILE"));
 
     for (auto const &mapPair : maps)
     {
@@ -29,6 +30,10 @@ int main()
             cout << map << "\n" << endl;
         }
         catch (char const *errorMessage)
+        {
+            cout << errorMessage << "\n" << endl;
+        }
+        catch (string const errorMessage)
         {
             cout << errorMessage << "\n" << endl;
         }
