@@ -1,2 +1,0 @@
-C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\ar.exe qc libWarzoneLib.a CMakeFiles/WarzoneLib.dir/src/cards/Cards.cpp.obj CMakeFiles/WarzoneLib.dir/src/map/Map.cpp.obj CMakeFiles/WarzoneLib.dir/src/map_loader/MapLoader.cpp.obj CMakeFiles/WarzoneLib.dir/src/orders/Orders.cpp.obj CMakeFiles/WarzoneLib.dir/src/player/Player.cpp.obj
-C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\ranlib.exe libWarzoneLib.a

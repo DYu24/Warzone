@@ -1,2 +1,0 @@
-C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\ar.exe qc libWarzonLib.a CMakeFiles/WarzonLib.dir/src/map/Map.cpp.obj CMakeFiles/WarzonLib.dir/src/map_loader/MapLoader.cpp.obj
-C:\PROGRA~1\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin\ranlib.exe libWarzonLib.a
