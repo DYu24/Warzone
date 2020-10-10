@@ -68,13 +68,13 @@ void OrdersList::setOrders(vector<unique_ptr<Order>> &orders)
 }
 
 // Add an order to the OrderList.
-void OrdersList::addOrder(unique_ptr<Order> order)
+void OrdersList::add(unique_ptr<Order> order)
 {
-    orders_->push_back(move(order));
+    orders_->push_back(std::move(order));
 }
 
 // Move an order within the OrderList from `source` position to `destination` position.
-void OrdersList::moveOrder(int source, int destination)
+void OrdersList::move(int source, int destination)
 {
     bool sourceInRange = source >= 0 && source < orders_->size();
     bool destinationInRange = destination >= 0 && destination < orders_->size();
@@ -107,7 +107,7 @@ void OrdersList::moveOrder(int source, int destination)
 }
 
 // Delete an order from the OrderList specified by the `target` index.
-void OrdersList::deleteOrder(int target)
+void OrdersList::remove(int target)
 {
     orders_->erase(orders_->begin() + target);
 }
@@ -123,7 +123,7 @@ DeployOrder::DeployOrder() : numberOfArmies_(make_unique<int>(0)), destination_(
 
 // Constructor
 DeployOrder::DeployOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> destination) 
-    : numberOfArmies_(move(numberOfArmies)), destination_(destination) {}
+    : numberOfArmies_(std::move(numberOfArmies)), destination_(destination) {}
 
 // Copy constructor
 DeployOrder::DeployOrder(const DeployOrder &order) : destination_(order.destination_)
@@ -176,7 +176,7 @@ AdvanceOrder::AdvanceOrder()
 
 // Constructor
 AdvanceOrder::AdvanceOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
-    : numberOfArmies_(move(numberOfArmies)), source_(source), destination_(destination) {}
+    : numberOfArmies_(std::move(numberOfArmies)), source_(source), destination_(destination) {}
 
 // Copy constructor
 AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : source_(order.source_), destination_(order.destination_)
@@ -326,7 +326,7 @@ AirliftOrder::AirliftOrder()
 
 // Constructor
 AirliftOrder::AirliftOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
-    : numberOfArmies_(move(numberOfArmies)), source_(source), destination_(destination) {}
+    : numberOfArmies_(std::move(numberOfArmies)), source_(source), destination_(destination) {}
 
 // Copy constructor
 AirliftOrder::AirliftOrder(const AirliftOrder &order) : source_(order.source_), destination_(order.destination_)

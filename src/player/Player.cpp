@@ -200,10 +200,10 @@ void Player::issueOrder(OrderType type)
     switch (type)
     {
     case DEPLOY:
-        orders_->addOrder(buildDeployOrder(*this));
+        orders_->add(buildDeployOrder(*this));
         break;
     case ADVANCE:
-        orders_->addOrder(buildAdvanceOrder(*this));
+        orders_->add(buildAdvanceOrder(*this));
         break;
     default:
         cout << "Unsupported input.";
