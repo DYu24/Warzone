@@ -17,7 +17,7 @@ class Player
 {
     public:
         Player();
-        Player(unique_ptr<string> name);
+        Player(string name);
         Player(const Player &player);
         const Player &operator=(const Player &player);
         friend ostream &operator<<(ostream &output, const Player &player);
@@ -33,8 +33,8 @@ class Player
         void issueOrder(OrderType type);
 
     private:
-        unique_ptr<string> name_;
-        unique_ptr<vector<shared_ptr<Territory>>> ownedTerritories_;
+        string name_;
+        vector<shared_ptr<Territory>> ownedTerritories_;
         unique_ptr<OrdersList> orders_;
         unique_ptr<Hand> hand_;
 };

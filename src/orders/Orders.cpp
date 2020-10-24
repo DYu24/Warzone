@@ -30,59 +30,59 @@ ostream &operator<<(ostream &output, const Order &order)
  */
 
 // Constructor
-OrdersList::OrdersList() : orders_(make_unique<vector<unique_ptr<Order>>>()) {}
+OrdersList::OrdersList() {}
 
 // Copy constructor
 OrdersList::OrdersList(const OrdersList &orders)
 {
-    setOrders(*orders.orders_);
+    setOrders(orders.orders_);
 }
 
 // Assignment operator overloading
 const OrdersList &OrdersList::operator=(const OrdersList &orders)
 {
-    setOrders(*orders.orders_);
+    setOrders(orders.orders_);
     return *this;
 }
 
 // Stream insertion operator overloading
 ostream &operator<<(ostream &output, const OrdersList &orders)
 {
-    output << "[Orders List] Size=" << orders.orders_->size();
+    output << "[Orders List] Size=" << orders.orders_.size();
     return output;
 }
 
 // Getter and setter
 vector<unique_ptr<Order>> &OrdersList::getOrders()
 {
-    return *orders_;
+    return orders_;
 }
 
-void OrdersList::setOrders(vector<unique_ptr<Order>> &orders)
+void OrdersList::setOrders(const vector<unique_ptr<Order>> &orders)
 {
-    orders_ = make_unique<vector<unique_ptr<Order>>>();
+    orders_.clear();
     for (auto const &orderPointer : orders)
     {
-        orders_->push_back(orderPointer->clone());
+        orders_.push_back(orderPointer->clone());
     }
 }
 
 // Add an order to the OrderList.
 void OrdersList::add(unique_ptr<Order> order)
 {
-    orders_->push_back(std::move(order));
+    orders_.push_back(std::move(order));
 }
 
 // Move an order within the OrderList from `source` position to `destination` position.
 void OrdersList::move(int source, int destination)
 {
-    bool sourceInRange = source >= 0 && source < orders_->size();
-    bool destinationInRange = destination >= 0 && destination < orders_->size();
+    bool sourceInRange = source >= 0 && source < orders_.size();
+    bool destinationInRange = destination >= 0 && destination < orders_.size();
 
     if (sourceInRange && destinationInRange)
     {
-        auto orderPosition = next(orders_->begin(), source);
-        auto destinationPosition = next(orders_->begin(), destination);
+        auto orderPosition = next(orders_.begin(), source);
+        auto destinationPosition = next(orders_.begin(), destination);
 
         // If the order is before its destination, move it forwards
         if (destinationPosition > orderPosition)
@@ -109,7 +109,7 @@ void OrdersList::move(int source, int destination)
 // Delete an order from the OrderList specified by the `target` index.
 void OrdersList::remove(int target)
 {
-    orders_->erase(orders_->begin() + target);
+    orders_.erase(orders_.begin() + target);
 }
 
 /* 
@@ -119,22 +119,18 @@ void OrdersList::remove(int target)
  */
 
 // Default constructor
-DeployOrder::DeployOrder() : numberOfArmies_(make_unique<int>(0)), destination_(make_shared<Territory>()) {}
+DeployOrder::DeployOrder() : numberOfArmies_(0), destination_(make_shared<Territory>()) {}
 
 // Constructor
-DeployOrder::DeployOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> destination) 
-    : numberOfArmies_(std::move(numberOfArmies)), destination_(destination) {}
+DeployOrder::DeployOrder(int numberOfArmies, shared_ptr<Territory> destination) : numberOfArmies_(numberOfArmies), destination_(destination) {}
 
 // Copy constructor
-DeployOrder::DeployOrder(const DeployOrder &order) : destination_(order.destination_)
-{
-    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
-}
+DeployOrder::DeployOrder(const DeployOrder &order) : numberOfArmies_(order.numberOfArmies_), destination_(order.destination_) {}
 
 // Assignment operator overloading
 const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
 {
-    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+    numberOfArmies_ = order.numberOfArmies_;
     destination_ = order.destination_;
     return *this;
 }
@@ -160,7 +156,7 @@ void DeployOrder::execute_()
 // Stream insertion operator overloading
 ostream &DeployOrder::print_(ostream &output) const
 {
-    output << "[DeployOrder] " << *numberOfArmies_ << " armies to " << destination_->getName();
+    output << "[DeployOrder] " << numberOfArmies_ << " armies to " << destination_->getName();
     return output;
 }
 
@@ -171,23 +167,18 @@ ostream &DeployOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AdvanceOrder::AdvanceOrder() 
-    : numberOfArmies_(make_unique<int>(0)), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
+AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
 
 // Constructor
-AdvanceOrder::AdvanceOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
-    : numberOfArmies_(std::move(numberOfArmies)), source_(source), destination_(destination) {}
+AdvanceOrder::AdvanceOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination): numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
 // Copy constructor
-AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : source_(order.source_), destination_(order.destination_)
-{
-    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
-}
+AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
 
 // Assignment operator overloading
 const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
 {
-    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+    numberOfArmies_ = order.numberOfArmies_;
     source_ = order.source_;
     destination_ = order.destination_;
     return *this;
@@ -214,7 +205,7 @@ void AdvanceOrder::execute_()
 // Stream insertion operator overloading
 ostream &AdvanceOrder::print_(ostream &output) const
 {
-    output << "[AdvanceOrder] " << *numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    output << "[AdvanceOrder] " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
     return output;
 }
 
@@ -321,23 +312,18 @@ ostream &BlockadeOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AirliftOrder::AirliftOrder()
-    : numberOfArmies_(make_unique<int>(0)), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
+AirliftOrder::AirliftOrder() : numberOfArmies_(0), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
 
 // Constructor
-AirliftOrder::AirliftOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
-    : numberOfArmies_(std::move(numberOfArmies)), source_(source), destination_(destination) {}
+AirliftOrder::AirliftOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination) : numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
 // Copy constructor
-AirliftOrder::AirliftOrder(const AirliftOrder &order) : source_(order.source_), destination_(order.destination_)
-{
-    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
-}
+AirliftOrder::AirliftOrder(const AirliftOrder &order) : numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
 
 // Assignment operator overloading
 const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
 {
-    numberOfArmies_ = make_unique<int>(*order.numberOfArmies_);
+    numberOfArmies_ = order.numberOfArmies_;
     source_ = order.source_;
     destination_ = order.destination_;
     return *this;
@@ -364,7 +350,7 @@ void AirliftOrder::execute_()
 // Stream insertion operator overloading
 ostream &AirliftOrder::print_(ostream &output) const
 {
-    output << "[AirliftOrder] " << *numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    output << "[AirliftOrder] " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
     return output;
 }
 

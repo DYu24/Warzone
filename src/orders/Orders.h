@@ -36,20 +36,20 @@ public:
     const OrdersList &operator=(const OrdersList &orders);
     friend ostream &operator<<(ostream &output, const OrdersList &orders);
     vector<unique_ptr<Order>> &getOrders();
-    void setOrders(vector<unique_ptr<Order>> &orders);
+    void setOrders(const vector<unique_ptr<Order>> &orders);
     void add(unique_ptr<Order> order);
     void move(int source, int destination);
     void remove(int target);
 
 private:
-    unique_ptr<vector<unique_ptr<Order>>> orders_;
+    vector<unique_ptr<Order>> orders_;
 };
 
 class DeployOrder : public Order
 {
 public:
     DeployOrder();
-    DeployOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> destination);
+    DeployOrder(int numberOfArmies, shared_ptr<Territory> destination);
     DeployOrder(const DeployOrder &order);
     const DeployOrder &operator=(const DeployOrder &order);
     unique_ptr<Order> clone() const;
@@ -60,7 +60,7 @@ protected:
     ostream &print_(ostream &output) const;
 
 private:
-    unique_ptr<int> numberOfArmies_;
+    int numberOfArmies_;
     shared_ptr<Territory> destination_;
 };
 
@@ -68,7 +68,7 @@ class AdvanceOrder : public Order
 {
 public:
     AdvanceOrder();
-    AdvanceOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination);
+    AdvanceOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination);
     AdvanceOrder(const AdvanceOrder &order);
     const AdvanceOrder &operator=(const AdvanceOrder &order);
     unique_ptr<Order> clone() const;
@@ -79,7 +79,7 @@ protected:
     ostream &print_(ostream &output) const;
 
 private:
-    unique_ptr<int> numberOfArmies_;
+    int numberOfArmies_;
     shared_ptr<Territory> source_;
     shared_ptr<Territory> destination_;
 };
@@ -124,7 +124,7 @@ class AirliftOrder : public Order
 {
 public:
     AirliftOrder();
-    AirliftOrder(unique_ptr<int> numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination);
+    AirliftOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination);
     AirliftOrder(const AirliftOrder &order);
     const AirliftOrder &operator=(const AirliftOrder &order);
     unique_ptr<Order> clone() const;
@@ -135,7 +135,7 @@ protected:
     ostream &print_(ostream &output) const;
 
 private:
-    unique_ptr<int> numberOfArmies_;
+    int numberOfArmies_;
     shared_ptr<Territory> source_;
     shared_ptr<Territory> destination_;
 };

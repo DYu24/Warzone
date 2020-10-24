@@ -4,15 +4,15 @@
 int main()
 {
     // Setup
-    shared_ptr<Territory> territory = make_shared<Territory>(Territory(make_unique<string>("Quebec")));
-    shared_ptr<Territory> targetTerritory = make_shared<Territory>(Territory(make_unique<string>("Ontario")));
+    shared_ptr<Territory> territory = make_shared<Territory>("Quebec");
+    shared_ptr<Territory> targetTerritory = make_shared<Territory>("Ontario");
 
     OrdersList ordersList;
-    ordersList.add(make_unique<DeployOrder>(make_unique<int>(5), territory));
-    ordersList.add(make_unique<AdvanceOrder>(make_unique<int>(5), territory, targetTerritory));
+    ordersList.add(make_unique<DeployOrder>(5, territory));
+    ordersList.add(make_unique<AdvanceOrder>(5, territory, targetTerritory));
     ordersList.add(make_unique<BombOrder>(targetTerritory));
     ordersList.add(make_unique<BlockadeOrder>(territory));
-    ordersList.add(make_unique<AirliftOrder>(make_unique<int>(10), territory, targetTerritory));
+    ordersList.add(make_unique<AirliftOrder>(10, territory, targetTerritory));
     ordersList.add(make_unique<NegotiateOrder>());
 
     // Show the OrderList

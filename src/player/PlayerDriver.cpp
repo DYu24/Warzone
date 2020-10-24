@@ -6,10 +6,10 @@
 int main()
 {
     // Setup
-    shared_ptr<Territory> t1 = make_shared<Territory>(Territory(make_unique<string>("Territory1")));
-    shared_ptr<Territory> t2 = make_shared<Territory>(Territory(make_unique<string>("Territory2")));
-    shared_ptr<Territory> t3 = make_shared<Territory>(Territory(make_unique<string>("Territory3")));
-    shared_ptr<Territory> t4 = make_shared<Territory>(Territory(make_unique<string>("Territory4")));
+    shared_ptr<Territory> t1 = make_shared<Territory>("Territory1");
+    shared_ptr<Territory> t2 = make_shared<Territory>("Territory2");
+    shared_ptr<Territory> t3 = make_shared<Territory>("Territory3");
+    shared_ptr<Territory> t4 = make_shared<Territory>("Territory4");
 
     t1->addAdjacentTerritory(t2);
     t2->addAdjacentTerritory(t1);
@@ -18,7 +18,7 @@ int main()
     t3->addAdjacentTerritory(t4);
     t4->addAdjacentTerritory(t3);
 
-    Player p1 = Player(make_unique<string>("Player 1"));
+    Player p1 = Player("Player 1");
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
     p1.addCardToHand(make_unique<BombCard>());

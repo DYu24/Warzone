@@ -30,12 +30,12 @@ public:
     const Deck &operator=(const Deck &deck);
     friend ostream &operator<<(ostream &output, const Deck &deck);
     vector<unique_ptr<Card>> &getCards();
-    void setCards(vector<unique_ptr<Card>> &cards);
+    void setCards(const vector<unique_ptr<Card>> &cards);
     void addCard(unique_ptr<Card> card);
     unique_ptr<Card> draw();
 
 private:
-    unique_ptr<vector<unique_ptr<Card>>> cards_;
+    vector<unique_ptr<Card>> cards_;
 };
 
 class Hand
@@ -47,13 +47,13 @@ public:
     const Hand &operator=(const Hand &hand);
     friend ostream &operator<<(ostream &output, const Hand &hand);
     vector<unique_ptr<Card>> &getCards();
-    void setCards(vector<unique_ptr<Card>> &cards);
+    void setCards(const vector<unique_ptr<Card>> &cards);
     void addCard(unique_ptr<Card> card);
     unique_ptr<Card> removeCard(int position);
     unique_ptr<Order> playCardAt(int position);
 
 private:
-    unique_ptr<vector<unique_ptr<Card>>> cards_;
+    vector<unique_ptr<Card>> cards_;
 };
 
 class BombCard : public Card

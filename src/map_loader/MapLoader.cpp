@@ -43,10 +43,7 @@ namespace
             string color;
             ss >> name >> continentValue >> color;
 
-            unique_ptr<string> namePointer = make_unique<string>(name);
-            unique_ptr<int> continentValuePointer = make_unique<int>(continentValue);
-
-            unique_ptr<Continent> continent = make_unique<Continent>(move(namePointer), move(continentValuePointer));
+            unique_ptr<Continent> continent = make_unique<Continent>(name, continentValue);
             continents.push_back(move(continent));
         }
 
@@ -77,7 +74,7 @@ namespace
             int continent;
             ss >> index >> name >> continent;
 
-            shared_ptr<Territory> territory = make_shared<Territory>(make_unique<string>(name));
+            shared_ptr<Territory> territory = make_shared<Territory>(name);
             territories.push_back(territory);
 
             map.getContinents().at(continent - 1)->addTerritory(territory);

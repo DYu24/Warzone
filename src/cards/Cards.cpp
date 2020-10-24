@@ -22,40 +22,40 @@ ostream &operator<<(ostream &output, const Card &card)
  */
 
 // Constructor
-Deck::Deck() : cards_(make_unique<vector<unique_ptr<Card>>>()) {}
+Deck::Deck() {}
 
 // Copy constructor
 Deck::Deck(const Deck &deck)
 {
-    setCards(*deck.cards_);
+    setCards(deck.cards_);
 }
 
 // Assignment operator overloading
 const Deck &Deck::operator=(const Deck &deck)
 {
-    setCards(*deck.cards_);
+    setCards(deck.cards_);
     return *this;
 }
 
 // Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Deck &deck)
 {
-    output << "[Deck] Size=" << deck.cards_->size();
+    output << "[Deck] Size=" << deck.cards_.size();
     return output;
 }
 
 // Getter and setter
 vector<unique_ptr<Card>> &Deck::getCards()
 {
-    return *cards_;
+    return cards_;
 }
 
-void Deck::setCards(vector<unique_ptr<Card>> &cards)
+void Deck::setCards(const vector<unique_ptr<Card>> &cards)
 {
-    cards_ = make_unique<vector<unique_ptr<Card>>>();
+    cards_.clear();
     for (auto const &cardPointer : cards)
     {
-        cards_->push_back(cardPointer->clone());
+        cards_.push_back(cardPointer->clone());
     }
 }
 
@@ -63,16 +63,16 @@ void Deck::setCards(vector<unique_ptr<Card>> &cards)
 // The selected card is removed from the deck.
 unique_ptr<Card> Deck::draw()
 {
-    if (cards_->empty())
+    if (cards_.empty())
     {
         cout << "Deck is empty." << endl;
         return NULL;
     }
 
     srand(time(NULL));
-    int randomIndex = rand() % cards_->size();
-    auto randomCard = move(cards_->at(randomIndex));
-    cards_->erase(cards_->begin() + randomIndex);
+    int randomIndex = rand() % cards_.size();
+    auto randomCard = move(cards_.at(randomIndex));
+    cards_.erase(cards_.begin() + randomIndex);
 
     return randomCard;
 }
@@ -80,7 +80,7 @@ unique_ptr<Card> Deck::draw()
 // Add a card to the deck.
 void Deck::addCard(unique_ptr<Card> card)
 {
-    cards_->push_back(move(card));
+    cards_.push_back(move(card));
 }
 
 
@@ -91,62 +91,62 @@ void Deck::addCard(unique_ptr<Card> card)
  */
 
 // Default constructor
-Hand::Hand() : cards_(make_unique<vector<unique_ptr<Card>>>()) {}
+Hand::Hand() {}
 
 // Copy constructor
 Hand::Hand(const Hand &hand)
 {
-    setCards(*hand.cards_);
+    setCards(hand.cards_);
 }
 
 // Assignment operator overloading
 const Hand &Hand::operator=(const Hand &hand)
 {
-    setCards(*hand.cards_);
+    setCards(hand.cards_);
     return *this;
 }
 
 // Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Hand &hand)
 {
-    output << "[Hand] Size=" << hand.cards_->size();
+    output << "[Hand] Size=" << hand.cards_.size();
     return output;
 }
 
 // Getter and setter
 vector<unique_ptr<Card>> &Hand::getCards()
 {
-    return *cards_;
+    return cards_;
 }
 
-void Hand::setCards(vector<unique_ptr<Card>> &cards)
+void Hand::setCards(const vector<unique_ptr<Card>> &cards)
 {
-    cards_ = make_unique<vector<unique_ptr<Card>>>();
+    cards_.clear();
     for (auto const &cardPointer : cards)
     {
-        cards_->push_back(cardPointer->clone());
+        cards_.push_back(cardPointer->clone());
     }
 }
 
 // Add a card to the player's hand.
 void Hand::addCard(unique_ptr<Card> card)
 {
-    cards_->push_back(move(card));
+    cards_.push_back(move(card));
 }
 
 // Remove and return a card from the player's hand indicated by its position.
 unique_ptr<Card> Hand::removeCard(int position)
 {
-    auto cardPosition = cards_->begin() + position;
+    auto cardPosition = cards_.begin() + position;
     unique_ptr<Card> card = move(*cardPosition);
-    cards_->erase(cardPosition);
+    cards_.erase(cardPosition);
     return card;
 }
 
 // Play the card at the specified position.
 unique_ptr<Order> Hand::playCardAt(int position)
 {
-    return cards_->at(position)->play();
+    return cards_.at(position)->play();
 }
 
 
