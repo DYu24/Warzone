@@ -139,9 +139,9 @@ vector<shared_ptr<Territory>> Player::getOwnedTerritories()
 }
 
 // Add a card to the Player's hand
-void Player::addCardToHand(unique_ptr<Card> card)
+void Player::addCardToHand(shared_ptr<Card> card)
 {
-    hand_->addCard(move(card));
+    hand_->addCard(card);
 }
 
 // Add a territory to the Player's list of owned territories

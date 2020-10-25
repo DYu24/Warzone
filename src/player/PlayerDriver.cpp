@@ -21,7 +21,7 @@ int main()
     Player p1 = Player("Player 1");
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
-    p1.addCardToHand(make_unique<BombCard>());
+    p1.addCardToHand(make_shared<BombCard>());
 
     // Show the Player object
     cout << p1 << endl;

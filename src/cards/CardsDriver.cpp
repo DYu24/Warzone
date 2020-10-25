@@ -5,11 +5,11 @@ int main()
 {
     // Setup
     Deck deck;
-    deck.addCard(make_unique<BombCard>());
-    deck.addCard(make_unique<ReinforcementCard>());
-    deck.addCard(make_unique<BlockadeCard>());
-    deck.addCard(make_unique<AirliftCard>());
-    deck.addCard(make_unique<DiplomacyCard>());
+    deck.addCard(make_shared<BombCard>());
+    deck.addCard(make_shared<ReinforcementCard>());
+    deck.addCard(make_shared<BlockadeCard>());
+    deck.addCard(make_shared<AirliftCard>());
+    deck.addCard(make_shared<DiplomacyCard>());
 
     cout << "-----" << " Initial Deck of cards - Size=" << deck.getCards().size() << " -----" << endl;
     for (auto const &card : deck.getCards())
@@ -22,9 +22,9 @@ int main()
     // Fill hand by randomly drawing from deck
     cout << "-----" << " Drawing cards from deck " << " -----" << endl;
     Hand hand;
-    hand.addCard(move(deck.draw()));
-    hand.addCard(move(deck.draw()));
-    hand.addCard(move(deck.draw()));
+    hand.addCard(deck.draw());
+    hand.addCard(deck.draw());
+    hand.addCard(deck.draw());
 
     cout << "*****" << " Deck after drawing - Size=" << deck.getCards().size() << " *****" << endl;
     for (auto const &card : deck.getCards())
@@ -46,7 +46,7 @@ int main()
     {
         unique_ptr<Order> playResult = hand.playCardAt(0);
         cout << *playResult << endl;
-        deck.addCard(move(hand.removeCard(0)));
+        deck.addCard(hand.removeCard(0));
     }
 
     cout << endl;

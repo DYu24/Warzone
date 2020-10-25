@@ -16,7 +16,6 @@ public:
     virtual ~Card(){};
     friend ostream &operator<<(ostream &output, const Card &card);
     virtual unique_ptr<Order> play() = 0;
-    virtual unique_ptr<Card> clone() const = 0;
 
 protected:
     virtual ostream &print_(ostream &output) const = 0;
@@ -29,38 +28,36 @@ public:
     Deck(const Deck &deck);
     const Deck &operator=(const Deck &deck);
     friend ostream &operator<<(ostream &output, const Deck &deck);
-    vector<unique_ptr<Card>> &getCards();
-    void setCards(const vector<unique_ptr<Card>> &cards);
-    void addCard(unique_ptr<Card> card);
-    unique_ptr<Card> draw();
+    vector<shared_ptr<Card>> getCards();
+    void addCard(shared_ptr<Card> card);
+    shared_ptr<Card> draw();
+    void generateCards(int numberOfCards);
 
 private:
-    vector<unique_ptr<Card>> cards_;
+    vector<shared_ptr<Card>> cards_;
 };
 
 class Hand
 {
 public:
     Hand();
-    Hand(vector<unique_ptr<Card>> cards);
+    Hand(vector<shared_ptr<Card>> cards);
     Hand(const Hand &hand);
     const Hand &operator=(const Hand &hand);
     friend ostream &operator<<(ostream &output, const Hand &hand);
-    vector<unique_ptr<Card>> &getCards();
-    void setCards(const vector<unique_ptr<Card>> &cards);
-    void addCard(unique_ptr<Card> card);
-    unique_ptr<Card> removeCard(int position);
+    vector<shared_ptr<Card>> getCards();
+    void addCard(shared_ptr<Card> card);
+    shared_ptr<Card> removeCard(int position);
     unique_ptr<Order> playCardAt(int position);
 
 private:
-    vector<unique_ptr<Card>> cards_;
+    vector<shared_ptr<Card>> cards_;
 };
 
 class BombCard : public Card
 {
 public:
     unique_ptr<Order> play();
-    unique_ptr<Card> clone() const;
 
 protected:
     ostream &print_(ostream &output) const;
@@ -70,7 +67,6 @@ class ReinforcementCard : public Card
 {
 public:
     unique_ptr<Order> play();
-    unique_ptr<Card> clone() const;
 
 protected:
     ostream &print_(ostream &output) const;
@@ -80,7 +76,6 @@ class BlockadeCard : public Card
 {
 public:
     unique_ptr<Order> play();
-    unique_ptr<Card> clone() const;
 
 protected:
     ostream &print_(ostream &output) const;
@@ -90,7 +85,6 @@ class AirliftCard : public Card
 {
 public:
     unique_ptr<Order> play();
-    unique_ptr<Card> clone() const;
 
 protected:
     ostream &print_(ostream &output) const;
@@ -100,7 +94,6 @@ class DiplomacyCard : public Card
 {
 public:
     unique_ptr<Order> play();
-    unique_ptr<Card> clone() const;
 
 protected:
     ostream &print_(ostream &output) const;

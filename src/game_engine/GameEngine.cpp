@@ -185,6 +185,8 @@ void GameEngine::startGame()
     vector<unique_ptr<Player>> players = setupPlayers();
     setPlayers(players);
     cout << endl;
+
+    deck_->generateCards(20);
 }
 
 /*
