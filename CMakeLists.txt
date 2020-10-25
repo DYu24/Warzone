@@ -22,3 +22,6 @@ target_link_libraries(PlayerDriver WarzoneLib)
 
 add_executable(CardsDriver ${PROJECT_SOURCE_DIR}/src/cards/CardsDriver.cpp)
 target_link_libraries(CardsDriver WarzoneLib)
+
+add_executable(GameEngineDriver ${PROJECT_SOURCE_DIR}/src/game_engine/GameEngineDriver.cpp)
+target_link_libraries(GameEngineDriver WarzoneLib)

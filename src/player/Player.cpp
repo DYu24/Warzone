@@ -113,11 +113,7 @@ Player::Player() : name_("unknown_player"), orders_(make_unique<OrdersList>()), 
 Player::Player(string name) : name_(name), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
 
 // Copy constructor
-Player::Player(const Player &player) : name_(player.name_), ownedTerritories_(player.ownedTerritories_)
-{
-    orders_ = make_unique<OrdersList>(*player.orders_);
-    setHand(*player.hand_);
-}
+Player::Player(const Player &player) : name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(make_unique<OrdersList>(*player.orders_)), hand_(make_unique<Hand>(*player.hand_)) {}
 
 // Assignment operator overloading
 const Player &Player::operator=(const Player &player)
@@ -125,7 +121,7 @@ const Player &Player::operator=(const Player &player)
     name_ = player.name_;
     ownedTerritories_ = player.ownedTerritories_;
     orders_ = make_unique<OrdersList>(*player.orders_);
-    setHand(*player.hand_);
+    hand_ = make_unique<Hand>(*player.hand_);
     return *this;
 }
 
@@ -136,29 +132,10 @@ ostream &operator<<(ostream &output, const Player &player)
     return output;
 }
 
-// Getters and setters
+// Getter
 vector<shared_ptr<Territory>> Player::getOwnedTerritories()
 {
     return ownedTerritories_;
-}
-
-OrdersList Player::getOrdersList()
-{
-    return *orders_;
-}
-
-Hand Player::getHand()
-{
-    return *hand_;
-}
-
-void Player::setHand(Hand hand)
-{
-    hand_ = make_unique<Hand>();
-    for (auto const &card : hand.getCards())
-    {
-        hand_->addCard(card->clone());
-    }
 }
 
 // Add a card to the Player's hand

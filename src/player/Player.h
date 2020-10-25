@@ -22,9 +22,6 @@ class Player
         const Player &operator=(const Player &player);
         friend ostream &operator<<(ostream &output, const Player &player);
         vector<shared_ptr<Territory>> getOwnedTerritories();
-        OrdersList getOrdersList();
-        Hand getHand();
-        void setHand(Hand hand);
         void addCardToHand(unique_ptr<Card> card);
         void addOwnedTerritory(shared_ptr<Territory> territory);
         void removeOwnedTerritory(shared_ptr<Territory> territory);
