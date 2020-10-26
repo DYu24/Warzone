@@ -3,6 +3,7 @@
 #include "../map_loader/MapLoader.h"
 #include <algorithm>
 #include <limits>
+#include <math.h>
 #include <random>
 #include <string>
 #include <time.h>
@@ -230,6 +231,90 @@ void GameEngine::startupPhase()
     const int NUMBER_OF_INITIAL_ARMIES = (-5 * players_.size()) + 50;
     for (auto const &player : players_)
     {
-        player->setReinforcements(NUMBER_OF_INITIAL_ARMIES);
+        player->addReinforcements(NUMBER_OF_INITIAL_ARMIES);
+    }
+}
+
+/*
+ * Assigns the appropriate amount of reinforcements for each player based on the territories they control.
+ */
+void GameEngine::reinforcementPhase()
+{
+    const int BASE_REINFORCEMENT_VALUE = 3;
+    for (auto const &player : players_)
+    {
+        vector<shared_ptr<Territory>> playerTerritories = player->getOwnedTerritories();
+        sort(playerTerritories.begin(), playerTerritories.end());
+
+        player->addReinforcements(BASE_REINFORCEMENT_VALUE);
+        player->addReinforcements(floor(playerTerritories.size() / 3));
+    
+        for (auto const &continent : map_->getContinents())
+        {
+            vector<shared_ptr<Territory>> continentMembers = continent->getTerritories();
+            sort(continentMembers.begin(), continentMembers.end());
+
+            if (includes(playerTerritories.begin(), playerTerritories.end(), continentMembers.begin(), continentMembers.end()))
+            {
+                player->addReinforcements(continent->getControlValue());
+            }
+        }
+    }
+}
+
+void GameEngine::issueOrdersPhase()
+{
+
+}
+
+void GameEngine::executeOrdersPhase()
+{
+
+}
+
+/*
+ * Core game
+ */
+void GameEngine::mainGameLoop()
+{
+    int j = 0;
+    bool shouldContinueGame = true;
+    while (shouldContinueGame && j < 5)
+    {
+        // Check for any winner and remove players who do not own any territories
+        vector<int> playersToRemove;
+        for (int i = 0; i < players_.size(); i++)
+        {
+            if (players_.at(i)->getOwnedTerritories().size() == map_->getAdjacencyList().size())
+            {
+                shouldContinueGame = false;
+                cout << players_.at(i)->getName() << " has won the game!" << endl;
+                break;
+            }
+
+            if (players_.at(i)->getOwnedTerritories().size() == 0)
+            {
+                playersToRemove.push_back(i);
+            }
+        }
+
+        for (const int i : playersToRemove)
+        {
+            cout << players_.at(i)->getName() << " does not control any territories. Removing from game." << endl;
+            players_.erase(players_.begin() + i);
+        }
+
+        cout << "***** Number of players still in game: " << players_.size() << " *****" << endl;
+        for (auto const &player : players_)
+        {
+            cout << *player << endl;
+        }
+        cout << endl;
+
+        reinforcementPhase();
+        issueOrdersPhase();
+        executeOrdersPhase();
+
+        j++;
     }
 }

@@ -19,6 +19,10 @@ public:
     void setPlayers(const vector<unique_ptr<Player>> &players);
     void startGame();
     void startupPhase();
+    void reinforcementPhase();
+    void issueOrdersPhase();
+    void executeOrdersPhase();
+    void mainGameLoop();
 
 private:
     unique_ptr<Deck> deck_;

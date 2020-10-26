@@ -133,15 +133,21 @@ ostream &operator<<(ostream &output, const Player &player)
     return output;
 }
 
-// Getter and setter
+// Getters
 vector<shared_ptr<Territory>> Player::getOwnedTerritories()
 {
     return ownedTerritories_;
 }
 
-void Player::setReinforcements(int reinforcements)
+string Player::getName()
 {
-    reinforcements_ = reinforcements;
+    return name_;
+}
+
+// Add a number of reinforcements to the Player's reinforcement pool
+void Player::addReinforcements(int reinforcements)
+{
+    reinforcements_ += reinforcements;
 }
 
 // Add a card to the Player's hand

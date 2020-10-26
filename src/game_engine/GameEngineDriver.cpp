@@ -44,5 +44,14 @@ int main()
     cout << "Number of territories in the game map: " << allTerritoriesInMap.size() << endl;
     cout << "Number of territories owned by players: " << ownedTerritories.size() << endl;
 
+    cout << endl;
+    
+
+    // ==============================
+    // Part 3:
+    // ==============================
+    cout << "========== PART 3 ==========" << endl;
+    gameEngine.mainGameLoop();
+
     return 0;
 }
