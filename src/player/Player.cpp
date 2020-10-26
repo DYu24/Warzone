@@ -107,17 +107,18 @@ namespace
 }
 
 // Default constructor
-Player::Player() : name_("unknown_player"), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
+Player::Player() : reinforcements_(0), name_("unknown_player"), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
 
 // Constructor
-Player::Player(string name) : name_(name), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
+Player::Player(string name) : reinforcements_(0), name_(name), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
 
 // Copy constructor
-Player::Player(const Player &player) : name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(make_unique<OrdersList>(*player.orders_)), hand_(make_unique<Hand>(*player.hand_)) {}
+Player::Player(const Player &player) : reinforcements_(player.reinforcements_), name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(make_unique<OrdersList>(*player.orders_)), hand_(make_unique<Hand>(*player.hand_)) {}
 
 // Assignment operator overloading
 const Player &Player::operator=(const Player &player)
 {
+    reinforcements_ = player.reinforcements_;
     name_ = player.name_;
     ownedTerritories_ = player.ownedTerritories_;
     orders_ = make_unique<OrdersList>(*player.orders_);
@@ -128,14 +129,19 @@ const Player &Player::operator=(const Player &player)
 // Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Player &player)
 {
-    output << "[Player] " << player.name_ << " has " << player.ownedTerritories_.size() << " Territories, " << player.orders_->getOrders().size() << " Orders, " << player.hand_->getCards().size() << " cards in Hand";
+    output << "[Player] " << player.name_ << " has " << player.reinforcements_ << " reinforcements, " << player.ownedTerritories_.size() << " Territories, " << player.orders_->getOrders().size() << " Orders, " << player.hand_->getCards().size() << " cards in Hand";
     return output;
 }
 
-// Getter
+// Getter and setter
 vector<shared_ptr<Territory>> Player::getOwnedTerritories()
 {
     return ownedTerritories_;
+}
+
+void Player::setReinforcements(int reinforcements)
+{
+    reinforcements_ = reinforcements;
 }
 
 // Add a card to the Player's hand

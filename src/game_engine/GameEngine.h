@@ -14,6 +14,7 @@ public:
     GameEngine(const GameEngine &gameEngine);
     const GameEngine &operator=(const GameEngine &gameEngine);
     friend ostream &operator<<(ostream &output, const GameEngine &gameEngine);
+    Map &getMap();
     vector<unique_ptr<Player>> &getPlayers();
     void setPlayers(const vector<unique_ptr<Player>> &players);
     void startGame();

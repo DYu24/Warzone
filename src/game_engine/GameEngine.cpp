@@ -1,7 +1,11 @@
 #include "GameEngine.h"
 #include "../map/Map.h"
 #include "../map_loader/MapLoader.h"
+#include <algorithm>
+#include <limits>
+#include <random>
 #include <string>
+#include <time.h>
 
 #ifdef WINDOWS
 #include <windows.h>
@@ -71,9 +75,11 @@ namespace
             int selection;
             cin >> selection;
 
-            if (selection - 1 < 0 || selection - 1 >= maps.size())
+            if (cin.fail() || selection - 1 < 0 || selection - 1 >= maps.size())
             {
                 cout << "That was not a valid option. Please try again:" << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 continue;
             }
 
@@ -106,9 +112,11 @@ namespace
         {
             cin >> numberOfPlayers;
 
-            if (numberOfPlayers < 2 || numberOfPlayers > 5)
+            if (cin.fail() || numberOfPlayers < 2 || numberOfPlayers > 5)
             {
                 cout << "Please enter a valid number of players (2-5): ";
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 continue;
             }
 
@@ -151,7 +159,12 @@ ostream &operator<<(ostream &output, const GameEngine &gameEngine)
     return output;
 }
 
-// Getter and setter
+// Getters and setter
+Map &GameEngine::getMap()
+{
+    return *map_;
+}
+
 vector<unique_ptr<Player>> &GameEngine::getPlayers()
 {
     return players_;
@@ -197,5 +210,26 @@ void GameEngine::startGame()
  */
 void GameEngine::startupPhase()
 {
+    // Shuffle the order of players in the game
+    shuffle(players_.begin(), players_.end(), default_random_engine(time(NULL)));
 
+    // Assign territories
+    int playerIndex = 0;
+    vector<shared_ptr<Territory>> assignableTerritories = map_->getAdjacencyList();
+    while (!assignableTerritories.empty())
+    {
+        // Pop out a random territory
+        int randomIndex = rand() % assignableTerritories.size();
+        shared_ptr<Territory> randomTerritory = assignableTerritories.at(randomIndex);
+        assignableTerritories.erase(assignableTerritories.begin() + randomIndex);
+
+        players_.at(playerIndex)->addOwnedTerritory(randomTerritory);
+        playerIndex = (playerIndex + 1) % players_.size();
+    }
+
+    const int NUMBER_OF_INITIAL_ARMIES = (-5 * players_.size()) + 50;
+    for (auto const &player : players_)
+    {
+        player->setReinforcements(NUMBER_OF_INITIAL_ARMIES);
+    }
 }
