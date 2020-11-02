@@ -145,9 +145,9 @@ string Player::getName()
 }
 
 // Add a number of reinforcements to the Player's reinforcement pool
-void Player::addReinforcements(int reinforcements)
+void Player::setReinforcements(int reinforcements)
 {
-    reinforcements_ += reinforcements;
+    reinforcements_ = reinforcements;
 }
 
 // Add a card to the Player's hand
@@ -181,18 +181,15 @@ vector<shared_ptr<Territory>> Player::toAttack()
     return ownedTerritories_;
 }
 
-// Create an Order and place it in the Player's list of orders
-void Player::issueOrder(OrderType type)
+// Return the next order to be executed from the Player's list of orders
+unique_ptr<Order> Player::getNextOrder()
 {
-    switch (type)
-    {
-    case DEPLOY:
-        orders_->add(buildDeployOrder(*this));
-        break;
-    case ADVANCE:
-        orders_->add(buildAdvanceOrder(*this));
-        break;
-    default:
-        cout << "Unsupported input.";
-    }
+    return move(orders_->popTopOrder());
+}
+
+// Create an Order and place it in the Player's list of orders
+void Player::issueOrder()
+{
+    // orders_->add(buildDeployOrder(*this));
+    // orders_->add(buildAdvanceOrder(*this));
 }

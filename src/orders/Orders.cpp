@@ -2,6 +2,17 @@
 #include <algorithm>
 #include <iterator>
 
+namespace
+{
+    /**
+     * Custom comparator to sort Orders by priority
+     */
+    bool compareOrders(const unique_ptr<Order> &order1, const unique_ptr<Order> &order2)
+    {
+        return order1->getPriority() < order2->getPriority();
+    }
+}
+
 /* 
 ===================================
  Implementation for Order class
@@ -21,6 +32,12 @@ void Order::execute()
 ostream &operator<<(ostream &output, const Order &order)
 {
     return order.print_(output);
+}
+
+// Get default order priority (lowest)
+int Order::getPriority()
+{
+    return 4;
 }
 
 /* 
@@ -112,6 +129,22 @@ void OrdersList::remove(int target)
     orders_.erase(orders_.begin() + target);
 }
 
+// Pop the first order in the OrderList according to priority
+unique_ptr<Order> OrdersList::popTopOrder()
+{
+    if (orders_.empty())
+    {
+        return NULL;
+    }
+
+    sort(orders_.begin(), orders_.end(), compareOrders);
+
+    unique_ptr<Order> topOrder = std::move(orders_.at(0));
+    orders_.erase(orders_.begin());
+
+    return topOrder;
+}
+
 /* 
 ===================================
  Implementation for DeployOrder class
@@ -145,6 +178,12 @@ unique_ptr<Order> DeployOrder::clone() const
 bool DeployOrder::validate()
 {
     return true;
+}
+
+// Get priority of DeployOrder
+int DeployOrder::getPriority()
+{
+    return 1;
 }
 
 // Executes the DeployOrder.
@@ -291,6 +330,12 @@ bool BlockadeOrder::validate()
     return true;
 }
 
+// Get priority of BlockadeOrder
+int BlockadeOrder::getPriority()
+{
+    return 3;
+}
+
 // Executes the BlockadeOrder.
 void BlockadeOrder::execute_()
 {
@@ -339,6 +384,12 @@ unique_ptr<Order> AirliftOrder::clone() const
 bool AirliftOrder::validate()
 {
     return true;
+}
+
+// Get priority of AirliftOrder
+int AirliftOrder::getPriority()
+{
+    return 2;
 }
 
 // Executes the AirliftOrder.

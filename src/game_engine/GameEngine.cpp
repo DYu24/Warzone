@@ -231,7 +231,7 @@ void GameEngine::startupPhase()
     const int NUMBER_OF_INITIAL_ARMIES = (-5 * players_.size()) + 50;
     for (auto const &player : players_)
     {
-        player->addReinforcements(NUMBER_OF_INITIAL_ARMIES);
+        player->setReinforcements(NUMBER_OF_INITIAL_ARMIES);
     }
 }
 
@@ -240,14 +240,13 @@ void GameEngine::startupPhase()
  */
 void GameEngine::reinforcementPhase()
 {
-    const int BASE_REINFORCEMENT_VALUE = 3;
     for (auto const &player : players_)
     {
+        int reinforcements = 0;
         vector<shared_ptr<Territory>> playerTerritories = player->getOwnedTerritories();
         sort(playerTerritories.begin(), playerTerritories.end());
 
-        player->addReinforcements(BASE_REINFORCEMENT_VALUE);
-        player->addReinforcements(floor(playerTerritories.size() / 3));
+        reinforcements += floor(playerTerritories.size() / 3);
     
         for (auto const &continent : map_->getContinents())
         {
@@ -256,20 +255,53 @@ void GameEngine::reinforcementPhase()
 
             if (includes(playerTerritories.begin(), playerTerritories.end(), continentMembers.begin(), continentMembers.end()))
             {
-                player->addReinforcements(continent->getControlValue());
+                reinforcements += continent->getControlValue();
             }
         }
+
+        if (reinforcements < 3)
+        {
+            reinforcements = 3;
+        }
+
+        player->setReinforcements(reinforcements);
     }
 }
 
 void GameEngine::issueOrdersPhase()
 {
-
+    for (auto const &player : players_)
+    {
+        player->issueOrder();
+    }
 }
 
+/*
+ * Executes players' orders in a round-robin fashion until all players have no orders left to execute.
+ */
 void GameEngine::executeOrdersPhase()
 {
+    while (true)
+    {
+        int playersFinishedExecutingOrders = 0;
+        for (auto const &player : players_)
+        {
+            unique_ptr<Order> order = player->getNextOrder();
+            if (order != NULL)
+            {
+                order->execute();
+            }
+            else
+            {
+                playersFinishedExecutingOrders++;
+            }
+        }
 
+        if (playersFinishedExecutingOrders == players_.size())
+        {
+            break;
+        }
+    }
 }
 
 /*
@@ -277,9 +309,9 @@ void GameEngine::executeOrdersPhase()
  */
 void GameEngine::mainGameLoop()
 {
-    int j = 0;
     bool shouldContinueGame = true;
-    while (shouldContinueGame && j < 5)
+    // while (shouldContinueGame)
+    for (int j = 0; j < 5; j++)
     {
         // Check for any winner and remove players who do not own any territories
         vector<int> playersToRemove;
@@ -314,7 +346,5 @@ void GameEngine::mainGameLoop()
         reinforcementPhase();
         issueOrdersPhase();
         executeOrdersPhase();
-
-        j++;
     }
 }

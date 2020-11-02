@@ -46,21 +46,10 @@ int main()
 
     cout << endl;
 
-
-    // Issue a Deploy order and then print the resulting Player object
-    p1.issueOrder(DEPLOY);
+    p1.issueOrder();
 
     cout << endl;
     cout << p1 << endl;
-
-    cout << endl;
-
-
-    // Issue an Advance order and then print the resulting Player object
-    p1.issueOrder(ADVANCE);
-
-    cout << endl;
-    cout << p1 << endl;
-
+    
     return 0;
 }

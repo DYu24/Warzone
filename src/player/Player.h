@@ -10,8 +10,8 @@ using namespace std;
 class Card;
 class Hand;
 class Territory;
+class Order;
 class OrdersList;
-enum OrderType : short;
 
 class Player
 {
@@ -23,13 +23,14 @@ class Player
         friend ostream &operator<<(ostream &output, const Player &player);
         vector<shared_ptr<Territory>> getOwnedTerritories();
         string getName();
-        void addReinforcements(int reinforcements);
+        void setReinforcements(int reinforcements);
         void addCardToHand(shared_ptr<Card> card);
         void addOwnedTerritory(shared_ptr<Territory> territory);
         void removeOwnedTerritory(shared_ptr<Territory> territory);
         vector<shared_ptr<Territory>> toDefend();
         vector<shared_ptr<Territory>> toAttack();
-        void issueOrder(OrderType type);
+        unique_ptr<Order> getNextOrder();
+        void issueOrder();
 
     private:
         int reinforcements_;

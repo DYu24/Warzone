@@ -8,12 +8,6 @@ using namespace std;
 
 class Territory;
 
-enum OrderType : short
-{
-    DEPLOY,
-    ADVANCE
-};
-
 class Order
 {
 public:
@@ -22,6 +16,7 @@ public:
     virtual unique_ptr<Order> clone() const = 0;
     void execute();
     virtual bool validate() = 0;
+    virtual int getPriority();
 
 protected:
     virtual void execute_() = 0;
@@ -40,6 +35,7 @@ public:
     void add(unique_ptr<Order> order);
     void move(int source, int destination);
     void remove(int target);
+    unique_ptr<Order> popTopOrder();
 
 private:
     vector<unique_ptr<Order>> orders_;
@@ -54,6 +50,7 @@ public:
     const DeployOrder &operator=(const DeployOrder &order);
     unique_ptr<Order> clone() const;
     bool validate();
+    int getPriority();
 
 protected:
     void execute_();
@@ -111,6 +108,7 @@ public:
     const BlockadeOrder &operator=(const BlockadeOrder &order);
     unique_ptr<Order> clone() const;
     bool validate();
+    int getPriority();
 
 protected:
     void execute_();
@@ -129,6 +127,7 @@ public:
     const AirliftOrder &operator=(const AirliftOrder &order);
     unique_ptr<Order> clone() const;
     bool validate();
+    int getPriority();
 
 protected:
     void execute_();
