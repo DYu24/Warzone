@@ -27,13 +27,34 @@ Deck::Deck() {}
 // Copy constructor
 Deck::Deck(const Deck &deck)
 {
-    cards_ = deck.cards_;
+    for (auto const &card : deck.cards_)
+    {
+        cards_.push_back(card->clone());
+    }
+}
+
+// Destructor
+Deck::~Deck()
+{
+    for (auto &card : cards_)
+    {
+        delete card;
+    }
 }
 
 // Assignment operator overloading
 const Deck &Deck::operator=(const Deck &deck)
 {
-    cards_ = deck.cards_;
+    for (auto &card : cards_)
+    {
+        delete card;
+    }
+    cards_.clear();
+
+    for (auto const &card : deck.cards_)
+    {
+        cards_.push_back(card->clone());
+    }
     return *this;
 }
 
@@ -45,14 +66,14 @@ ostream &operator<<(ostream &output, const Deck &deck)
 }
 
 // Getter and setter
-vector<shared_ptr<Card>> Deck::getCards()
+vector<Card*> Deck::getCards()
 {
     return cards_;
 }
 
 // Pick a random card from the deck and return a pointer to it.
 // The selected card is removed from the deck.
-shared_ptr<Card> Deck::draw()
+Card* Deck::draw()
 {
     if (cards_.empty())
     {
@@ -69,7 +90,7 @@ shared_ptr<Card> Deck::draw()
 }
 
 // Add a card to the deck.
-void Deck::addCard(shared_ptr<Card> card)
+void Deck::addCard(Card* card)
 {
     cards_.push_back(card);
 }
@@ -85,19 +106,19 @@ void Deck::generateCards(int numberOfCards)
         switch (i % NUMBER_OF_CARD_TYPES)
         {
             case 0: 
-                cards_.push_back(make_shared<BombCard>());
+                cards_.push_back(new BombCard());
                 break;
             case 1:
-                cards_.push_back(make_shared<ReinforcementCard>());
+                cards_.push_back(new ReinforcementCard());
                 break;
             case 2:
-                cards_.push_back(make_shared<BlockadeCard>());
+                cards_.push_back(new BlockadeCard());
                 break;
             case 3:
-                cards_.push_back(make_shared<AirliftCard>());
+                cards_.push_back(new AirliftCard());
                 break;
             default:
-                cards_.push_back(make_shared<DiplomacyCard>());
+                cards_.push_back(new DiplomacyCard());
         }
     }
 }
@@ -115,13 +136,34 @@ Hand::Hand() {}
 // Copy constructor
 Hand::Hand(const Hand &hand)
 {
-    cards_ = hand.cards_;
+    for (auto const &card : hand.cards_)
+    {
+        cards_.push_back(card->clone());
+    }
+}
+
+// Destructor
+Hand::~Hand()
+{
+    for (auto &card : cards_)
+    {
+        delete card;
+    }
 }
 
 // Assignment operator overloading
 const Hand &Hand::operator=(const Hand &hand)
 {
-    cards_ = hand.cards_;
+    for (auto &card : cards_)
+    {
+        delete card;
+    }
+    cards_.clear();
+
+    for (auto const &card : hand.cards_)
+    {
+        cards_.push_back(card->clone());
+    }
     return *this;
 }
 
@@ -133,28 +175,28 @@ ostream &operator<<(ostream &output, const Hand &hand)
 }
 
 // Getter and setter
-vector<shared_ptr<Card>> Hand::getCards()
+vector<Card*> Hand::getCards()
 {
     return cards_;
 }
 
 // Add a card to the player's hand.
-void Hand::addCard(shared_ptr<Card> card)
+void Hand::addCard(Card* card)
 {
     cards_.push_back(card);
 }
 
 // Remove and return a card from the player's hand indicated by its position.
-shared_ptr<Card> Hand::removeCard(int position)
+Card* Hand::removeCard(int position)
 {
     auto cardPosition = cards_.begin() + position;
-    shared_ptr<Card> card = *cardPosition;
+    Card* card = *cardPosition;
     cards_.erase(cardPosition);
     return card;
 }
 
 // Play the card at the specified position.
-unique_ptr<Order> Hand::playCardAt(int position)
+Order* Hand::playCardAt(int position)
 {
     return cards_.at(position)->play();
 }
@@ -173,10 +215,16 @@ ostream &BombCard::print_(ostream &output) const
     return output;
 }
 
-// Generate a BombOrder when the card is played.
-unique_ptr<Order> BombCard::play()
+// Return a pointer to a new instance of BombCard.
+Card* BombCard::clone() const
 {
-    return make_unique<BombOrder>();
+    return new BombCard();
+}
+
+// Generate a BombOrder when the card is played.
+Order* BombCard::play()
+{
+    return new BombOrder();
 }
 
 /* 
@@ -192,10 +240,17 @@ ostream &ReinforcementCard::print_(ostream &output) const
     return output;
 }
 
-// Generate an Order when the card is played.
-unique_ptr<Order> ReinforcementCard::play()
+// Return a pointer to a new instance of ReinforcementCard.
+Card* ReinforcementCard::clone() const
 {
-    return make_unique<BombOrder>();
+    return new ReinforcementCard();
+}
+
+// Generate an Order when the card is played.
+Order* ReinforcementCard::play()
+{
+    cout << "Played Reinforcement card." << endl;
+    return NULL;
 }
 
 
@@ -212,10 +267,16 @@ ostream &BlockadeCard::print_(ostream &output) const
     return output;
 }
 
-// Generate an BlockadeOrder when the card is played.
-unique_ptr<Order> BlockadeCard::play()
+// Return a pointer to a new instance of BlockadeCard.
+Card* BlockadeCard::clone() const
 {
-    return make_unique<BlockadeOrder>();
+    return new BlockadeCard();
+}
+
+// Generate an BlockadeOrder when the card is played.
+Order* BlockadeCard::play()
+{
+    return new BlockadeOrder();
 }
 
 
@@ -232,10 +293,16 @@ ostream &AirliftCard::print_(ostream &output) const
     return output;
 }
 
-// Generate an AirliftOrder when the card is played.
-unique_ptr<Order> AirliftCard::play()
+// Return a pointer to a new instance of AirliftCard.
+Card* AirliftCard::clone() const
 {
-    return make_unique<AirliftOrder>();
+    return new AirliftCard();
+}
+
+// Generate an AirliftOrder when the card is played.
+Order* AirliftCard::play()
+{
+    return new AirliftOrder();
 }
 
 
@@ -252,8 +319,14 @@ ostream &DiplomacyCard::print_(ostream &output) const
     return output;
 }
 
-// Generate an NegotiateOrder when the card is played.
-unique_ptr<Order> DiplomacyCard::play()
+// Return a pointer to a new instance of DiplomacyCard.
+Card* DiplomacyCard::clone() const
 {
-    return make_unique<NegotiateOrder>();
+    return new DiplomacyCard();
+}
+
+// Generate an NegotiateOrder when the card is played.
+Order* DiplomacyCard::play()
+{
+    return new NegotiateOrder();
 }

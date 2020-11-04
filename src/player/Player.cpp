@@ -158,7 +158,7 @@ void Player::setReinforcements(int reinforcements)
 // Add a card to the Player's hand
 void Player::addCardToHand(shared_ptr<Card> card)
 {
-    hand_->addCard(card);
+    hand_->addCard(card.get());
 }
 
 // Add a territory to the Player's list of owned territories
