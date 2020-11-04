@@ -34,9 +34,20 @@ int Territory::getNumberOfArmies()
     return numberOfArmies_;
 }
 
-void Territory::setNumberOfArmies(int armies)
+// Add a number of armies to the current territory
+void Territory::addArmies(int armies)
 {
-    numberOfArmies_ = armies;
+    numberOfArmies_ += armies;
+}
+
+// Remove a number of armies to the current territory
+void Territory::removeArmies(int armies)
+{
+    numberOfArmies_ -= armies;
+    if (numberOfArmies_ < 0)
+    {
+        numberOfArmies_ = 0;
+    }
 }
 
 vector<shared_ptr<Territory>> Territory::getAdjacentTerritories()

@@ -15,8 +15,8 @@ public:
     const GameEngine &operator=(const GameEngine &gameEngine);
     friend ostream &operator<<(ostream &output, const GameEngine &gameEngine);
     Map &getMap();
-    vector<unique_ptr<Player>> &getPlayers();
-    void setPlayers(const vector<unique_ptr<Player>> &players);
+    vector<shared_ptr<Player>> &getPlayers();
+    void setPlayers(const vector<shared_ptr<Player>> &players);
     void startGame();
     void startupPhase();
     void reinforcementPhase();
@@ -26,6 +26,6 @@ public:
 
 private:
     unique_ptr<Deck> deck_;
-    vector<unique_ptr<Player>> players_;
+    vector<shared_ptr<Player>> players_;
     unique_ptr<Map> map_;
 };

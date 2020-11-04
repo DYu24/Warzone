@@ -18,7 +18,8 @@ public:
     string getName();
     void setName(string name);
     int getNumberOfArmies();
-    void setNumberOfArmies(int armies);
+    void addArmies(int armies);
+    void removeArmies(int armies);
     vector<shared_ptr<Territory>> getAdjacentTerritories();
     void setAdjacentTerritories(vector<shared_ptr<Territory>> territories);
     void addAdjacentTerritory(shared_ptr<Territory> territory);

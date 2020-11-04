@@ -23,10 +23,13 @@ class Player
         friend ostream &operator<<(ostream &output, const Player &player);
         vector<shared_ptr<Territory>> getOwnedTerritories();
         string getName();
+        vector<shared_ptr<Player>> getDiplomaticRelations();
         void setReinforcements(int reinforcements);
         void addCardToHand(shared_ptr<Card> card);
         void addOwnedTerritory(shared_ptr<Territory> territory);
         void removeOwnedTerritory(shared_ptr<Territory> territory);
+        void addDiplomaticRelation(shared_ptr<Player> player);
+        void clearDiplomaticRelations();
         vector<shared_ptr<Territory>> toDefend();
         vector<shared_ptr<Territory>> toAttack();
         unique_ptr<Order> getNextOrder();
@@ -38,4 +41,5 @@ class Player
         vector<shared_ptr<Territory>> ownedTerritories_;
         unique_ptr<OrdersList> orders_;
         unique_ptr<Hand> hand_;
+        vector<shared_ptr<Player>> diplomaticRelations_;
 };

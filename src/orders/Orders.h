@@ -6,6 +6,7 @@
 #include <vector>
 using namespace std;
 
+class Player;
 class Territory;
 
 class Order
@@ -14,8 +15,8 @@ public:
     virtual ~Order(){};
     friend ostream &operator<<(ostream &output, const Order &order);
     virtual unique_ptr<Order> clone() const = 0;
-    void execute();
-    virtual bool validate() = 0;
+    void execute(const shared_ptr<Player> owner);
+    virtual bool validate(const shared_ptr<Player> owner) = 0;
     virtual int getPriority();
 
 protected:
@@ -49,7 +50,7 @@ public:
     DeployOrder(const DeployOrder &order);
     const DeployOrder &operator=(const DeployOrder &order);
     unique_ptr<Order> clone() const;
-    bool validate();
+    bool validate(const shared_ptr<Player> owner);
     int getPriority();
 
 protected:
@@ -69,7 +70,7 @@ public:
     AdvanceOrder(const AdvanceOrder &order);
     const AdvanceOrder &operator=(const AdvanceOrder &order);
     unique_ptr<Order> clone() const;
-    bool validate();
+    bool validate(const shared_ptr<Player> owner);
 
 protected:
     void execute_();
@@ -79,6 +80,7 @@ private:
     int numberOfArmies_;
     shared_ptr<Territory> source_;
     shared_ptr<Territory> destination_;
+    bool offensive_;
 };
 
 class BombOrder : public Order
@@ -89,7 +91,7 @@ public:
     BombOrder(const BombOrder &order);
     const BombOrder &operator=(const BombOrder &order);
     unique_ptr<Order> clone() const;
-    bool validate();
+    bool validate(const shared_ptr<Player> owner);
 
 protected:
     void execute_();
@@ -107,7 +109,7 @@ public:
     BlockadeOrder(const BlockadeOrder &order);
     const BlockadeOrder &operator=(const BlockadeOrder &order);
     unique_ptr<Order> clone() const;
-    bool validate();
+    bool validate(const shared_ptr<Player> owner);
     int getPriority();
 
 protected:
@@ -126,7 +128,7 @@ public:
     AirliftOrder(const AirliftOrder &order);
     const AirliftOrder &operator=(const AirliftOrder &order);
     unique_ptr<Order> clone() const;
-    bool validate();
+    bool validate(const shared_ptr<Player> owner);
     int getPriority();
 
 protected:
@@ -142,10 +144,18 @@ private:
 class NegotiateOrder : public Order
 {
 public:
+    NegotiateOrder();
+    NegotiateOrder(shared_ptr<Player> initiator, shared_ptr<Player> target);
+    NegotiateOrder(const NegotiateOrder &order);
+    const NegotiateOrder &operator=(const NegotiateOrder &order);
     unique_ptr<Order> clone() const;
-    bool validate();
+    bool validate(const shared_ptr<Player> owner);
 
 protected:
     void execute_();
     ostream &print_(ostream &output) const;
+    
+private:
+    shared_ptr<Player> initiator_;
+    shared_ptr<Player> target_;
 };

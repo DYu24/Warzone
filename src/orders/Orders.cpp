@@ -1,15 +1,33 @@
 #include "Orders.h"
 #include <algorithm>
 #include <iterator>
+#include <math.h>
 
 namespace
 {
-    /**
+    /*
      * Custom comparator to sort Orders by priority
      */
     bool compareOrders(const unique_ptr<Order> &order1, const unique_ptr<Order> &order2)
     {
         return order1->getPriority() < order2->getPriority();
+    }
+
+    /**
+     * Helper function to check whether a territory can be attacked by a specific player.
+     */
+    bool canAttack(const shared_ptr<Player> attacker, const shared_ptr<Territory> target)
+    {
+        for (auto const &enemy : attacker->getDiplomaticRelations())
+        {
+            vector<shared_ptr<Territory>> enemyTerritories = enemy->getOwnedTerritories();
+            if (find(enemyTerritories.begin(), enemyTerritories.end(), target) != enemyTerritories.end())
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 
@@ -20,9 +38,9 @@ namespace
  */
 
 // Validate and execute the Order. Invalid orders will have no effect.
-void Order::execute()
+void Order::execute(const shared_ptr<Player> owner)
 {
-    if (validate())
+    if (validate(owner))
     {
         execute_();
     }
@@ -175,9 +193,10 @@ unique_ptr<Order> DeployOrder::clone() const
 }
 
 // Checks that the DeployOrder is valid.
-bool DeployOrder::validate()
-{
-    return true;
+bool DeployOrder::validate(const shared_ptr<Player> owner)
+{   
+    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
 }
 
 // Get priority of DeployOrder
@@ -189,7 +208,8 @@ int DeployOrder::getPriority()
 // Executes the DeployOrder.
 void DeployOrder::execute_()
 {
-    cout << "Deploy executed!" << endl;
+    destination_->addArmies(numberOfArmies_);
+    cout << numberOfArmies_ << " armies deployed to " << destination_->getName() << "." << endl;
 }
 
 // Stream insertion operator overloading
@@ -206,13 +226,14 @@ ostream &DeployOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
+AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(make_shared<Territory>()), destination_(make_shared<Territory>()), offensive_(false) {}
 
 // Constructor
-AdvanceOrder::AdvanceOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination): numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
+AdvanceOrder::AdvanceOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
+    : numberOfArmies_(numberOfArmies), source_(source), destination_(destination), offensive_(false) {}
 
 // Copy constructor
-AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
+AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_), offensive_(order.offensive_) {}
 
 // Assignment operator overloading
 const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
@@ -220,6 +241,7 @@ const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
     numberOfArmies_ = order.numberOfArmies_;
     source_ = order.source_;
     destination_ = order.destination_;
+    offensive_ = order.offensive_;
     return *this;
 }
 
@@ -230,15 +252,58 @@ unique_ptr<Order> AdvanceOrder::clone() const
 }
 
 // Checks that the AdvanceOrder is valid.
-bool AdvanceOrder::validate()
+bool AdvanceOrder::validate(const shared_ptr<Player> owner)
 {
-    return true;
+    auto currentPlayerTerritories = owner->getOwnedTerritories();
+
+    // If the player owns the destination territory, then this AdvanceOrder is not an attack
+    bool ownsDestinationTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
+    offensive_ = !ownsDestinationTerritory;
+
+    bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
+    return validSourceTerritory && canAttack(owner, destination_);
 }
 
 // Executes the AdvanceOrder.
 void AdvanceOrder::execute_()
 {
-    cout << "Advance executed!" << endl;
+    if (offensive_)
+    {
+        source_->removeArmies(numberOfArmies_);
+
+        int defendersKilled = round(numberOfArmies_ * 0.6);
+        int attackersKilled = round(destination_->getNumberOfArmies() * 0.7);
+
+        int survivingAttackers = max(numberOfArmies_ - attackersKilled, 0);
+        int survivingDefenders = max(destination_->getNumberOfArmies() - defendersKilled, 0);
+        destination_->removeArmies(defendersKilled);
+
+        if (survivingDefenders > 0)
+        {
+            source_->addArmies(survivingAttackers);
+            cout << "Failed attack on " << destination_->getName() << " with " << survivingDefenders << " enemy armies left standing.";
+
+            if (survivingAttackers > 0)
+            {
+                cout << " Retreating " << survivingAttackers << " attacking armies back to" << source_->getName() << endl;
+            }
+            else
+            {
+                cout << endl;
+            }
+        }
+        else
+        {
+            destination_->addArmies(survivingAttackers);
+            cout << "Successful attack on " << destination_->getName() << ". " << survivingAttackers << " armies now occupy this territory." << endl;
+        }
+    }
+    else
+    {
+        source_->removeArmies(numberOfArmies_);
+        destination_->addArmies(numberOfArmies_);
+        cout << "Advanced " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;
+    }
 }
 
 // Stream insertion operator overloading
@@ -277,15 +342,19 @@ unique_ptr<Order> BombOrder::clone() const
 }
 
 // Checks that the BombOrder is valid.
-bool BombOrder::validate()
+bool BombOrder::validate(const shared_ptr<Player> owner)
 {
-    return true;
+    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    bool validTargetTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), target_) == currentPlayerTerritories.end();
+    return validTargetTerritory && canAttack(owner, target_);
 }
 
 // Executes the BombOrder.
 void BombOrder::execute_()
 {
-    cout << "Bomb executed!" << endl;
+    int armiesOnTarget = target_->getNumberOfArmies();
+    target_->removeArmies(armiesOnTarget / 2);
+    cout << "Bombed " << armiesOnTarget / 2 << " enemy armies on " << target_->getName() << "." << endl;
 }
 
 // Stream insertion operator overloading
@@ -325,9 +394,10 @@ unique_ptr<Order> BlockadeOrder::clone() const
 }
 
 // Checks that the BlockadeOrder is valid.
-bool BlockadeOrder::validate()
+bool BlockadeOrder::validate(const shared_ptr<Player> owner)
 {
-    return true;
+    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), territory_) != currentPlayerTerritories.end();
 }
 
 // Get priority of BlockadeOrder
@@ -339,7 +409,9 @@ int BlockadeOrder::getPriority()
 // Executes the BlockadeOrder.
 void BlockadeOrder::execute_()
 {
-    cout << "Blockade executed!" << endl;
+    territory_->addArmies(territory_->getNumberOfArmies());
+    cout << "Blockade called on " << territory_->getName() << ". ";
+    cout << territory_->getNumberOfArmies() << " neutral armies now occupy this territory." << endl;
 }
 
 // Stream insertion operator overloading
@@ -381,7 +453,7 @@ unique_ptr<Order> AirliftOrder::clone() const
 }
 
 // Checks that the AirliftOrder is valid.
-bool AirliftOrder::validate()
+bool AirliftOrder::validate(const shared_ptr<Player> owner)
 {
     return true;
 }
@@ -412,6 +484,23 @@ ostream &AirliftOrder::print_(ostream &output) const
 ===================================
  */
 
+// Default constructor
+NegotiateOrder::NegotiateOrder() : initiator_(make_shared<Player>()), target_(make_shared<Player>()) {}
+
+// Constructor
+NegotiateOrder::NegotiateOrder(shared_ptr<Player> initiator, shared_ptr<Player> target) : initiator_(initiator), target_(target) {}
+
+// Copy constructor
+NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : initiator_(order.initiator_), target_(order.target_) {}
+
+// Assignment operator overloading
+const NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order)
+{
+    initiator_ = order.initiator_;
+    target_ = order.target_;
+    return *this;
+}
+
 // Return a pointer to a new instance of NegotiateOrder.
 unique_ptr<Order> NegotiateOrder::clone() const
 {
@@ -419,20 +508,22 @@ unique_ptr<Order> NegotiateOrder::clone() const
 }
 
 // Checks that the NegotiateOrder is valid.
-bool NegotiateOrder::validate()
+bool NegotiateOrder::validate(const shared_ptr<Player> owner)
 {
-    return true;
+    return owner != target_;
 }
 
 // Executes the NegotiateOrder.
 void NegotiateOrder::execute_()
 {
-    cout << "Negotiate executed!" << endl;
+    initiator_->addDiplomaticRelation(target_);
+    target_->addDiplomaticRelation(initiator_);
+    cout << "Negotiated diplomacy between " << initiator_->getName() << " and " << target_->getName() << "." << endl;
 }
 
 // Stream insertion operator overloading
 ostream &NegotiateOrder::print_(ostream &output) const
 {
-    output << "[NegotiateOrder]";
+    output << "[NegotiateOrder] Initiator: " << initiator_->getName() << ", Target: " << target_->getName();
     return output;
 }

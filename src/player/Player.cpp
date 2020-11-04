@@ -144,6 +144,11 @@ string Player::getName()
     return name_;
 }
 
+vector<shared_ptr<Player>> Player::getDiplomaticRelations()
+{
+    return diplomaticRelations_;
+}
+
 // Add a number of reinforcements to the Player's reinforcement pool
 void Player::setReinforcements(int reinforcements)
 {
@@ -167,6 +172,18 @@ void Player::removeOwnedTerritory(shared_ptr<Territory> territory)
 {
     auto removeIterator = remove(ownedTerritories_.begin(), ownedTerritories_.end(), territory);
     ownedTerritories_.erase(removeIterator, ownedTerritories_.end());
+}
+
+// Adds a player to the list of diplomatic relations
+void Player::addDiplomaticRelation(shared_ptr<Player> player)
+{
+    diplomaticRelations_.push_back(player);
+}
+
+// Clears the list of diplomatic relations with other players
+void Player::clearDiplomaticRelations()
+{
+    diplomaticRelations_.clear();
 }
 
 // Return a list of territories to defend

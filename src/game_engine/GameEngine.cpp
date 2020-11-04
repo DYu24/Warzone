@@ -102,9 +102,9 @@ namespace
     /*
     * Create players based on user's input
     */
-    vector<unique_ptr<Player>> setupPlayers()
+    vector<shared_ptr<Player>> setupPlayers()
     {
-        vector<unique_ptr<Player>> players;
+        vector<shared_ptr<Player>> players;
         cout << "Enter the number of players for this game: ";
         
         int numberOfPlayers;
@@ -130,8 +130,8 @@ namespace
             string name;
             cin >> name;
 
-            unique_ptr<Player> player = make_unique<Player>(name);
-            players.push_back(move(player));
+            shared_ptr<Player> player = make_shared<Player>(name);
+            players.push_back(player);
         }
 
         return players;
@@ -141,17 +141,14 @@ namespace
 // Constructors
 GameEngine::GameEngine() : deck_(make_unique<Deck>()), map_(make_unique<Map>()) {}
 
-GameEngine::GameEngine(const GameEngine &gameEngine) : deck_(make_unique<Deck>(*gameEngine.deck_)), map_(make_unique<Map>(*gameEngine.map_))
-{
-    setPlayers(gameEngine.players_);
-}
+GameEngine::GameEngine(const GameEngine &gameEngine) : deck_(make_unique<Deck>(*gameEngine.deck_)), map_(make_unique<Map>(*gameEngine.map_)), players_(gameEngine.players_) {}
 
 // Operator overloading
 const GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
 {
     deck_ = make_unique<Deck>(*gameEngine.deck_);
     map_ = make_unique<Map>(*gameEngine.map_);
-    setPlayers(gameEngine.players_);
+    players_ = gameEngine.players_;
     return *this;
 }
 
@@ -166,18 +163,14 @@ Map &GameEngine::getMap()
     return *map_;
 }
 
-vector<unique_ptr<Player>> &GameEngine::getPlayers()
+vector<shared_ptr<Player>> &GameEngine::getPlayers()
 {
     return players_;
 }
 
-void GameEngine::setPlayers(const vector<unique_ptr<Player>> &players)
+void GameEngine::setPlayers(const vector<shared_ptr<Player>> &players)
 {
-    players_.clear();
-    for (auto const &player : players)
-    {
-        players_.push_back(make_unique<Player>(*player));
-    }
+    players_ = players;
 }
 
 /*
@@ -196,7 +189,7 @@ void GameEngine::startGame()
     map_ = make_unique<Map>(map);
     cout << endl;
 
-    vector<unique_ptr<Player>> players = setupPlayers();
+    vector<shared_ptr<Player>> players = setupPlayers();
     setPlayers(players);
     cout << endl;
 
@@ -289,10 +282,11 @@ void GameEngine::executeOrdersPhase()
             unique_ptr<Order> order = player->getNextOrder();
             if (order != NULL)
             {
-                order->execute();
+                order->execute(player);
             }
             else
             {
+                player->clearDiplomaticRelations();
                 playersFinishedExecutingOrders++;
             }
         }
@@ -314,7 +308,6 @@ void GameEngine::mainGameLoop()
     for (int j = 0; j < 5; j++)
     {
         // Check for any winner and remove players who do not own any territories
-        vector<int> playersToRemove;
         for (int i = 0; i < players_.size(); i++)
         {
             if (players_.at(i)->getOwnedTerritories().size() == map_->getAdjacencyList().size())
@@ -326,22 +319,12 @@ void GameEngine::mainGameLoop()
 
             if (players_.at(i)->getOwnedTerritories().size() == 0)
             {
-                playersToRemove.push_back(i);
+                cout << players_.at(i)->getName() << " does not control any territories. Removing from game." << endl;
             }
         }
 
-        for (const int i : playersToRemove)
-        {
-            cout << players_.at(i)->getName() << " does not control any territories. Removing from game." << endl;
-            players_.erase(players_.begin() + i);
-        }
-
-        cout << "***** Number of players still in game: " << players_.size() << " *****" << endl;
-        for (auto const &player : players_)
-        {
-            cout << *player << endl;
-        }
-        cout << endl;
+        auto removeIterator = remove_if(players_.begin(), players_.end(), [](shared_ptr<Player> p) { return p->getOwnedTerritories().size() == 0; });
+        players_.erase(removeIterator, players_.end());
 
         reinforcementPhase();
         issueOrdersPhase();
