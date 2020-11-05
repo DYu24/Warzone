@@ -6,5 +6,5 @@ using namespace std;
 
 class MapLoader {
     public:
-        static Map loadMap(string filename);
+        static Map* loadMap(string filename);
 };

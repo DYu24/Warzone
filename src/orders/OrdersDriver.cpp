@@ -43,5 +43,9 @@ int main()
         cout << *orderPointer << endl;
     }
 
+    delete territory;
+    delete targetTerritory;
+    delete player;
+
     return 0;
 }

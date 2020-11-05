@@ -1,7 +1,6 @@
 #include "../map/Map.h"
 #include "../orders/Orders.h"
 #include "Player.h"
-#include <memory>
 
 int main()
 {
@@ -10,13 +9,6 @@ int main()
     Territory* t2 = new Territory("Territory2");
     Territory* t3 = new Territory("Territory3");
     Territory* t4 = new Territory("Territory4");
-
-    t1->addAdjacentTerritory(t2);
-    t2->addAdjacentTerritory(t1);
-    t2->addAdjacentTerritory(t3);
-    t3->addAdjacentTerritory(t2);
-    t3->addAdjacentTerritory(t4);
-    t4->addAdjacentTerritory(t3);
 
     Player p1 = Player("Player 1");
     p1.addOwnedTerritory(t1);
@@ -50,6 +42,11 @@ int main()
 
     cout << endl;
     cout << p1 << endl;
+
+    delete t1;
+    delete t2;
+    delete t3;
+    delete t4;
     
     return 0;
 }

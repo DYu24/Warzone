@@ -1,7 +1,6 @@
 #include "MapLoader.h"
 #include "../map/Map.h"
 #include <fstream>
-#include <memory>
 #include <sstream>
 using namespace std;
 
@@ -19,7 +18,7 @@ namespace
     }
 
     // Reads the input `.map` file and populates the Map object with continents.
-    void populateContinents(ifstream &stream, Map &map)
+    vector<Continent*> getContinents(ifstream &stream)
     {
         vector<Continent*> continents;
         string line;
@@ -46,11 +45,11 @@ namespace
             continents.push_back(new Continent(name, continentValue));
         }
 
-        map.setContinents(continents);
+        return continents;
     }
 
     // Reads the input `.map` file and populates the Map object with territories.
-    void populateTerritories(ifstream &stream, Map &map)
+    vector<Territory*> getTerritories(ifstream &stream, vector<Continent*> &continents)
     {
         vector<Territory*> territories;
         string line;
@@ -76,16 +75,16 @@ namespace
             Territory *territory = new Territory(name);
             territories.push_back(territory);
 
-            map.getContinents().at(continent - 1)->addTerritory(territory);
+            continents.at(continent - 1)->addTerritory(territory);
         }
 
-        map.setAdjacencyList(territories);
+        return territories;
     }
 
     // Reads the input `.map` file and connects the territories to each other.
-    void populateBorders(ifstream &stream, Map &map)
+    unordered_map<Territory*, vector<Territory*>> buildAdjacencyList(ifstream &stream, vector<Territory*> territories)
     {
-        vector<Territory*> territories = map.getAdjacencyList();
+        unordered_map<Territory*, vector<Territory*>> adjacencyList;
         string line;
         istringstream ss;
 
@@ -109,29 +108,31 @@ namespace
             while (ss >> adjacentIndex)
             {
                 Territory* adjacentTerritory = territories.at(adjacentIndex - 1);
-                territoryPointer->addAdjacentTerritory(adjacentTerritory);
+                adjacencyList[territoryPointer].push_back(adjacentTerritory);
             }
         }
+
+        return adjacencyList;
     }
 }
 
 // Read the input `.map` file and generate a Map instance.
-Map MapLoader::loadMap(string filename)
+Map* MapLoader::loadMap(string filename)
 {
     cout << "Loading map..." << endl;
     ifstream mapFile(filename);
 
-    Map map;
-
     if (mapFile.is_open())
     {
-        populateContinents(mapFile, map);
-        populateTerritories(mapFile, map);
-        populateBorders(mapFile, map);
+        vector<Continent*> continents = getContinents(mapFile);
+        vector<Territory*> territories = getTerritories(mapFile, continents);
+        unordered_map<Territory*, vector<Territory*>> adjacencyList = buildAdjacencyList(mapFile, territories);
+
+        Map* map = new Map(continents, adjacencyList);
 
         mapFile.close();
 
-        if (!map.validate())
+        if (!map->validate())
         {
             throw "Invalid map structure.";
         }

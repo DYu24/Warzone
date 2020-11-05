@@ -7,103 +7,103 @@
 
 namespace
 {
-    // Build a DeployOrder from user input
-    DeployOrder* buildDeployOrder(Player &player)
-    {
-        vector<Territory*> playerTerritories = player.getOwnedTerritories();
-        Territory* selectedTerritory = NULL;
+    // // Build a DeployOrder from user input
+    // DeployOrder* buildDeployOrder(Player &player)
+    // {
+    //     vector<Territory*> playerTerritories = player.getOwnedTerritories();
+    //     Territory* selectedTerritory = NULL;
 
-        while (true)
-        {
-            cout << "Which territory do you want to deploy to:" << endl;
-            for (int i = 0; i < playerTerritories.size(); i++)
-            {
-                Territory territory = *playerTerritories.at(i);
-                cout << "[" << i + 1 << "] " << territory.getName() << " (" << territory.getNumberOfArmies() << " armies present)" << endl;
-            }
+    //     while (true)
+    //     {
+    //         cout << "Which territory do you want to deploy to:" << endl;
+    //         for (int i = 0; i < playerTerritories.size(); i++)
+    //         {
+    //             Territory territory = *playerTerritories.at(i);
+    //             cout << "[" << i + 1 << "] " << territory.getName() << " (" << territory.getNumberOfArmies() << " armies present)" << endl;
+    //         }
 
-            int option;
-            cin >> option;
+    //         int option;
+    //         cin >> option;
 
-            if (option - 1 < 0 || option - 1 >= playerTerritories.size())
-            {
-                cout << "Invalid territory option!" << endl;
-                continue;
-            }
+    //         if (option - 1 < 0 || option - 1 >= playerTerritories.size())
+    //         {
+    //             cout << "Invalid territory option!" << endl;
+    //             continue;
+    //         }
 
-            selectedTerritory = playerTerritories.at(option - 1);
-            break;
-        }
+    //         selectedTerritory = playerTerritories.at(option - 1);
+    //         break;
+    //     }
 
-        cout << "How many armies do you want to deploy: ";
+    //     cout << "How many armies do you want to deploy: ";
 
-        int armies;
-        cin >> armies;
+    //     int armies;
+    //     cin >> armies;
 
-        return new DeployOrder(armies, selectedTerritory);
-    }
+    //     return new DeployOrder(armies, selectedTerritory);
+    // }
 
-    // Build an AdvanceOrder from user input
-    AdvanceOrder* buildAdvanceOrder(Player &player)
-    {
-        vector<Territory*> playerTerritories = player.getOwnedTerritories();
+    // // Build an AdvanceOrder from user input
+    // AdvanceOrder* buildAdvanceOrder(Player &player)
+    // {
+    //     vector<Territory*> playerTerritories = player.getOwnedTerritories();
 
-        Territory* source = NULL;
-        Territory* target = NULL;
+    //     Territory* source = NULL;
+    //     Territory* target = NULL;
 
-        while (true)
-        {
-            cout << "Which territory do you want to advance from:" << endl;
-            for (int i = 0; i < playerTerritories.size(); i++)
-            {
-                Territory territory = *playerTerritories.at(i);
-                cout << "[" << i + 1 << "] " << territory.getName() << " (" << territory.getNumberOfArmies() << " armies present)" << endl;
-            }
+    //     while (true)
+    //     {
+    //         cout << "Which territory do you want to advance from:" << endl;
+    //         for (int i = 0; i < playerTerritories.size(); i++)
+    //         {
+    //             Territory territory = *playerTerritories.at(i);
+    //             cout << "[" << i + 1 << "] " << territory.getName() << " (" << territory.getNumberOfArmies() << " armies present)" << endl;
+    //         }
 
-            int option;
-            cin >> option;
+    //         int option;
+    //         cin >> option;
 
-            if (option - 1 < 0 || option - 1 >= playerTerritories.size())
-            {
-                cout << "Invalid territory option!" << endl;
-                continue;
-            }
+    //         if (option - 1 < 0 || option - 1 >= playerTerritories.size())
+    //         {
+    //             cout << "Invalid territory option!" << endl;
+    //             continue;
+    //         }
 
-            source = playerTerritories.at(option - 1);
-            break;
-        }
+    //         source = playerTerritories.at(option - 1);
+    //         break;
+    //     }
 
-        vector<Territory*> neighboring = source->getAdjacentTerritories();
-        while (true)
-        {
-            cout << "Which territory do you want to advance to:" << endl;
-            int i = 0;
-            for (auto territory : neighboring)
-            {
-                cout << "[" << i + 1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
-                i++;
-            }
+    //     vector<Territory*> neighboring = source->getAdjacentTerritories();
+    //     while (true)
+    //     {
+    //         cout << "Which territory do you want to advance to:" << endl;
+    //         int i = 0;
+    //         for (auto territory : neighboring)
+    //         {
+    //             cout << "[" << i + 1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
+    //             i++;
+    //         }
 
-            int option;
-            cin >> option;
+    //         int option;
+    //         cin >> option;
 
-            if (option - 1 < 0 || option - 1 >= neighboring.size())
-            {
-                cout << "Invalid territory option!" << endl;
-                continue;
-            }
+    //         if (option - 1 < 0 || option - 1 >= neighboring.size())
+    //         {
+    //             cout << "Invalid territory option!" << endl;
+    //             continue;
+    //         }
 
-            target = neighboring.at(option - 1);
-            break;
-        }
+    //         target = neighboring.at(option - 1);
+    //         break;
+    //     }
 
-        cout << "How many armies do you want to move: ";
+    //     cout << "How many armies do you want to move: ";
 
-        int armies;
-        cin >> armies;
+    //     int armies;
+    //     cin >> armies;
 
-        return new AdvanceOrder(armies, source, target);
-    }
+    //     return new AdvanceOrder(armies, source, target);
+    // }
 }
 
 // Default constructor

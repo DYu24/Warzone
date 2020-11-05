@@ -18,13 +18,7 @@ Territory::Territory(string name) : name_(name), numberOfArmies_(0) {}
 
 Territory::Territory(string name, int numberOfArmies) : name_(name), numberOfArmies_(numberOfArmies) {}
 
-Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_)
-{
-    for (auto t : territory.adjacentTerritories_)
-    {
-        adjacentTerritories_.push_back(new Territory(t->getName(), t->getNumberOfArmies()));
-    }
-}
+Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_) {}
 
 // Getters and Setters
 string Territory::getName()
@@ -58,36 +52,23 @@ void Territory::removeArmies(int armies)
     }
 }
 
-vector<Territory*> Territory::getAdjacentTerritories()
-{
-    return adjacentTerritories_;
-}
-
-void Territory::setAdjacentTerritories(vector<Territory*> territories)
-{
-    adjacentTerritories_.clear();
-    adjacentTerritories_ = territories;
-}
-
 // Operator overloading
 const Territory &Territory::operator=(const Territory &territory)
 {
     name_ = territory.name_;
     numberOfArmies_ = territory.numberOfArmies_;
-    adjacentTerritories_ = territory.adjacentTerritories_;
     return *this;
 }
 
 ostream &operator<<(ostream &output, const Territory &territory)
 {
-    output << "[Territory]: " << territory.name_ << ", " << territory.numberOfArmies_ << " Armies, " << territory.adjacentTerritories_.size() << " Adjacent Territories";
+    output << "[Territory]: " << territory.name_ << ", " << territory.numberOfArmies_ << " Armies";
     return output;
 }
 
-// Add an adjacent territory to the current territory.
-void Territory::addAdjacentTerritory(Territory* territory)
+bool operator==(const Territory &t1, const Territory &t2)
 {
-    adjacentTerritories_.push_back(territory);
+    return t1.name_ == t2.name_ && t1.numberOfArmies_ == t2.numberOfArmies_;
 }
 
 
@@ -172,82 +153,24 @@ void Continent::addTerritory(Territory* territory)
 // Constructors
 Map::Map() {}
 
+Map::Map(vector<Continent*> continents, unordered_map<Territory*, vector<Territory*>> adjacencyList) : continents_(continents), adjacencyList_(adjacencyList) {}
+
 Map::Map(const Map &map)
 {
-    for (auto continent : map.continents_)
-    {
-        continents_.push_back(new Continent(*continent));
-    }
-
-    for (auto continent : continents_)
-    {
-        for (auto territory : continent->getTerritories())
-        {
-            adjacencyList_.push_back(territory);
-        }
-    }
+    copyMapContents(map);
 }
 
 // Destructor
 Map::~Map()
 {
-    for (auto continent : continents_)
-    {
-        delete continent;
-    }
-    continents_.clear();
-
-    for (auto territory : adjacencyList_)
-    {
-        delete territory;
-    }
-    adjacencyList_.clear();
-}
-
-// Getters and Setters
-vector<Territory*> Map::getAdjacencyList()
-{
-    return adjacencyList_;
-}
-
-void Map::setAdjacencyList(vector<Territory*> adjacencyList)
-{
-    for (auto territory : adjacencyList_)
-    {
-        delete territory;
-    }
-    adjacencyList_.clear();
-
-    for (auto territory : adjacencyList)
-    {
-        adjacencyList_.push_back(territory);
-    }
-}
-
-vector<Continent*> Map::getContinents()
-{
-    return continents_;
-}
-
-void Map::setContinents(vector<Continent*> continents)
-{
-    for (auto continent : continents_)
-    {
-        delete continent;
-    }
-    continents_.clear();
-
-    for (auto const &continent : continents)
-    {
-        continents_.push_back(continent);
-    }
+    destroyMapContents();
 }
 
 // Operator overloading
 const Map &Map::operator=(const Map &map)
 {
-    adjacencyList_ = map.adjacencyList_;
-    setContinents(map.continents_);
+    destroyMapContents();
+    copyMapContents(map);
     return *this;
 }
 
@@ -255,6 +178,35 @@ ostream &operator<<(ostream &output, const Map &map)
 {
     output << "[Map]: " << map.adjacencyList_.size() << " Territories, " << map.continents_.size() << " Continents";
     return output;
+}
+
+// Getters
+unordered_map<Territory*, vector<Territory*>> Map::getAdjacencyList()
+{
+    return adjacencyList_;
+}
+
+vector<Continent*> Map::getContinents()
+{
+    return continents_;
+}
+
+// Return a list of all the territories in the Map
+vector<Territory*> Map::getTerritories()
+{
+    vector<Territory*> territories;
+    for (auto entry : adjacencyList_)
+    {
+        territories.push_back(entry.first);
+    }
+
+    return territories;
+}
+
+// Return a list of territories that are adjacent to the one specified
+vector<Territory*> Map::getAdjacentTerritories(Territory* territory)
+{
+    return adjacencyList_[territory];
 }
 
 /*
@@ -279,7 +231,7 @@ bool Map::checkGraphValidity()
 {
     unordered_set<Territory*> visitedTerritories;
     queue<Territory*> territoryQueue;
-    territoryQueue.push(adjacencyList_.front());
+    territoryQueue.push(adjacencyList_.begin()->first);
 
     while (!territoryQueue.empty())
     {
@@ -287,7 +239,7 @@ bool Map::checkGraphValidity()
         territoryQueue.pop();
         visitedTerritories.insert(current);
 
-        for (auto territory : current->getAdjacentTerritories())
+        for (auto territory : getAdjacentTerritories(current))
         {
             // If the territory hasn't been visited, add it to the queue
             if (visitedTerritories.find(territory) == visitedTerritories.end())
@@ -321,12 +273,12 @@ bool Map::checkContinentsValidity()
             visitedTerritories.insert(current);
 
             // If the territory isn't a member of the set of all territories in the map, then continent is not a subgraph
-            if (find(adjacencyList_.begin(), adjacencyList_.end(), current) == adjacencyList_.end())
+            if (adjacencyList_.find(current) == adjacencyList_.end())
             {
                 return false;
             }
 
-            for (auto territory : current->getAdjacentTerritories())
+            for (auto territory : getAdjacentTerritories(current))
             {
                 bool visited = visitedTerritories.find(territory) != visitedTerritories.end();
                 bool inCurrentContinent = find(continentMembers.begin(), continentMembers.end(), territory) != continentMembers.end();
@@ -372,4 +324,57 @@ bool Map::checkTerritoriesValidity()
     }
 
     return true;
+}
+
+/*
+ * Helper method to copy the contents of another Map object. 
+ */
+void Map::copyMapContents(const Map &map)
+{
+    // Copy the continents
+    for (auto continent : map.continents_)
+    {
+        continents_.push_back(new Continent(*continent));
+    }
+
+    // Get all the territories from the continents
+    for (auto continent : continents_)
+    {
+        for (auto territory : continent->getTerritories())
+        {
+            adjacencyList_[territory];
+        }
+    }
+
+    // Rebuild the adjacency list using `map.adjacencyList_` as reference
+    for (auto entry : map.adjacencyList_)
+    {
+        auto iterator = find_if(adjacencyList_.begin(), adjacencyList_.end(), [&entry](auto const &kvp) { return *kvp.first == *entry.first; });
+        Territory* territoryKey = iterator->first;
+
+        for (auto territoryToCopy : entry.second)
+        {
+            auto matchingTerritory = find_if(adjacencyList_.begin(), adjacencyList_.end(), [&territoryToCopy](auto const &kvp) { return *kvp.first == *territoryToCopy; });
+            adjacencyList_[territoryKey].push_back(matchingTerritory->first);
+        }
+    }
+}
+
+/*
+ * Helper method to dealloacte dynamic memory in Map class. 
+ */
+void Map::destroyMapContents()
+{
+    for (auto continent : continents_)
+    {
+        delete continent;
+    }
+    continents_.clear();
+
+    for (auto entry : adjacencyList_)
+    {
+        entry.second.clear();
+        delete entry.first;
+    }
+    adjacencyList_.clear();
 }

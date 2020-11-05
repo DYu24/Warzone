@@ -26,8 +26,9 @@ int main()
         try
         {
             cout << "-----" << mapPair.second << "-----" << endl;
-            Map map = MapLoader::loadMap("resources/" + mapPair.first + ".map");
-            cout << map << "\n" << endl;
+            Map* map = MapLoader::loadMap("resources/" + mapPair.first + ".map");
+            cout << *map << "\n" << endl;
+            delete map;
         }
         catch (char const *errorMessage)
         {

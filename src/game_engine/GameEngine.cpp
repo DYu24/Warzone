@@ -61,7 +61,7 @@ namespace
     /*
     * Select and create a game map based on the user's selection
     */
-    Map selectMap()
+    Map* selectMap()
     {
         cout << "Select a map to play on: " << endl;
         vector<string> maps = getMapFileNames("resources");
@@ -86,8 +86,7 @@ namespace
 
             try
             {
-                Map selectedMap = MapLoader::loadMap("resources/" + maps.at(selection - 1));
-                return selectedMap;
+                return MapLoader::loadMap("resources/" + maps.at(selection - 1));
             }
             catch (char const *errorMessage)
             {
@@ -199,11 +198,10 @@ void GameEngine::startGame()
     )";
     cout << title << endl;
 
-    map_ = new Map(selectMap());
+    map_ = selectMap();
     cout << endl;
 
-    vector<Player*> players = setupPlayers();
-    setPlayers(players);
+    players_ = setupPlayers();
     cout << endl;
 
     deck_->generateCards(20);
@@ -222,7 +220,8 @@ void GameEngine::startupPhase()
 
     // Assign territories
     int playerIndex = 0;
-    vector<Territory*> assignableTerritories = map_->getAdjacencyList();
+
+    vector<Territory*> assignableTerritories = map_->getTerritories();
     while (!assignableTerritories.empty())
     {
         // Pop out a random territory

@@ -3,6 +3,7 @@
 #include "../player/Player.h"
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 using namespace std;
 
@@ -14,21 +15,17 @@ public:
     Territory(string name, int numberOfArmies);
     Territory(const Territory &territory);
     const Territory &operator=(const Territory &territory);
+    friend bool operator== (const Territory &t1, const Territory &t2);
     friend ostream &operator<<(ostream &output, const Territory &territory);
     string getName();
     void setName(string name);
     int getNumberOfArmies();
     void addArmies(int armies);
     void removeArmies(int armies);
-    vector<Territory*> getAdjacentTerritories();
-    void setAdjacentTerritories(vector<Territory*> territories);
-    void addAdjacentTerritory(Territory* territory);
-    void removeAdjacentTerritory(Territory* territory);
 
 private:
     string name_;
     int numberOfArmies_;
-    vector<Territory*> adjacentTerritories_;
 };
 
 class Continent
@@ -57,20 +54,23 @@ class Map
 {
 public:
     Map();
+    Map(vector<Continent*> continents, unordered_map<Territory*, vector<Territory*>> adjacencyList);
     Map(const Map &map);
     ~Map();
-    vector<Territory*> getAdjacencyList();
     const Map &operator=(const Map &map);
     friend ostream &operator<<(ostream &output, const Map &map);
-    void setAdjacencyList(vector<Territory*> adjacencyList);
+    unordered_map<Territory*, vector<Territory*>> getAdjacencyList();
     vector<Continent*> getContinents();
-    void setContinents(vector<Continent*> continents);
+    vector<Territory*> getTerritories();
+    vector<Territory*> getAdjacentTerritories(Territory* territory);
     bool validate();
 
 private:
-    vector<Territory*> adjacencyList_;
     vector<Continent*> continents_;
+    unordered_map<Territory*, vector<Territory*>> adjacencyList_;
     bool checkGraphValidity();
     bool checkContinentsValidity();
     bool checkTerritoriesValidity();
+    void copyMapContents(const Map &map);
+    void destroyMapContents();
 };
