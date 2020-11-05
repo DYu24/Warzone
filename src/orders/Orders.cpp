@@ -86,7 +86,10 @@ OrdersList::OrdersList() {}
 // Copy constructor
 OrdersList::OrdersList(const OrdersList &orders)
 {
-    setOrders(orders.orders_);
+    for (auto order : orders.orders_)
+    {
+        orders_.push_back(order->clone());
+    }
 }
 
 // Destructor
@@ -202,7 +205,7 @@ Order* OrdersList::popTopOrder()
  */
 
 // Default constructor
-DeployOrder::DeployOrder() : Order(1), numberOfArmies_(0) {}
+DeployOrder::DeployOrder() : Order(1), numberOfArmies_(0), destination_(NULL) {}
 
 // Constructor
 DeployOrder::DeployOrder(int numberOfArmies, Territory* destination) : Order(1), numberOfArmies_(numberOfArmies), destination_(destination) {}
@@ -228,6 +231,11 @@ Order* DeployOrder::clone() const
 // Checks that the DeployOrder is valid.
 bool DeployOrder::validate(Player* owner)
 {   
+    if (destination_ == NULL)
+    {
+        return false;
+    }
+
     auto currentPlayerTerritories = owner->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
 }
@@ -242,7 +250,13 @@ void DeployOrder::execute_()
 // Stream insertion operator overloading
 ostream &DeployOrder::print_(ostream &output) const
 {
-    output << "[DeployOrder] " << numberOfArmies_ << " armies to " << destination_->getName();
+    output << "[DeployOrder]";
+
+    if (destination_ != NULL)
+    {
+        output << " " << numberOfArmies_ << " armies to " << destination_->getName();
+    }
+
     return output;
 }
 
@@ -254,7 +268,7 @@ ostream &DeployOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), offensive_(false) {}
+AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), offensive_(false), source_(NULL), destination_(NULL) {}
 
 // Constructor
 AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination)
@@ -284,6 +298,11 @@ Order* AdvanceOrder::clone() const
 // Checks that the AdvanceOrder is valid.
 bool AdvanceOrder::validate(Player* owner)
 {
+    if (source_ == NULL || destination_ == NULL)
+    {
+        return false;
+    }
+
     auto currentPlayerTerritories = owner->getOwnedTerritories();
 
     // If the player owns the destination territory, then this AdvanceOrder is not an attack
@@ -339,7 +358,13 @@ void AdvanceOrder::execute_()
 // Stream insertion operator overloading
 ostream &AdvanceOrder::print_(ostream &output) const
 {
-    output << "[AdvanceOrder] " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    output << "[AdvanceOrder]";
+
+    if (source_ != NULL && destination_ != NULL)
+    {
+        output << " " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    }
+
     return output;
 }
 
@@ -351,7 +376,7 @@ ostream &AdvanceOrder::print_(ostream &output) const
  */
 
 // Default constructor
-BombOrder::BombOrder() {}
+BombOrder::BombOrder() : target_(NULL) {}
 
 // Constructor
 BombOrder::BombOrder(Territory* target) : target_(target) {}
@@ -376,6 +401,11 @@ Order* BombOrder::clone() const
 // Checks that the BombOrder is valid.
 bool BombOrder::validate(Player* owner)
 {
+    if (target_ == NULL)
+    {
+        return false;
+    }
+
     auto currentPlayerTerritories = owner->getOwnedTerritories();
     bool validTargetTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), target_) == currentPlayerTerritories.end();
     return validTargetTerritory && canAttack(owner, target_);
@@ -392,7 +422,13 @@ void BombOrder::execute_()
 // Stream insertion operator overloading
 ostream &BombOrder::print_(ostream &output) const
 {
-    output << "[BombOrder] Target: " << target_->getName();
+    output << "[BombOrder]";
+
+    if (target_ != NULL)
+    {
+        output << " Target: " << target_->getName();
+    }
+
     return output;
 }
 
@@ -404,7 +440,7 @@ ostream &BombOrder::print_(ostream &output) const
  */
 
 // Default constructor
-BlockadeOrder::BlockadeOrder() : Order(3) {}
+BlockadeOrder::BlockadeOrder() : Order(3), territory_(NULL) {}
 
 // Constructor
 BlockadeOrder::BlockadeOrder(Territory* territory) : Order(3), territory_(territory) {}
@@ -429,6 +465,11 @@ Order* BlockadeOrder::clone() const
 // Checks that the BlockadeOrder is valid.
 bool BlockadeOrder::validate(Player* owner)
 {
+    if (territory_ == NULL)
+    {
+        return false;
+    }
+
     auto currentPlayerTerritories = owner->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), territory_) != currentPlayerTerritories.end();
 }
@@ -444,7 +485,13 @@ void BlockadeOrder::execute_()
 // Stream insertion operator overloading
 ostream &BlockadeOrder::print_(ostream &output) const
 {
-    output << "[BlockadeOrder] Territory: " << territory_->getName();
+    output << "[BlockadeOrder]";
+
+    if (territory_ != NULL)
+    {
+        output << " Territory: " << territory_->getName();
+    }
+
     return output;
 }
 
@@ -456,7 +503,7 @@ ostream &BlockadeOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AirliftOrder::AirliftOrder() : Order(2), numberOfArmies_(0) {}
+AirliftOrder::AirliftOrder() : Order(2), numberOfArmies_(0), source_(NULL), destination_(NULL) {}
 
 // Constructor
 AirliftOrder::AirliftOrder(int numberOfArmies, Territory* source, Territory* destination) : Order(2), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
@@ -483,6 +530,11 @@ Order* AirliftOrder::clone() const
 // Checks that the AirliftOrder is valid.
 bool AirliftOrder::validate(Player* owner)
 {
+    if (source_ == NULL || destination_ == NULL)
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -495,7 +547,13 @@ void AirliftOrder::execute_()
 // Stream insertion operator overloading
 ostream &AirliftOrder::print_(ostream &output) const
 {
-    output << "[AirliftOrder] " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    output << "[AirliftOrder]";
+
+    if (source_ != NULL && destination_ != NULL)
+    {
+        output << " " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    }
+
     return output;
 }
 
@@ -507,7 +565,7 @@ ostream &AirliftOrder::print_(ostream &output) const
  */
 
 // Default constructor
-NegotiateOrder::NegotiateOrder() {}
+NegotiateOrder::NegotiateOrder() : initiator_(NULL), target_(NULL) {}
 
 // Constructor
 NegotiateOrder::NegotiateOrder(Player* initiator, Player* target) : initiator_(initiator), target_(target) {}
@@ -533,20 +591,31 @@ Order* NegotiateOrder::clone() const
 // Checks that the NegotiateOrder is valid.
 bool NegotiateOrder::validate(Player* owner)
 {
+    if (initiator_ == NULL || target_ == NULL)
+    {
+        return false;
+    }
+
     return owner != target_;
 }
 
 // Executes the NegotiateOrder.
 void NegotiateOrder::execute_()
 {
-    // initiator_->addDiplomaticRelation(target_);
-    // target_->addDiplomaticRelation(initiator_);
+    initiator_->addDiplomaticRelation(target_);
+    target_->addDiplomaticRelation(initiator_);
     cout << "Negotiated diplomacy between " << initiator_->getName() << " and " << target_->getName() << "." << endl;
 }
 
 // Stream insertion operator overloading
 ostream &NegotiateOrder::print_(ostream &output) const
 {
-    output << "[NegotiateOrder] Initiator: " << initiator_->getName() << ", Target: " << target_->getName();
+    output << "[NegotiateOrder]";
+
+    if (initiator_ != NULL && target_ != NULL)
+    {
+        output << " Initiator: " << initiator_->getName() << ", Target: " << target_->getName();
+    }
+
     return output;
 }

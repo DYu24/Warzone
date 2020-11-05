@@ -27,7 +27,10 @@ Deck::Deck() {}
 // Copy constructor
 Deck::Deck(const Deck &deck)
 {
-    setCards(deck.cards_);
+    for (auto card : deck.cards_)
+    {
+        cards_.push_back(card->clone());
+    }
 }
 
 // Destructor
@@ -139,7 +142,10 @@ Hand::Hand() {}
 // Copy constructor
 Hand::Hand(const Hand &hand)
 {
-    setCards(hand.cards_);
+    for (auto card : hand.cards_)
+    {
+        cards_.push_back(card->clone());
+    }
 }
 
 // Destructor
