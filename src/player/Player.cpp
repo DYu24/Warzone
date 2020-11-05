@@ -10,8 +10,8 @@ namespace
     // Build a DeployOrder from user input
     unique_ptr<DeployOrder> buildDeployOrder(Player &player)
     {
-        vector<shared_ptr<Territory>> playerTerritories = player.getOwnedTerritories();
-        shared_ptr<Territory> selectedTerritory = NULL;
+        vector<Territory*> playerTerritories = player.getOwnedTerritories();
+        Territory* selectedTerritory = NULL;
 
         while (true)
         {
@@ -46,10 +46,10 @@ namespace
     // Build an AdvanceOrder from user input
     unique_ptr<AdvanceOrder> buildAdvanceOrder(Player &player)
     {
-        vector<shared_ptr<Territory>> playerTerritories = player.getOwnedTerritories();
+        vector<Territory*> playerTerritories = player.getOwnedTerritories();
 
-        shared_ptr<Territory> source = NULL;
-        shared_ptr<Territory> target = NULL;
+        Territory* source = NULL;
+        Territory* target = NULL;
 
         while (true)
         {
@@ -93,7 +93,7 @@ namespace
                 continue;
             }
 
-            target = neighboring.at(option - 1);
+            target = neighboring.at(option - 1).get();
             break;
         }
 
@@ -134,9 +134,14 @@ ostream &operator<<(ostream &output, const Player &player)
 }
 
 // Getters
-vector<shared_ptr<Territory>> Player::getOwnedTerritories()
+vector<Territory*> Player::getOwnedTerritories()
 {
-    return ownedTerritories_;
+    vector<Territory*> territories;
+    for (auto const &territory : ownedTerritories_)
+    {
+        territories.push_back(territory.get());
+    }
+    return territories;
 }
 
 string Player::getName()
@@ -201,7 +206,8 @@ vector<shared_ptr<Territory>> Player::toAttack()
 // Return the next order to be executed from the Player's list of orders
 unique_ptr<Order> Player::getNextOrder()
 {
-    return move(orders_->popTopOrder());
+    orders_->popTopOrder();
+    return make_unique<DeployOrder>();
 }
 
 // Create an Order and place it in the Player's list of orders

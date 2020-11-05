@@ -21,7 +21,7 @@ class Player
         Player(const Player &player);
         const Player &operator=(const Player &player);
         friend ostream &operator<<(ostream &output, const Player &player);
-        vector<shared_ptr<Territory>> getOwnedTerritories();
+        vector<Territory*> getOwnedTerritories();
         string getName();
         vector<shared_ptr<Player>> getDiplomaticRelations();
         void setReinforcements(int reinforcements);

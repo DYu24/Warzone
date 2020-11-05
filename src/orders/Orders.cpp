@@ -8,7 +8,7 @@ namespace
     /*
      * Custom comparator to sort Orders by priority
      */
-    bool compareOrders(const unique_ptr<Order> &order1, const unique_ptr<Order> &order2)
+    bool compareOrders(Order* order1, Order* order2)
     {
         return order1->getPriority() < order2->getPriority();
     }
@@ -16,11 +16,11 @@ namespace
     /**
      * Helper function to check whether a territory can be attacked by a specific player.
      */
-    bool canAttack(const shared_ptr<Player> attacker, const shared_ptr<Territory> target)
+    bool canAttack(Player* attacker, Territory* target)
     {
         for (auto const &enemy : attacker->getDiplomaticRelations())
         {
-            vector<shared_ptr<Territory>> enemyTerritories = enemy->getOwnedTerritories();
+            auto enemyTerritories = enemy->getOwnedTerritories();
             if (find(enemyTerritories.begin(), enemyTerritories.end(), target) != enemyTerritories.end())
             {
                 return false;
@@ -31,14 +31,29 @@ namespace
     }
 }
 
+
 /* 
 ===================================
  Implementation for Order class
 ===================================
  */
 
+// Constructors
+Order::Order(): priority_(4) {}
+
+Order::Order(int priority) : priority_(priority) {}
+
+Order::Order(const Order &order) : priority_(order.priority_) {}
+
+// Assignment operator overloading
+const Order &Order::operator=(const Order &order)
+{
+    priority_ = order.priority_;
+    return *this;
+}
+
 // Validate and execute the Order. Invalid orders will have no effect.
-void Order::execute(const shared_ptr<Player> owner)
+void Order::execute(Player* owner)
 {
     if (validate(owner))
     {
@@ -52,11 +67,12 @@ ostream &operator<<(ostream &output, const Order &order)
     return order.print_(output);
 }
 
-// Get default order priority (lowest)
+// Get order priority
 int Order::getPriority()
 {
-    return 4;
+    return priority_;
 }
+
 
 /* 
 ===================================
@@ -71,6 +87,16 @@ OrdersList::OrdersList() {}
 OrdersList::OrdersList(const OrdersList &orders)
 {
     setOrders(orders.orders_);
+}
+
+// Destructor
+OrdersList::~OrdersList()
+{
+    for (auto order : orders_)
+    {
+        delete order;
+    }
+    orders_.clear();
 }
 
 // Assignment operator overloading
@@ -88,24 +114,29 @@ ostream &operator<<(ostream &output, const OrdersList &orders)
 }
 
 // Getter and setter
-vector<unique_ptr<Order>> &OrdersList::getOrders()
+vector<Order*> OrdersList::getOrders()
 {
     return orders_;
 }
 
-void OrdersList::setOrders(const vector<unique_ptr<Order>> &orders)
+void OrdersList::setOrders(vector<Order*> orders)
 {
-    orders_.clear();
-    for (auto const &orderPointer : orders)
+    for (auto order : orders_)
     {
-        orders_.push_back(orderPointer->clone());
+        delete order;
+    }
+    orders_.clear();
+
+    for (auto const &order : orders)
+    {
+        orders_.push_back(order->clone());
     }
 }
 
 // Add an order to the OrderList.
-void OrdersList::add(unique_ptr<Order> order)
+void OrdersList::add(Order* order)
 {
-    orders_.push_back(std::move(order));
+    orders_.push_back(order);
 }
 
 // Move an order within the OrderList from `source` position to `destination` position.
@@ -148,7 +179,7 @@ void OrdersList::remove(int target)
 }
 
 // Pop the first order in the OrderList according to priority
-unique_ptr<Order> OrdersList::popTopOrder()
+Order* OrdersList::popTopOrder()
 {
     if (orders_.empty())
     {
@@ -157,11 +188,12 @@ unique_ptr<Order> OrdersList::popTopOrder()
 
     sort(orders_.begin(), orders_.end(), compareOrders);
 
-    unique_ptr<Order> topOrder = std::move(orders_.at(0));
+    Order* topOrder = orders_.at(0);
     orders_.erase(orders_.begin());
 
     return topOrder;
 }
+
 
 /* 
 ===================================
@@ -170,39 +202,34 @@ unique_ptr<Order> OrdersList::popTopOrder()
  */
 
 // Default constructor
-DeployOrder::DeployOrder() : numberOfArmies_(0), destination_(make_shared<Territory>()) {}
+DeployOrder::DeployOrder() : Order(1), numberOfArmies_(0), destination_(new Territory()) {}
 
 // Constructor
-DeployOrder::DeployOrder(int numberOfArmies, shared_ptr<Territory> destination) : numberOfArmies_(numberOfArmies), destination_(destination) {}
+DeployOrder::DeployOrder(int numberOfArmies, Territory* destination) : Order(1), numberOfArmies_(numberOfArmies), destination_(destination) {}
 
 // Copy constructor
-DeployOrder::DeployOrder(const DeployOrder &order) : numberOfArmies_(order.numberOfArmies_), destination_(order.destination_) {}
+DeployOrder::DeployOrder(const DeployOrder &order) : Order(order), numberOfArmies_(order.numberOfArmies_), destination_(order.destination_) {}
 
 // Assignment operator overloading
 const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
 {
+    Order::operator=(order);
     numberOfArmies_ = order.numberOfArmies_;
     destination_ = order.destination_;
     return *this;
 }
 
 // Return a pointer to a new instance of DeployOrder.
-unique_ptr<Order> DeployOrder::clone() const
+Order* DeployOrder::clone() const
 {
-    return make_unique<DeployOrder>(*this);
+    return new DeployOrder(*this);
 }
 
 // Checks that the DeployOrder is valid.
-bool DeployOrder::validate(const shared_ptr<Player> owner)
+bool DeployOrder::validate(Player* owner)
 {   
     auto currentPlayerTerritories = owner->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
-}
-
-// Get priority of DeployOrder
-int DeployOrder::getPriority()
-{
-    return 1;
 }
 
 // Executes the DeployOrder.
@@ -219,6 +246,7 @@ ostream &DeployOrder::print_(ostream &output) const
     return output;
 }
 
+
 /* 
 ===================================
  Implementation for AdvanceOrder class
@@ -226,18 +254,20 @@ ostream &DeployOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(make_shared<Territory>()), destination_(make_shared<Territory>()), offensive_(false) {}
+AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(new Territory()), destination_(new Territory()), offensive_(false) {}
 
 // Constructor
-AdvanceOrder::AdvanceOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination)
+AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination)
     : numberOfArmies_(numberOfArmies), source_(source), destination_(destination), offensive_(false) {}
 
 // Copy constructor
-AdvanceOrder::AdvanceOrder(const AdvanceOrder &order) : numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_), offensive_(order.offensive_) {}
+AdvanceOrder::AdvanceOrder(const AdvanceOrder &order)
+    : Order(order), numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_), offensive_(order.offensive_) {}
 
 // Assignment operator overloading
 const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
 {
+    Order::operator=(order);
     numberOfArmies_ = order.numberOfArmies_;
     source_ = order.source_;
     destination_ = order.destination_;
@@ -246,13 +276,13 @@ const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
 }
 
 // Return a pointer to a new instace of AdvanceOrder
-unique_ptr<Order> AdvanceOrder::clone() const
+Order* AdvanceOrder::clone() const
 {
-    return make_unique<AdvanceOrder>(*this);
+    return new AdvanceOrder(*this);
 }
 
 // Checks that the AdvanceOrder is valid.
-bool AdvanceOrder::validate(const shared_ptr<Player> owner)
+bool AdvanceOrder::validate(Player* owner)
 {
     auto currentPlayerTerritories = owner->getOwnedTerritories();
 
@@ -313,6 +343,7 @@ ostream &AdvanceOrder::print_(ostream &output) const
     return output;
 }
 
+
 /* 
 ===================================
  Implementation for BombOrder class
@@ -320,29 +351,30 @@ ostream &AdvanceOrder::print_(ostream &output) const
  */
 
 // Default constructor
-BombOrder::BombOrder() : target_(make_shared<Territory>()) {}
+BombOrder::BombOrder() : target_(new Territory()) {}
 
 // Constructor
-BombOrder::BombOrder(shared_ptr<Territory> target) : target_(target) {}
+BombOrder::BombOrder(Territory* target) : target_(target) {}
 
 // Copy constructor
-BombOrder::BombOrder(const BombOrder &order) : target_(order.target_) {}
+BombOrder::BombOrder(const BombOrder &order) : Order(order), target_(order.target_) {}
 
 // Assignment operator overloading
 const BombOrder &BombOrder::operator=(const BombOrder &order)
 {
+    Order::operator=(order);
     target_ = order.target_;
     return *this;
 }
 
 // Return a pointer to a new instance of BombOrder.
-unique_ptr<Order> BombOrder::clone() const
+Order* BombOrder::clone() const
 {
-    return make_unique<BombOrder>(*this);
+    return new BombOrder(*this);
 }
 
 // Checks that the BombOrder is valid.
-bool BombOrder::validate(const shared_ptr<Player> owner)
+bool BombOrder::validate(Player* owner)
 {
     auto currentPlayerTerritories = owner->getOwnedTerritories();
     bool validTargetTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), target_) == currentPlayerTerritories.end();
@@ -372,38 +404,33 @@ ostream &BombOrder::print_(ostream &output) const
  */
 
 // Default constructor
-BlockadeOrder::BlockadeOrder() : territory_(make_shared<Territory>()) {}
+BlockadeOrder::BlockadeOrder() : Order(3), territory_(new Territory()) {}
 
 // Constructor
-BlockadeOrder::BlockadeOrder(shared_ptr<Territory> territory) : territory_(territory) {}
+BlockadeOrder::BlockadeOrder(Territory* territory) : Order(3), territory_(territory) {}
 
 // Copy constructor
-BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : territory_(order.territory_) {}
+BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order), territory_(order.territory_) {}
 
 // Assignment operator overloading
 const BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order)
 {
+    Order::operator=(order);
     territory_ = order.territory_;
     return *this;
 }
 
 // Return a pointer to a new instance of BlockadeOrder.
-unique_ptr<Order> BlockadeOrder::clone() const
+Order* BlockadeOrder::clone() const
 {
-    return make_unique<BlockadeOrder>(*this);
+    return new BlockadeOrder(*this);
 }
 
 // Checks that the BlockadeOrder is valid.
-bool BlockadeOrder::validate(const shared_ptr<Player> owner)
+bool BlockadeOrder::validate(Player* owner)
 {
     auto currentPlayerTerritories = owner->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), territory_) != currentPlayerTerritories.end();
-}
-
-// Get priority of BlockadeOrder
-int BlockadeOrder::getPriority()
-{
-    return 3;
 }
 
 // Executes the BlockadeOrder.
@@ -429,17 +456,18 @@ ostream &BlockadeOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AirliftOrder::AirliftOrder() : numberOfArmies_(0), source_(make_shared<Territory>()), destination_(make_shared<Territory>()) {}
+AirliftOrder::AirliftOrder() : Order(2), numberOfArmies_(0), source_(new Territory()), destination_(new Territory()) {}
 
 // Constructor
-AirliftOrder::AirliftOrder(int numberOfArmies, shared_ptr<Territory> source, shared_ptr<Territory> destination) : numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
+AirliftOrder::AirliftOrder(int numberOfArmies, Territory* source, Territory* destination) : Order(2), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
 // Copy constructor
-AirliftOrder::AirliftOrder(const AirliftOrder &order) : numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
+AirliftOrder::AirliftOrder(const AirliftOrder &order) : Order(order), numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
 
 // Assignment operator overloading
 const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
 {
+    Order::operator=(order);
     numberOfArmies_ = order.numberOfArmies_;
     source_ = order.source_;
     destination_ = order.destination_;
@@ -447,21 +475,15 @@ const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
 }
 
 // Return a pointer to a new instance of AirliftOrder.
-unique_ptr<Order> AirliftOrder::clone() const
+Order* AirliftOrder::clone() const
 {
-    return make_unique<AirliftOrder>(*this);
+    return new AirliftOrder(*this);
 }
 
 // Checks that the AirliftOrder is valid.
-bool AirliftOrder::validate(const shared_ptr<Player> owner)
+bool AirliftOrder::validate(Player* owner)
 {
     return true;
-}
-
-// Get priority of AirliftOrder
-int AirliftOrder::getPriority()
-{
-    return 2;
 }
 
 // Executes the AirliftOrder.
@@ -485,30 +507,31 @@ ostream &AirliftOrder::print_(ostream &output) const
  */
 
 // Default constructor
-NegotiateOrder::NegotiateOrder() : initiator_(make_shared<Player>()), target_(make_shared<Player>()) {}
+NegotiateOrder::NegotiateOrder() : initiator_(new Player()), target_(new Player()) {}
 
 // Constructor
-NegotiateOrder::NegotiateOrder(shared_ptr<Player> initiator, shared_ptr<Player> target) : initiator_(initiator), target_(target) {}
+NegotiateOrder::NegotiateOrder(Player* initiator, Player* target) : initiator_(initiator), target_(target) {}
 
 // Copy constructor
-NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : initiator_(order.initiator_), target_(order.target_) {}
+NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order), initiator_(order.initiator_), target_(order.target_) {}
 
 // Assignment operator overloading
 const NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order)
 {
+    Order::operator=(order);
     initiator_ = order.initiator_;
     target_ = order.target_;
     return *this;
 }
 
 // Return a pointer to a new instance of NegotiateOrder.
-unique_ptr<Order> NegotiateOrder::clone() const
+Order* NegotiateOrder::clone() const
 {
-    return make_unique<NegotiateOrder>(*this);
+    return new NegotiateOrder(*this);
 }
 
 // Checks that the NegotiateOrder is valid.
-bool NegotiateOrder::validate(const shared_ptr<Player> owner)
+bool NegotiateOrder::validate(Player* owner)
 {
     return owner != target_;
 }
@@ -516,8 +539,8 @@ bool NegotiateOrder::validate(const shared_ptr<Player> owner)
 // Executes the NegotiateOrder.
 void NegotiateOrder::execute_()
 {
-    initiator_->addDiplomaticRelation(target_);
-    target_->addDiplomaticRelation(initiator_);
+    // initiator_->addDiplomaticRelation(target_);
+    // target_->addDiplomaticRelation(initiator_);
     cout << "Negotiated diplomacy between " << initiator_->getName() << " and " << target_->getName() << "." << endl;
 }
 

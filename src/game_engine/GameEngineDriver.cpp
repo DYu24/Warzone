@@ -27,13 +27,13 @@ int main()
     gameEngine.startupPhase();
 
     vector<shared_ptr<Territory>> allTerritoriesInMap = gameEngine.getMap().getAdjacencyList();
-    vector<shared_ptr<Territory>> ownedTerritories;
+    vector<Territory*> ownedTerritories;
 
     for (auto const &player : gameEngine.getPlayers())
     {
         // Print out the player to show that they now have reinforcements assigned to them
         cout << *player << endl;
-        vector<shared_ptr<Territory>> playerTerritories = player->getOwnedTerritories();
+        vector<Territory*> playerTerritories = player->getOwnedTerritories();
         ownedTerritories.insert(ownedTerritories.end(), playerTerritories.begin(), playerTerritories.end());
     }
 

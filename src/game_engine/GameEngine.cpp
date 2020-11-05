@@ -236,14 +236,18 @@ void GameEngine::reinforcementPhase()
     for (auto const &player : players_)
     {
         int reinforcements = 0;
-        vector<shared_ptr<Territory>> playerTerritories = player->getOwnedTerritories();
+        vector<Territory*> playerTerritories = player->getOwnedTerritories();
         sort(playerTerritories.begin(), playerTerritories.end());
 
         reinforcements += floor(playerTerritories.size() / 3);
     
         for (auto const &continent : map_->getContinents())
         {
-            vector<shared_ptr<Territory>> continentMembers = continent->getTerritories();
+            vector<Territory*> continentMembers;
+            for (auto const & member : continent->getTerritories())
+            {
+                continentMembers.push_back(member.get());
+            }
             sort(continentMembers.begin(), continentMembers.end());
 
             if (includes(playerTerritories.begin(), playerTerritories.end(), continentMembers.begin(), continentMembers.end()))
@@ -282,7 +286,7 @@ void GameEngine::executeOrdersPhase()
             unique_ptr<Order> order = player->getNextOrder();
             if (order != NULL)
             {
-                order->execute(player);
+                order->execute(player.get());
             }
             else
             {
