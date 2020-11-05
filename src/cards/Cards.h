@@ -31,6 +31,7 @@ public:
     const Deck &operator=(const Deck &deck);
     friend ostream &operator<<(ostream &output, const Deck &deck);
     vector<Card*> getCards();
+    void setCards(vector<Card*> cards);
     void addCard(Card* card);
     Card* draw();
     void generateCards(int numberOfCards);
@@ -49,6 +50,7 @@ public:
     const Hand &operator=(const Hand &hand);
     friend ostream &operator<<(ostream &output, const Hand &hand);
     vector<Card*> getCards();
+    void setCards(vector<Card*> cards);
     void addCard(Card* card);
     Card* removeCard(int position);
     Order* playCardAt(int position);

@@ -214,7 +214,7 @@ void GameEngine::startupPhase()
     {
         // Pop out a random territory
         int randomIndex = rand() % assignableTerritories.size();
-        shared_ptr<Territory> randomTerritory = assignableTerritories.at(randomIndex);
+        Territory* randomTerritory = assignableTerritories.at(randomIndex).get();
         assignableTerritories.erase(assignableTerritories.begin() + randomIndex);
 
         players_.at(playerIndex)->addOwnedTerritory(randomTerritory);
@@ -283,7 +283,7 @@ void GameEngine::executeOrdersPhase()
         int playersFinishedExecutingOrders = 0;
         for (auto const &player : players_)
         {
-            unique_ptr<Order> order = player->getNextOrder();
+            Order* order = player->getNextOrder();
             if (order != NULL)
             {
                 order->execute(player.get());

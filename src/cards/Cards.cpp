@@ -27,34 +27,23 @@ Deck::Deck() {}
 // Copy constructor
 Deck::Deck(const Deck &deck)
 {
-    for (auto const &card : deck.cards_)
-    {
-        cards_.push_back(card->clone());
-    }
+    setCards(deck.cards_);
 }
 
 // Destructor
 Deck::~Deck()
 {
-    for (auto &card : cards_)
+    for (auto card : cards_)
     {
         delete card;
     }
+    cards_.clear();
 }
 
 // Assignment operator overloading
 const Deck &Deck::operator=(const Deck &deck)
 {
-    for (auto &card : cards_)
-    {
-        delete card;
-    }
-    cards_.clear();
-
-    for (auto const &card : deck.cards_)
-    {
-        cards_.push_back(card->clone());
-    }
+    setCards(deck.cards_);
     return *this;
 }
 
@@ -69,6 +58,20 @@ ostream &operator<<(ostream &output, const Deck &deck)
 vector<Card*> Deck::getCards()
 {
     return cards_;
+}
+
+void Deck::setCards(vector<Card*> cards)
+{
+    for (auto card : cards_)
+    {
+        delete card;
+    }
+    cards_.clear();
+
+    for (auto card : cards)
+    {
+        cards_.push_back(card->clone());
+    }
 }
 
 // Pick a random card from the deck and return a pointer to it.
@@ -136,34 +139,23 @@ Hand::Hand() {}
 // Copy constructor
 Hand::Hand(const Hand &hand)
 {
-    for (auto const &card : hand.cards_)
-    {
-        cards_.push_back(card->clone());
-    }
+    setCards(hand.cards_);
 }
 
 // Destructor
 Hand::~Hand()
 {
-    for (auto &card : cards_)
+    for (auto card : cards_)
     {
         delete card;
     }
+    cards_.clear();
 }
 
 // Assignment operator overloading
 const Hand &Hand::operator=(const Hand &hand)
 {
-    for (auto &card : cards_)
-    {
-        delete card;
-    }
-    cards_.clear();
-
-    for (auto const &card : hand.cards_)
-    {
-        cards_.push_back(card->clone());
-    }
+    setCards(hand.cards_);
     return *this;
 }
 
@@ -178,6 +170,20 @@ ostream &operator<<(ostream &output, const Hand &hand)
 vector<Card*> Hand::getCards()
 {
     return cards_;
+}
+
+void Hand::setCards(vector<Card*> cards)
+{
+    for (auto card : cards_)
+    {
+        delete card;
+    }
+    cards_.clear();
+
+    for (auto card : cards)
+    {
+        cards_.push_back(card->clone());
+    }
 }
 
 // Add a card to the player's hand.

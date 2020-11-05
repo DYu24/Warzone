@@ -7,7 +7,7 @@ int main()
     Territory* targetTerritory = new Territory("Ontario");
 
     Player* player = new Player();
-    player->addOwnedTerritory(make_shared<Territory>(*territory));
+    player->addOwnedTerritory(territory);
 
     OrdersList ordersList;
     ordersList.add(new DeployOrder(5, territory));

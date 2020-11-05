@@ -19,15 +19,15 @@ int main()
     t4->addAdjacentTerritory(t3);
 
     Player p1 = Player("Player 1");
-    p1.addOwnedTerritory(t1);
-    p1.addOwnedTerritory(t2);
-    p1.addCardToHand(make_shared<BombCard>());
+    p1.addOwnedTerritory(t1.get());
+    p1.addOwnedTerritory(t2.get());
+    p1.addCardToHand(new BombCard());
 
     // Show the Player object
     cout << p1 << endl;
 
     // Show the list of territories to defend
-    vector<shared_ptr<Territory>> toDefend = p1.toDefend();
+    vector<Territory*> toDefend = p1.toDefend();
     cout << "-----Calling Player.toDefend(): -----" << endl;
     for (auto const &territory : toDefend)
     {
@@ -37,9 +37,9 @@ int main()
     cout << endl;
 
     // Show the list of territories to attack
-    vector<shared_ptr<Territory>> toAttack = p1.toAttack();
+    vector<Territory*> toAttack = p1.toAttack();
     cout << "-----Calling Player.toAttack(): -----" << endl;
-    for (auto const &territory : toAttack)
+    for (auto territory : toAttack)
     {
         cout << *territory << endl;
     }

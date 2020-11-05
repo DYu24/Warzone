@@ -18,7 +18,7 @@ namespace
      */
     bool canAttack(Player* attacker, Territory* target)
     {
-        for (auto const &enemy : attacker->getDiplomaticRelations())
+        for (auto enemy : attacker->getDiplomaticRelations())
         {
             auto enemyTerritories = enemy->getOwnedTerritories();
             if (find(enemyTerritories.begin(), enemyTerritories.end(), target) != enemyTerritories.end())
@@ -127,7 +127,7 @@ void OrdersList::setOrders(vector<Order*> orders)
     }
     orders_.clear();
 
-    for (auto const &order : orders)
+    for (auto order : orders)
     {
         orders_.push_back(order->clone());
     }
@@ -236,7 +236,7 @@ bool DeployOrder::validate(Player* owner)
 void DeployOrder::execute_()
 {
     destination_->addArmies(numberOfArmies_);
-    cout << numberOfArmies_ << " armies deployed to " << destination_->getName() << "." << endl;
+    cout << "Deployed " << numberOfArmies_ << " armies to " << destination_->getName() << "." << endl;
 }
 
 // Stream insertion operator overloading

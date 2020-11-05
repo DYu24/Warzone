@@ -8,7 +8,7 @@
 namespace
 {
     // Build a DeployOrder from user input
-    unique_ptr<DeployOrder> buildDeployOrder(Player &player)
+    DeployOrder* buildDeployOrder(Player &player)
     {
         vector<Territory*> playerTerritories = player.getOwnedTerritories();
         Territory* selectedTerritory = NULL;
@@ -40,11 +40,11 @@ namespace
         int armies;
         cin >> armies;
 
-        return make_unique<DeployOrder>(armies, selectedTerritory);
+        return new DeployOrder(armies, selectedTerritory);
     }
 
     // Build an AdvanceOrder from user input
-    unique_ptr<AdvanceOrder> buildAdvanceOrder(Player &player)
+    AdvanceOrder* buildAdvanceOrder(Player &player)
     {
         vector<Territory*> playerTerritories = player.getOwnedTerritories();
 
@@ -102,18 +102,27 @@ namespace
         int armies;
         cin >> armies;
 
-        return make_unique<AdvanceOrder>(armies, source, target);
+        return new AdvanceOrder(armies, source, target);
     }
 }
 
 // Default constructor
-Player::Player() : reinforcements_(0), name_("unknown_player"), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
+Player::Player() : reinforcements_(0), name_("unknown_player"), orders_(new OrdersList()), hand_(new Hand()) {}
 
 // Constructor
-Player::Player(string name) : reinforcements_(0), name_(name), orders_(make_unique<OrdersList>()), hand_(make_unique<Hand>()) {}
+Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()) {}
 
 // Copy constructor
-Player::Player(const Player &player) : reinforcements_(player.reinforcements_), name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(make_unique<OrdersList>(*player.orders_)), hand_(make_unique<Hand>(*player.hand_)) {}
+Player::Player(const Player &player)
+    : reinforcements_(player.reinforcements_), name_(player.name_), ownedTerritories_(player.ownedTerritories_),
+    orders_(new OrdersList(*player.orders_)), hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_) {}
+
+// Destructor
+Player::~Player()
+{
+    delete orders_;
+    delete hand_;
+}
 
 // Assignment operator overloading
 const Player &Player::operator=(const Player &player)
@@ -121,8 +130,8 @@ const Player &Player::operator=(const Player &player)
     reinforcements_ = player.reinforcements_;
     name_ = player.name_;
     ownedTerritories_ = player.ownedTerritories_;
-    orders_ = make_unique<OrdersList>(*player.orders_);
-    hand_ = make_unique<Hand>(*player.hand_);
+    orders_ = new OrdersList(*player.orders_);
+    hand_ = new Hand(*player.hand_);
     return *this;
 }
 
@@ -136,12 +145,7 @@ ostream &operator<<(ostream &output, const Player &player)
 // Getters
 vector<Territory*> Player::getOwnedTerritories()
 {
-    vector<Territory*> territories;
-    for (auto const &territory : ownedTerritories_)
-    {
-        territories.push_back(territory.get());
-    }
-    return territories;
+    return ownedTerritories_;
 }
 
 string Player::getName()
@@ -149,7 +153,7 @@ string Player::getName()
     return name_;
 }
 
-vector<shared_ptr<Player>> Player::getDiplomaticRelations()
+vector<Player*> Player::getDiplomaticRelations()
 {
     return diplomaticRelations_;
 }
@@ -161,26 +165,26 @@ void Player::setReinforcements(int reinforcements)
 }
 
 // Add a card to the Player's hand
-void Player::addCardToHand(shared_ptr<Card> card)
+void Player::addCardToHand(Card* card)
 {
-    hand_->addCard(card.get());
+    hand_->addCard(card);
 }
 
 // Add a territory to the Player's list of owned territories
-void Player::addOwnedTerritory(shared_ptr<Territory> territory)
+void Player::addOwnedTerritory(Territory* territory)
 {
     ownedTerritories_.push_back(territory);
 }
 
 // Remove a territory from the Player's list of owned territories
-void Player::removeOwnedTerritory(shared_ptr<Territory> territory)
+void Player::removeOwnedTerritory(Territory* territory)
 {
     auto removeIterator = remove(ownedTerritories_.begin(), ownedTerritories_.end(), territory);
     ownedTerritories_.erase(removeIterator, ownedTerritories_.end());
 }
 
 // Adds a player to the list of diplomatic relations
-void Player::addDiplomaticRelation(shared_ptr<Player> player)
+void Player::addDiplomaticRelation(Player* player)
 {
     diplomaticRelations_.push_back(player);
 }
@@ -192,22 +196,21 @@ void Player::clearDiplomaticRelations()
 }
 
 // Return a list of territories to defend
-vector<shared_ptr<Territory>> Player::toDefend()
+vector<Territory*> Player::toDefend()
 {
     return ownedTerritories_;
 }
 
 // Return a list of territories to attack
-vector<shared_ptr<Territory>> Player::toAttack()
+vector<Territory*> Player::toAttack()
 {
     return ownedTerritories_;
 }
 
 // Return the next order to be executed from the Player's list of orders
-unique_ptr<Order> Player::getNextOrder()
+Order* Player::getNextOrder()
 {
-    orders_->popTopOrder();
-    return make_unique<DeployOrder>();
+    return orders_->popTopOrder();
 }
 
 // Create an Order and place it in the Player's list of orders
