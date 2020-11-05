@@ -21,7 +21,7 @@ namespace
     // Reads the input `.map` file and populates the Map object with continents.
     void populateContinents(ifstream &stream, Map &map)
     {
-        vector<unique_ptr<Continent>> continents;
+        vector<Continent*> continents;
         string line;
         istringstream ss;
 
@@ -43,8 +43,7 @@ namespace
             string color;
             ss >> name >> continentValue >> color;
 
-            unique_ptr<Continent> continent = make_unique<Continent>(name, continentValue);
-            continents.push_back(move(continent));
+            continents.push_back(new Continent(name, continentValue));
         }
 
         map.setContinents(continents);
@@ -53,7 +52,7 @@ namespace
     // Reads the input `.map` file and populates the Map object with territories.
     void populateTerritories(ifstream &stream, Map &map)
     {
-        vector<shared_ptr<Territory>> territories = map.getAdjacencyList();
+        vector<Territory*> territories;
         string line;
         istringstream ss;
 
@@ -74,7 +73,7 @@ namespace
             int continent;
             ss >> index >> name >> continent;
 
-            shared_ptr<Territory> territory = make_shared<Territory>(name);
+            Territory *territory = new Territory(name);
             territories.push_back(territory);
 
             map.getContinents().at(continent - 1)->addTerritory(territory);
@@ -86,7 +85,7 @@ namespace
     // Reads the input `.map` file and connects the territories to each other.
     void populateBorders(ifstream &stream, Map &map)
     {
-        vector<shared_ptr<Territory>> territories = map.getAdjacencyList();
+        vector<Territory*> territories = map.getAdjacencyList();
         string line;
         istringstream ss;
 
@@ -104,12 +103,12 @@ namespace
 
             int countryIndex;
             ss >> countryIndex;
-            shared_ptr<Territory> territoryPointer = territories.at(countryIndex - 1);
+            Territory* territoryPointer = territories.at(countryIndex - 1);
 
             int adjacentIndex;
             while (ss >> adjacentIndex)
             {
-                shared_ptr<Territory> adjacentTerritory = territories.at(adjacentIndex - 1);
+                Territory* adjacentTerritory = territories.at(adjacentIndex - 1);
                 territoryPointer->addAdjacentTerritory(adjacentTerritory);
             }
         }

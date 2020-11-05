@@ -6,10 +6,10 @@
 int main()
 {
     // Setup
-    shared_ptr<Territory> t1 = make_shared<Territory>("Territory1");
-    shared_ptr<Territory> t2 = make_shared<Territory>("Territory2");
-    shared_ptr<Territory> t3 = make_shared<Territory>("Territory3");
-    shared_ptr<Territory> t4 = make_shared<Territory>("Territory4");
+    Territory* t1 = new Territory("Territory1");
+    Territory* t2 = new Territory("Territory2");
+    Territory* t3 = new Territory("Territory3");
+    Territory* t4 = new Territory("Territory4");
 
     t1->addAdjacentTerritory(t2);
     t2->addAdjacentTerritory(t1);
@@ -19,8 +19,8 @@ int main()
     t4->addAdjacentTerritory(t3);
 
     Player p1 = Player("Player 1");
-    p1.addOwnedTerritory(t1.get());
-    p1.addOwnedTerritory(t2.get());
+    p1.addOwnedTerritory(t1);
+    p1.addOwnedTerritory(t2);
     p1.addCardToHand(new BombCard());
 
     // Show the Player object

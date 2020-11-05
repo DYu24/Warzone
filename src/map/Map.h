@@ -2,7 +2,6 @@
 
 #include "../player/Player.h"
 
-#include <memory>
 #include <string>
 #include <vector>
 using namespace std;
@@ -12,6 +11,7 @@ class Territory
 public:
     Territory();
     Territory(string name);
+    Territory(string name, int numberOfArmies);
     Territory(const Territory &territory);
     const Territory &operator=(const Territory &territory);
     friend ostream &operator<<(ostream &output, const Territory &territory);
@@ -20,14 +20,15 @@ public:
     int getNumberOfArmies();
     void addArmies(int armies);
     void removeArmies(int armies);
-    vector<shared_ptr<Territory>> getAdjacentTerritories();
-    void setAdjacentTerritories(vector<shared_ptr<Territory>> territories);
-    void addAdjacentTerritory(shared_ptr<Territory> territory);
+    vector<Territory*> getAdjacentTerritories();
+    void setAdjacentTerritories(vector<Territory*> territories);
+    void addAdjacentTerritory(Territory* territory);
+    void removeAdjacentTerritory(Territory* territory);
 
 private:
     string name_;
     int numberOfArmies_;
-    vector<shared_ptr<Territory>> adjacentTerritories_;
+    vector<Territory*> adjacentTerritories_;
 };
 
 class Continent
@@ -42,14 +43,14 @@ public:
     void setName(string name);
     int getControlValue();
     void setControlValue(int value);
-    vector<shared_ptr<Territory>> getTerritories();
-    void setTerritories(vector<shared_ptr<Territory>> territories);
-    void addTerritory(shared_ptr<Territory> territory);
+    vector<Territory*> getTerritories();
+    void setTerritories(vector<Territory*> territories);
+    void addTerritory(Territory* territory);
 
 private:
     string name_;
     int controlValue_;
-    vector<shared_ptr<Territory>> territories_;
+    vector<Territory*> territories_;
 };
 
 class Map
@@ -57,17 +58,18 @@ class Map
 public:
     Map();
     Map(const Map &map);
-    vector<shared_ptr<Territory>> getAdjacencyList();
+    ~Map();
+    vector<Territory*> getAdjacencyList();
     const Map &operator=(const Map &map);
     friend ostream &operator<<(ostream &output, const Map &map);
-    void setAdjacencyList(vector<shared_ptr<Territory>> adjacencyList);
-    vector<unique_ptr<Continent>> &getContinents();
-    void setContinents(const vector<unique_ptr<Continent>> &continents);
+    void setAdjacencyList(vector<Territory*> adjacencyList);
+    vector<Continent*> getContinents();
+    void setContinents(vector<Continent*> continents);
     bool validate();
 
 private:
-    vector<shared_ptr<Territory>> adjacencyList_;
-    vector<unique_ptr<Continent>> continents_;
+    vector<Territory*> adjacencyList_;
+    vector<Continent*> continents_;
     bool checkGraphValidity();
     bool checkContinentsValidity();
     bool checkTerritoriesValidity();

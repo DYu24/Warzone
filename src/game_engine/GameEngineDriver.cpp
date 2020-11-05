@@ -26,7 +26,7 @@ int main()
     cout << "========== PART 2 ==========" << endl;
     gameEngine.startupPhase();
 
-    vector<shared_ptr<Territory>> allTerritoriesInMap = gameEngine.getMap().getAdjacencyList();
+    vector<Territory*> allTerritoriesInMap = gameEngine.getMap().getAdjacencyList();
     vector<Territory*> ownedTerritories;
 
     for (auto const &player : gameEngine.getPlayers())

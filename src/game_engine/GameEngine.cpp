@@ -209,12 +209,12 @@ void GameEngine::startupPhase()
 
     // Assign territories
     int playerIndex = 0;
-    vector<shared_ptr<Territory>> assignableTerritories = map_->getAdjacencyList();
+    vector<Territory*> assignableTerritories = map_->getAdjacencyList();
     while (!assignableTerritories.empty())
     {
         // Pop out a random territory
         int randomIndex = rand() % assignableTerritories.size();
-        Territory* randomTerritory = assignableTerritories.at(randomIndex).get();
+        Territory* randomTerritory = assignableTerritories.at(randomIndex);
         assignableTerritories.erase(assignableTerritories.begin() + randomIndex);
 
         players_.at(playerIndex)->addOwnedTerritory(randomTerritory);
@@ -246,7 +246,7 @@ void GameEngine::reinforcementPhase()
             vector<Territory*> continentMembers;
             for (auto const & member : continent->getTerritories())
             {
-                continentMembers.push_back(member.get());
+                continentMembers.push_back(member);
             }
             sort(continentMembers.begin(), continentMembers.end());
 

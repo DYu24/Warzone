@@ -202,7 +202,7 @@ Order* OrdersList::popTopOrder()
  */
 
 // Default constructor
-DeployOrder::DeployOrder() : Order(1), numberOfArmies_(0), destination_(new Territory()) {}
+DeployOrder::DeployOrder() : Order(1), numberOfArmies_(0) {}
 
 // Constructor
 DeployOrder::DeployOrder(int numberOfArmies, Territory* destination) : Order(1), numberOfArmies_(numberOfArmies), destination_(destination) {}
@@ -254,7 +254,7 @@ ostream &DeployOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(new Territory()), destination_(new Territory()), offensive_(false) {}
+AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), offensive_(false) {}
 
 // Constructor
 AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination)
@@ -351,7 +351,7 @@ ostream &AdvanceOrder::print_(ostream &output) const
  */
 
 // Default constructor
-BombOrder::BombOrder() : target_(new Territory()) {}
+BombOrder::BombOrder() {}
 
 // Constructor
 BombOrder::BombOrder(Territory* target) : target_(target) {}
@@ -404,7 +404,7 @@ ostream &BombOrder::print_(ostream &output) const
  */
 
 // Default constructor
-BlockadeOrder::BlockadeOrder() : Order(3), territory_(new Territory()) {}
+BlockadeOrder::BlockadeOrder() : Order(3) {}
 
 // Constructor
 BlockadeOrder::BlockadeOrder(Territory* territory) : Order(3), territory_(territory) {}
@@ -456,7 +456,7 @@ ostream &BlockadeOrder::print_(ostream &output) const
  */
 
 // Default constructor
-AirliftOrder::AirliftOrder() : Order(2), numberOfArmies_(0), source_(new Territory()), destination_(new Territory()) {}
+AirliftOrder::AirliftOrder() : Order(2), numberOfArmies_(0) {}
 
 // Constructor
 AirliftOrder::AirliftOrder(int numberOfArmies, Territory* source, Territory* destination) : Order(2), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
@@ -507,7 +507,7 @@ ostream &AirliftOrder::print_(ostream &output) const
  */
 
 // Default constructor
-NegotiateOrder::NegotiateOrder() : initiator_(new Player()), target_(new Player()) {}
+NegotiateOrder::NegotiateOrder() {}
 
 // Constructor
 NegotiateOrder::NegotiateOrder(Player* initiator, Player* target) : initiator_(initiator), target_(target) {}

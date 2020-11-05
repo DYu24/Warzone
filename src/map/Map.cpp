@@ -16,7 +16,15 @@ Territory::Territory(): name_("unknown_territory"), numberOfArmies_(0) {}
 
 Territory::Territory(string name) : name_(name), numberOfArmies_(0) {}
 
-Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_), adjacentTerritories_(territory.adjacentTerritories_) {}
+Territory::Territory(string name, int numberOfArmies) : name_(name), numberOfArmies_(numberOfArmies) {}
+
+Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_)
+{
+    for (auto t : territory.adjacentTerritories_)
+    {
+        adjacentTerritories_.push_back(new Territory(t->getName(), t->getNumberOfArmies()));
+    }
+}
 
 // Getters and Setters
 string Territory::getName()
@@ -50,13 +58,14 @@ void Territory::removeArmies(int armies)
     }
 }
 
-vector<shared_ptr<Territory>> Territory::getAdjacentTerritories()
+vector<Territory*> Territory::getAdjacentTerritories()
 {
     return adjacentTerritories_;
 }
 
-void Territory::setAdjacentTerritories(vector<shared_ptr<Territory>> territories)
+void Territory::setAdjacentTerritories(vector<Territory*> territories)
 {
+    adjacentTerritories_.clear();
     adjacentTerritories_ = territories;
 }
 
@@ -76,7 +85,7 @@ ostream &operator<<(ostream &output, const Territory &territory)
 }
 
 // Add an adjacent territory to the current territory.
-void Territory::addAdjacentTerritory(shared_ptr<Territory> territory)
+void Territory::addAdjacentTerritory(Territory* territory)
 {
     adjacentTerritories_.push_back(territory);
 }
@@ -93,7 +102,13 @@ Continent::Continent(): name_("unknown_continent"), controlValue_(0) {}
 
 Continent::Continent(string name, int controlValue) : name_(name), controlValue_(controlValue) {}
 
-Continent::Continent(const Continent &continent) : name_(continent.name_), controlValue_(continent.controlValue_), territories_(continent.territories_) {}
+Continent::Continent(const Continent &continent) : name_(continent.name_), controlValue_(continent.controlValue_)
+{
+    for (auto territory : continent.territories_)
+    {
+        territories_.push_back(new Territory(*territory));
+    }
+}
 
 // Getters and Setters
 string Continent::getName()
@@ -116,12 +131,12 @@ void Continent::setControlValue(int value)
     controlValue_ = value;
 }
 
-vector<shared_ptr<Territory>> Continent::getTerritories()
+vector<Territory*> Continent::getTerritories()
 {
     return territories_;
 }
 
-void Continent::setTerritories(vector<shared_ptr<Territory>> territories)
+void Continent::setTerritories(vector<Territory*> territories)
 {
     territories_ = territories;
 }
@@ -142,7 +157,7 @@ ostream &operator<<(ostream &output, const Continent &continent)
 }
 
 // Add a territory to the current continent.
-void Continent::addTerritory(shared_ptr<Territory> territory)
+void Continent::addTerritory(Territory* territory)
 {
     territories_.push_back(territory);
 }
@@ -159,32 +174,72 @@ Map::Map() {}
 
 Map::Map(const Map &map)
 {
-    adjacencyList_ = map.adjacencyList_;
-    setContinents(map.continents_);
+    for (auto continent : map.continents_)
+    {
+        continents_.push_back(new Continent(*continent));
+    }
+
+    for (auto continent : continents_)
+    {
+        for (auto territory : continent->getTerritories())
+        {
+            adjacencyList_.push_back(territory);
+        }
+    }
+}
+
+// Destructor
+Map::~Map()
+{
+    for (auto continent : continents_)
+    {
+        delete continent;
+    }
+    continents_.clear();
+
+    for (auto territory : adjacencyList_)
+    {
+        delete territory;
+    }
+    adjacencyList_.clear();
 }
 
 // Getters and Setters
-vector<shared_ptr<Territory>> Map::getAdjacencyList()
+vector<Territory*> Map::getAdjacencyList()
 {
     return adjacencyList_;
 }
 
-void Map::setAdjacencyList(vector<shared_ptr<Territory>> adjacencyList)
+void Map::setAdjacencyList(vector<Territory*> adjacencyList)
 {
-    adjacencyList_ = adjacencyList;
+    for (auto territory : adjacencyList_)
+    {
+        delete territory;
+    }
+    adjacencyList_.clear();
+
+    for (auto territory : adjacencyList)
+    {
+        adjacencyList_.push_back(territory);
+    }
 }
 
-vector<unique_ptr<Continent>> &Map::getContinents()
+vector<Continent*> Map::getContinents()
 {
     return continents_;
 }
 
-void Map::setContinents(const vector<unique_ptr<Continent>> &continents)
+void Map::setContinents(vector<Continent*> continents)
 {
-    continents_.clear();
-    for (auto const &continentPointer : continents)
+    for (auto continent : continents_)
     {
-        continents_.push_back(make_unique<Continent>(*continentPointer));
+        delete continent;
+    }
+    continents_.clear();
+
+    for (auto const &continent : continents)
+    {
+        continents_.push_back(continent);
     }
 }
 
@@ -222,17 +277,17 @@ bool Map::validate()
  */
 bool Map::checkGraphValidity()
 {
-    unordered_set<shared_ptr<Territory>> visitedTerritories;
-    queue<shared_ptr<Territory>> territoryQueue;
+    unordered_set<Territory*> visitedTerritories;
+    queue<Territory*> territoryQueue;
     territoryQueue.push(adjacencyList_.front());
 
     while (!territoryQueue.empty())
     {
-        shared_ptr<Territory> current = territoryQueue.front();
+        Territory* current = territoryQueue.front();
         territoryQueue.pop();
         visitedTerritories.insert(current);
 
-        for (auto const &territory : current->getAdjacentTerritories())
+        for (auto territory : current->getAdjacentTerritories())
         {
             // If the territory hasn't been visited, add it to the queue
             if (visitedTerritories.find(territory) == visitedTerritories.end())
@@ -251,17 +306,17 @@ bool Map::checkGraphValidity()
  */
 bool Map::checkContinentsValidity()
 {
-    for (auto const &continent : getContinents())
+    for (auto continent : getContinents())
     {
-        unordered_set<shared_ptr<Territory>> visitedTerritories;
-        queue<shared_ptr<Territory>> territoryQueue;
+        unordered_set<Territory*> visitedTerritories;
+        queue<Territory*> territoryQueue;
 
-        vector<shared_ptr<Territory>> continentMembers = continent->getTerritories();
+        vector<Territory*> continentMembers = continent->getTerritories();
         territoryQueue.push(continentMembers.front());
 
         while (!territoryQueue.empty())
         {
-            shared_ptr<Territory> current = territoryQueue.front();
+            Territory* current = territoryQueue.front();
             territoryQueue.pop();
             visitedTerritories.insert(current);
 
@@ -271,7 +326,7 @@ bool Map::checkContinentsValidity()
                 return false;
             }
 
-            for (auto const &territory : current->getAdjacentTerritories())
+            for (auto territory : current->getAdjacentTerritories())
             {
                 bool visited = visitedTerritories.find(territory) != visitedTerritories.end();
                 bool inCurrentContinent = find(continentMembers.begin(), continentMembers.end(), territory) != continentMembers.end();
@@ -297,11 +352,11 @@ bool Map::checkContinentsValidity()
  */
 bool Map::checkTerritoriesValidity()
 {
-    unordered_set<shared_ptr<Territory>> visitedTerritories;
+    unordered_set<Territory*> visitedTerritories;
 
-    for (auto const &continent : getContinents())
+    for (auto continent : getContinents())
     {
-        for (auto const &territory : continent->getTerritories())
+        for (auto territory : continent->getTerritories())
         {
             // If territory has not been visited, add to set
             if (visitedTerritories.find(territory) == visitedTerritories.end())

@@ -73,12 +73,12 @@ namespace
             break;
         }
 
-        vector<shared_ptr<Territory>> neighboring = source->getAdjacentTerritories();
+        vector<Territory*> neighboring = source->getAdjacentTerritories();
         while (true)
         {
             cout << "Which territory do you want to advance to:" << endl;
             int i = 0;
-            for (auto const &territory : neighboring)
+            for (auto territory : neighboring)
             {
                 cout << "[" << i + 1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
                 i++;
@@ -93,7 +93,7 @@ namespace
                 continue;
             }
 
-            target = neighboring.at(option - 1).get();
+            target = neighboring.at(option - 1);
             break;
         }
 
@@ -122,6 +122,8 @@ Player::~Player()
 {
     delete orders_;
     delete hand_;
+    orders_ = NULL;
+    hand_ = NULL;
 }
 
 // Assignment operator overloading
