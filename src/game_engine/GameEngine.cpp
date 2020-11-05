@@ -102,9 +102,9 @@ namespace
     /*
     * Create players based on user's input
     */
-    vector<shared_ptr<Player>> setupPlayers()
+    vector<Player*> setupPlayers()
     {
-        vector<shared_ptr<Player>> players;
+        vector<Player*> players;
         cout << "Enter the number of players for this game: ";
         
         int numberOfPlayers;
@@ -130,8 +130,7 @@ namespace
             string name;
             cin >> name;
 
-            shared_ptr<Player> player = make_shared<Player>(name);
-            players.push_back(player);
+            players.push_back(new Player(name));
         }
 
         return players;
@@ -139,16 +138,22 @@ namespace
 }
 
 // Constructors
-GameEngine::GameEngine() : deck_(make_unique<Deck>()), map_(make_unique<Map>()) {}
+GameEngine::GameEngine() : deck_(new Deck()), map_(new Map()) {}
 
-GameEngine::GameEngine(const GameEngine &gameEngine) : deck_(make_unique<Deck>(*gameEngine.deck_)), map_(make_unique<Map>(*gameEngine.map_)), players_(gameEngine.players_) {}
+GameEngine::GameEngine(const GameEngine &gameEngine) : deck_(new Deck(*gameEngine.deck_)), map_(new Map(*gameEngine.map_))
+{
+    for (auto player: gameEngine.players_)
+    {
+        players_.push_back(new Player(*player));
+    }
+}
 
 // Operator overloading
 const GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
 {
-    deck_ = make_unique<Deck>(*gameEngine.deck_);
-    map_ = make_unique<Map>(*gameEngine.map_);
-    players_ = gameEngine.players_;
+    deck_ = new Deck(*gameEngine.deck_);
+    map_ = new Map(*gameEngine.map_);
+    setPlayers(gameEngine.players_);
     return *this;
 }
 
@@ -158,19 +163,28 @@ ostream &operator<<(ostream &output, const GameEngine &gameEngine)
 }
 
 // Getters and setter
-Map &GameEngine::getMap()
+Map GameEngine::getMap()
 {
     return *map_;
 }
 
-vector<shared_ptr<Player>> &GameEngine::getPlayers()
+vector<Player*> GameEngine::getPlayers()
 {
     return players_;
 }
 
-void GameEngine::setPlayers(const vector<shared_ptr<Player>> &players)
+void GameEngine::setPlayers(vector<Player*> players)
 {
-    players_ = players;
+    for (auto player : players_)
+    {
+        delete player;
+    }
+    players_.clear();
+
+    for (auto player: players)
+    {
+        players_.push_back(new Player(*player));
+    }
 }
 
 /*
@@ -185,11 +199,10 @@ void GameEngine::startGame()
     )";
     cout << title << endl;
 
-    Map map = selectMap();
-    map_ = make_unique<Map>(map);
+    map_ = new Map(selectMap());
     cout << endl;
 
-    vector<shared_ptr<Player>> players = setupPlayers();
+    vector<Player*> players = setupPlayers();
     setPlayers(players);
     cout << endl;
 
@@ -286,7 +299,7 @@ void GameEngine::executeOrdersPhase()
             Order* order = player->getNextOrder();
             if (order != NULL)
             {
-                order->execute(player.get());
+                order->execute(player);
             }
             else
             {
@@ -327,7 +340,7 @@ void GameEngine::mainGameLoop()
             }
         }
 
-        auto removeIterator = remove_if(players_.begin(), players_.end(), [](shared_ptr<Player> p) { return p->getOwnedTerritories().size() == 0; });
+        auto removeIterator = remove_if(players_.begin(), players_.end(), [](Player* p) { return p->getOwnedTerritories().size() == 0; });
         players_.erase(removeIterator, players_.end());
 
         reinforcementPhase();

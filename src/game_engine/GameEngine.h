@@ -3,7 +3,6 @@
 #include "../cards/Cards.h"
 #include "../map/Map.h"
 #include "../player/Player.h"
-#include <memory>
 #include <vector>
 using namespace std;
 
@@ -14,9 +13,9 @@ public:
     GameEngine(const GameEngine &gameEngine);
     const GameEngine &operator=(const GameEngine &gameEngine);
     friend ostream &operator<<(ostream &output, const GameEngine &gameEngine);
-    Map &getMap();
-    vector<shared_ptr<Player>> &getPlayers();
-    void setPlayers(const vector<shared_ptr<Player>> &players);
+    Map getMap();
+    vector<Player*> getPlayers();
+    void setPlayers(vector<Player*> players);
     void startGame();
     void startupPhase();
     void reinforcementPhase();
@@ -25,7 +24,7 @@ public:
     void mainGameLoop();
 
 private:
-    unique_ptr<Deck> deck_;
-    vector<shared_ptr<Player>> players_;
-    unique_ptr<Map> map_;
+    Deck* deck_;
+    Map* map_;
+    vector<Player*> players_;
 };
