@@ -6,7 +6,8 @@ int main()
     Territory* territory = new Territory("Quebec");
     Territory* targetTerritory = new Territory("Ontario");
 
-    Player* player = new Player("Bob");
+    Map* map = new Map();
+    Player* player = new Player("Bob", map);
     player->addOwnedTerritory(territory);
 
     OrdersList ordersList;
@@ -15,7 +16,7 @@ int main()
     ordersList.add(new BombOrder(targetTerritory));
     ordersList.add(new BlockadeOrder(territory));
     ordersList.add(new AirliftOrder(10, territory, targetTerritory));
-    ordersList.add(new NegotiateOrder(player, new Player("Alice")));
+    ordersList.add(new NegotiateOrder(player, new Player("Alice", map)));
 
     // Show the OrderList
     cout << "------" << "Original orders list: " << ordersList << "------" << endl;

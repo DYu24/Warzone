@@ -16,8 +16,6 @@ Territory::Territory(): name_("unknown_territory"), numberOfArmies_(0) {}
 
 Territory::Territory(string name) : name_(name), numberOfArmies_(0) {}
 
-Territory::Territory(string name, int numberOfArmies) : name_(name), numberOfArmies_(numberOfArmies) {}
-
 Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_) {}
 
 // Getters and Setters

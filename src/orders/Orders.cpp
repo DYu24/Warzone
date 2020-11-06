@@ -222,6 +222,23 @@ const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
     return *this;
 }
 
+// Getters
+int DeployOrder::getNumberOfArmies()
+{
+    return numberOfArmies_;
+}
+
+Territory DeployOrder::getDestination()
+{
+    return *destination_;
+}
+
+// Add a number of armies to deploy to the order
+void DeployOrder::addArmies(int additional)
+{
+    numberOfArmies_ += additional;
+}
+
 // Return a pointer to a new instance of DeployOrder.
 Order* DeployOrder::clone() const
 {

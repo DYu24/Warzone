@@ -101,7 +101,7 @@ namespace
     /*
     * Create players based on user's input
     */
-    vector<Player*> setupPlayers()
+    vector<Player*> setupPlayers(Map* map)
     {
         vector<Player*> players;
         cout << "Enter the number of players for this game: ";
@@ -129,7 +129,7 @@ namespace
             string name;
             cin >> name;
 
-            players.push_back(new Player(name));
+            players.push_back(new Player(name, map));
         }
 
         return players;
@@ -201,7 +201,7 @@ void GameEngine::startGame()
     map_ = selectMap();
     cout << endl;
 
-    players_ = setupPlayers();
+    players_ = setupPlayers(map_);
     cout << endl;
 
     deck_->generateCards(20);
@@ -236,7 +236,7 @@ void GameEngine::startupPhase()
     const int NUMBER_OF_INITIAL_ARMIES = (-5 * players_.size()) + 50;
     for (auto const &player : players_)
     {
-        player->setReinforcements(NUMBER_OF_INITIAL_ARMIES);
+        player->addReinforcements(NUMBER_OF_INITIAL_ARMIES);
     }
 }
 
@@ -273,7 +273,7 @@ void GameEngine::reinforcementPhase()
             reinforcements = 3;
         }
 
-        player->setReinforcements(reinforcements);
+        player->addReinforcements(reinforcements);
     }
 }
 
@@ -321,7 +321,7 @@ void GameEngine::mainGameLoop()
 {
     bool shouldContinueGame = true;
     // while (shouldContinueGame)
-    for (int j = 0; j < 5; j++)
+    for (int j = 0; j < 2; j++)
     {
         // Check for any winner and remove players who do not own any territories
         for (int i = 0; i < players_.size(); i++)

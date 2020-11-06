@@ -56,6 +56,9 @@ public:
     DeployOrder(int numberOfArmies, Territory* destination);
     DeployOrder(const DeployOrder &order);
     const DeployOrder &operator=(const DeployOrder &order);
+    int getNumberOfArmies();
+    Territory getDestination();
+    void addArmies(int additional);
     Order* clone() const;
     bool validate(Player* owner);
 

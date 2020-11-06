@@ -12,7 +12,6 @@ class Territory
 public:
     Territory();
     Territory(string name);
-    Territory(string name, int numberOfArmies);
     Territory(const Territory &territory);
     const Territory &operator=(const Territory &territory);
     friend bool operator== (const Territory &t1, const Territory &t2);

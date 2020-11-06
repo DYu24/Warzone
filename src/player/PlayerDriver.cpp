@@ -10,7 +10,13 @@ int main()
     Territory* t3 = new Territory("Territory3");
     Territory* t4 = new Territory("Territory4");
 
-    Player p1 = Player("Player 1");
+    vector<Continent*> continents;
+    unordered_map<Territory*, vector<Territory*>> adjacencyList;
+    adjacencyList[t1].push_back(t3);
+    adjacencyList[t2].push_back(t4);
+    
+    Map* map = new Map(continents, adjacencyList);
+    Player p1 = Player("Player 1", map);
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
     p1.addCardToHand(new BombCard());
@@ -19,21 +25,25 @@ int main()
     cout << p1 << endl;
 
     // Show the list of territories to defend
+    cout << "\n-----Calling Player.toDefend(): -----" << endl;
     vector<Territory*> toDefend = p1.toDefend();
-    cout << "-----Calling Player.toDefend(): -----" << endl;
+
+    cout << "\nTerritories to defend: \n" << endl;
     for (auto const &territory : toDefend)
     {
-        cout << *territory << endl;
+        cout << "- " << *territory << endl;
     }
 
     cout << endl;
 
     // Show the list of territories to attack
+    cout << "\n-----Calling Player.toAttack(): -----" << endl;
     vector<Territory*> toAttack = p1.toAttack();
-    cout << "-----Calling Player.toAttack(): -----" << endl;
+
+    cout << "\nTerritories to attack: \n" << endl;
     for (auto territory : toAttack)
     {
-        cout << *territory << endl;
+        cout << "- " << *territory << endl;
     }
 
     cout << endl;
@@ -47,6 +57,7 @@ int main()
     delete t2;
     delete t3;
     delete t4;
+    delete map;
     
     return 0;
 }
