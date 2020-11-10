@@ -21,10 +21,18 @@ public:
     int getNumberOfArmies();
     void addArmies(int armies);
     void removeArmies(int armies);
+    int getPendingIncomingArmies();
+    void setPendingIncomingArmies(int armies);
+    void addPendingIncomingArmies(int armies);
+    int getPendingOutgoingArmies();
+    void setPendingOutgoingArmies(int armies);
+    void addPendingOutgoingArmies(int armies);
 
 private:
     string name_;
     int numberOfArmies_;
+    int pendingIncomingArmies_;
+    int pendingOutgoingArmies_;
 };
 
 class Continent

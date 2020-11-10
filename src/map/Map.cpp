@@ -12,11 +12,12 @@ using namespace std;
  */
 
 // Constructors
-Territory::Territory(): name_("unknown_territory"), numberOfArmies_(0) {}
+Territory::Territory(): name_("unknown_territory"), numberOfArmies_(0), pendingIncomingArmies_(0), pendingOutgoingArmies_(0) {}
 
-Territory::Territory(string name) : name_(name), numberOfArmies_(0) {}
+Territory::Territory(string name) : name_(name), numberOfArmies_(0), pendingIncomingArmies_(0), pendingOutgoingArmies_(0) {}
 
-Territory::Territory(const Territory &territory) : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_) {}
+Territory::Territory(const Territory &territory)
+    : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_), pendingIncomingArmies_(territory.pendingIncomingArmies_), pendingOutgoingArmies_(territory.pendingOutgoingArmies_) {}
 
 // Getters and Setters
 string Territory::getName()
@@ -32,6 +33,26 @@ void Territory::setName(string name)
 int Territory::getNumberOfArmies()
 {
     return numberOfArmies_;
+}
+
+int Territory::getPendingIncomingArmies()
+{
+    return pendingIncomingArmies_;
+}
+
+void Territory::setPendingIncomingArmies(int armies)
+{
+    pendingIncomingArmies_ = armies;
+}
+
+int Territory::getPendingOutgoingArmies()
+{
+    return pendingOutgoingArmies_;
+}
+
+void Territory::setPendingOutgoingArmies(int armies)
+{
+    pendingOutgoingArmies_ = armies;
 }
 
 // Add a number of armies to the current territory
@@ -50,11 +71,25 @@ void Territory::removeArmies(int armies)
     }
 }
 
+// Add a number of armies pending deployment to the current territory
+void Territory::addPendingIncomingArmies(int armies)
+{
+    pendingIncomingArmies_ += armies;
+}
+
+// Mark a number of armies that will be moving off the current territory
+void Territory::addPendingOutgoingArmies(int armies)
+{
+    pendingOutgoingArmies_ += armies;
+}
+
 // Operator overloading
 const Territory &Territory::operator=(const Territory &territory)
 {
     name_ = territory.name_;
     numberOfArmies_ = territory.numberOfArmies_;
+    pendingIncomingArmies_ = territory.pendingIncomingArmies_;
+    pendingOutgoingArmies_ = territory.pendingOutgoingArmies_;
     return *this;
 }
 
@@ -66,7 +101,10 @@ ostream &operator<<(ostream &output, const Territory &territory)
 
 bool operator==(const Territory &t1, const Territory &t2)
 {
-    return t1.name_ == t2.name_ && t1.numberOfArmies_ == t2.numberOfArmies_;
+    return t1.name_ == t2.name_
+        && t1.numberOfArmies_ == t2.numberOfArmies_
+        && t1.pendingIncomingArmies_ == t2.pendingIncomingArmies_
+        && t1.pendingOutgoingArmies_ == t2.pendingOutgoingArmies_;
 }
 
 

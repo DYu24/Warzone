@@ -184,6 +184,15 @@ void OrdersList::remove(int target)
 // Pop the first order in the OrderList according to priority
 Order* OrdersList::popTopOrder()
 {
+    Order* topOrder = peek();
+    orders_.erase(orders_.begin());
+
+    return topOrder;
+}
+
+// Get the first order in the OrderList according to priority without removing it
+Order* OrdersList::peek()
+{
     if (orders_.empty())
     {
         return NULL;
@@ -191,10 +200,7 @@ Order* OrdersList::popTopOrder()
 
     sort(orders_.begin(), orders_.end(), compareOrders);
 
-    Order* topOrder = orders_.at(0);
-    orders_.erase(orders_.begin());
-
-    return topOrder;
+    return orders_.at(0);
 }
 
 
@@ -261,6 +267,7 @@ bool DeployOrder::validate(Player* owner)
 void DeployOrder::execute_()
 {
     destination_->addArmies(numberOfArmies_);
+    destination_->setPendingIncomingArmies(0);
     cout << "Deployed " << numberOfArmies_ << " armies to " << destination_->getName() << "." << endl;
 }
 
@@ -277,6 +284,11 @@ ostream &DeployOrder::print_(ostream &output) const
     return output;
 }
 
+// Get the type of the Order sub-class
+OrderType DeployOrder::getType()
+{
+    return DEPLOY;
+}
 
 /* 
 ===================================
@@ -288,8 +300,8 @@ ostream &DeployOrder::print_(ostream &output) const
 AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), offensive_(false), source_(NULL), destination_(NULL) {}
 
 // Constructor
-AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination)
-    : numberOfArmies_(numberOfArmies), source_(source), destination_(destination), offensive_(false) {}
+AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination, bool offensive)
+    : numberOfArmies_(numberOfArmies), source_(source), destination_(destination), offensive_(offensive) {}
 
 // Copy constructor
 AdvanceOrder::AdvanceOrder(const AdvanceOrder &order)
@@ -321,10 +333,6 @@ bool AdvanceOrder::validate(Player* owner)
     }
 
     auto currentPlayerTerritories = owner->getOwnedTerritories();
-
-    // If the player owns the destination territory, then this AdvanceOrder is not an attack
-    bool ownsDestinationTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
-    offensive_ = !ownsDestinationTerritory;
 
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     return validSourceTerritory && canAttack(owner, destination_);
@@ -383,6 +391,12 @@ ostream &AdvanceOrder::print_(ostream &output) const
     }
 
     return output;
+}
+
+// Get the type of the Order sub-class
+OrderType AdvanceOrder::getType()
+{
+    return ADVANCE;
 }
 
 
@@ -449,6 +463,12 @@ ostream &BombOrder::print_(ostream &output) const
     return output;
 }
 
+// Get the type of the Order sub-class
+OrderType BombOrder::getType()
+{
+    return BOMB;
+}
+
 
 /* 
 ===================================
@@ -510,6 +530,12 @@ ostream &BlockadeOrder::print_(ostream &output) const
     }
 
     return output;
+}
+
+// Get the type of the Order sub-class
+OrderType BlockadeOrder::getType()
+{
+    return BLOCKADE;
 }
 
 
@@ -574,6 +600,12 @@ ostream &AirliftOrder::print_(ostream &output) const
     return output;
 }
 
+// Get the type of the Order sub-class
+OrderType AirliftOrder::getType()
+{
+    return AIRLIFT;
+}
+
 
 /* 
 ===================================
@@ -635,4 +667,10 @@ ostream &NegotiateOrder::print_(ostream &output) const
     }
 
     return output;
+}
+
+// Get the type of the Order sub-class
+OrderType NegotiateOrder::getType()
+{
+    return NEGOTIATE;
 }

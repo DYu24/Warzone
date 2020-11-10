@@ -36,6 +36,7 @@ class Player
         vector<Territory*> toDefend();
         vector<Territory*> toAttack();
         Order* getNextOrder();
+        Order* peekNextOrder();
         void issueOrder();
 
     private:
@@ -46,5 +47,6 @@ class Player
         Map* map_;
         vector<Territory*> ownedTerritories_;
         vector<Player*> diplomaticRelations_;
-        vector<DeployOrder*> deployReinforcements(vector<Territory*> territoriesToDefend, vector<DeployOrder*> existingOrders);
+        void issueDeploy(vector<Territory*> territoriesToDefend, vector<DeployOrder*> &existingOrders);
+        void issueAdvance(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
 };

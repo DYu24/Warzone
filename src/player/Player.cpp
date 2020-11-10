@@ -10,6 +10,32 @@
 namespace
 {
     /*
+     * Get a valid input from the user when entering a single number.
+     */
+    int getValidUserInput(int restriction, string message)
+    {
+        bool validInput = false;
+        int input;
+    
+        while (!validInput)
+        {
+            cin >> input;
+
+            if (cin.fail() || input - 1 < 0 || input - 1 >= restriction)
+            {
+                cout << message << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+
+            validInput = true;
+        }
+
+        return input;
+    }
+
+    /*
      * Custom comparator to sort Territories by their number of armies. 
      */
     bool compareTerritories(Territory* t1, Territory* t2)
@@ -204,7 +230,6 @@ vector<Territory*> Player::toAttack()
         cout << "[" << i + 1 << "] " << attackableTerritories.at(i)->getName() << " (" << attackableTerritories.at(i)->getNumberOfArmies() << " enemy armies)" << endl;
     }
     
-    cin.ignore();
     vector<Territory*> territoriesToAttack;
     while (true)
     {
@@ -257,6 +282,12 @@ Order* Player::getNextOrder()
     return orders_->popTopOrder();
 }
 
+// Return the next order from the Player's list of orders without removing it from the list
+Order* Player::peekNextOrder()
+{
+    return orders_->peek();
+}
+
 // Create an Order and place it in the Player's list of orders
 void Player::issueOrder()
 {
@@ -284,11 +315,11 @@ void Player::issueOrder()
             }
         }
 
-        if (!orders_->getOrders().empty())
-        {
-            cout << "[M] Move an order" << endl;
-            cout << "[R] Remove an order" << endl;
-        }
+        // if (!orders_->getOrders().empty())
+        // {
+        //     cout << "[M] Move an order" << endl;
+        //     cout << "[R] Remove an order" << endl;
+        // }
 
         if (reinforcements_ == 0)
         {
@@ -306,10 +337,11 @@ void Player::issueOrder()
             {
                 case 'D':
                     validSelection = true;
-                    deployOrders = deployReinforcements(territoriesToDefend, deployOrders);
+                    issueDeploy(territoriesToDefend, deployOrders);
                     break;
                 case 'A':
                     validSelection = true;
+                    issueAdvance(territoriesToAttack, territoriesToDefend);
                     break;
                 case 'C':
                     validSelection = true;
@@ -340,7 +372,7 @@ void Player::issueOrder()
 /*
  * Helper method to issue DeployOrders for the Player
  */
-vector<DeployOrder*> Player::deployReinforcements(vector<Territory*> territoriesToDefend, vector<DeployOrder*> existingOrders)
+void Player::issueDeploy(vector<Territory*> territoriesToDefend, vector<DeployOrder*> &deployOrders)
 {
     cout << "You have " << reinforcements_ << " reinforcements left." << endl;
     cout << "Select a territory to deploy your armies to: " << endl;
@@ -349,64 +381,108 @@ vector<DeployOrder*> Player::deployReinforcements(vector<Territory*> territories
         Territory* territory = territoriesToDefend.at(i);
         cout << "[" << i + 1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " deployed";
 
-        auto iterator = find_if(existingOrders.begin(), existingOrders.end(), [&territory](auto order) { return order->getDestination() == *territory; });
-        if (iterator != existingOrders.end())
+        if (territory->getPendingIncomingArmies() > 0)
         {
-            DeployOrder* existingDeployOrder = *iterator;
-            cout << ", " << existingDeployOrder->getNumberOfArmies() << " pending)" << endl;
+            cout << ", " << territory->getPendingIncomingArmies() << " pending";
         }
-        else
-        {
-            cout << ")" << endl;
-        }
+
+        cout << ")" << endl;
     }
 
-    int selection;
-    while (true)
-    {
-        cin >> selection;
-
-        if (cin.fail() || selection - 1 < 0 || selection - 1 >= territoriesToDefend.size())
-        {
-            cout << "That was not a valid option. Please try again:" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue;
-        }
-
-        break;
-    }
-
+    int selection = getValidUserInput(territoriesToDefend.size(), "That was not a valid option. Please try again:");
+    
     cout << "Enter the number of armies to deploy: ";
-    int armiesToDeploy;
-    while (true)
-    {
-        cin >> armiesToDeploy;
-
-        if (cin.fail() || armiesToDeploy < 0 || armiesToDeploy > reinforcements_)
-        {
-            cout << "Please enter a valid number of armies :" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue;
-        }
-
-        break;
-    }
+    int armiesToDeploy = getValidUserInput(reinforcements_, "Please enter a valid number of armies :");
 
     Territory* selectedTerritory = territoriesToDefend.at(selection - 1);
-    auto iterator = find_if(existingOrders.begin(), existingOrders.end(), [&selectedTerritory](auto order) { return order->getDestination() == *selectedTerritory; });
-    if (iterator != existingOrders.end())
+    auto iterator = find_if(deployOrders.begin(), deployOrders.end(), [&selectedTerritory](auto order) { return order->getDestination() == *selectedTerritory; });
+    if (iterator != deployOrders.end())
     {
         DeployOrder* existingDeployOrder = *iterator;
         existingDeployOrder->addArmies(armiesToDeploy);
     }
     else
     {
-        existingOrders.push_back(new DeployOrder(armiesToDeploy, selectedTerritory));
-        sort(existingOrders.begin(), existingOrders.end(), compareDeployOrders);
+        deployOrders.push_back(new DeployOrder(armiesToDeploy, selectedTerritory));
+        sort(deployOrders.begin(), deployOrders.end(), compareDeployOrders);
     }
 
+    selectedTerritory->addPendingIncomingArmies(armiesToDeploy);
     reinforcements_ -= armiesToDeploy;
-    return existingOrders;
+}
+
+/*
+ * Helper method to issue AdvanceOrders for the Player
+ */
+void Player::issueAdvance(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend)
+{
+    vector<Territory*> sources;
+    unordered_set<Territory*> sourcesSeen;
+
+    for (auto territory : ownedTerritories_)
+    {
+        vector<Territory*> neighbors = map_->getAdjacentTerritories(territory);
+
+        bool alreadySeen = sourcesSeen.find(territory) != sourcesSeen.end();
+        bool hasArmiesToMove = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies() > 0;
+        bool hasNeighborToAttackOrDefend = any_of(neighbors.begin(), neighbors.end(), [&territoriesToAttack, &territoriesToDefend](auto t) { 
+            bool toAttack = find(territoriesToAttack.begin(), territoriesToAttack.end(), t) != territoriesToAttack.end();
+            bool toDefend = find(territoriesToDefend.begin(), territoriesToDefend.end(), t) != territoriesToDefend.end();
+            return toAttack || toDefend;
+        });
+
+        if (hasNeighborToAttackOrDefend && hasArmiesToMove && !alreadySeen)
+        {
+            sources.push_back(territory);
+            sourcesSeen.insert(territory);
+        }
+    }
+
+    cout << "Select a territory to advance from: " << endl;
+    for (int i = 0; i < sources.size(); i++)
+    {
+        Territory* territory = sources.at(i);
+        int maxPossibleArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
+        cout << "[" << i + 1 << "] " << territory->getName() << " (" << maxPossibleArmies << " armies)" << endl;
+    }
+
+    int sourceIndex = getValidUserInput(sources.size(), "That was not a valid option. Please try again:");
+    Territory* sourceTerritory = sources.at(sourceIndex - 1);
+
+    vector<Territory*> destinations;
+    for (auto territory : map_->getAdjacentTerritories(sourceTerritory))
+    {
+        bool toAttack = find(territoriesToAttack.begin(), territoriesToAttack.end(), territory) != territoriesToAttack.end();
+        bool toDefend = find(territoriesToDefend.begin(), territoriesToDefend.end(), territory) != territoriesToDefend.end();
+        
+        if (toAttack || toDefend)
+        {
+            destinations.push_back(territory);
+        }
+    }
+
+    cout << "Select a territory to advance to: " << endl;
+    for (int i = 0; i < destinations.size(); i++)
+    {
+        Territory* territory = destinations.at(i);
+        cout << "[" << i + 1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies)" << endl;
+    }
+
+    int destinationIndex = getValidUserInput(destinations.size(), "That was not a valid option. Please try again:");
+    Territory* destinationTerritory = destinations.at(destinationIndex - 1);
+
+    cout << "Enter the number of armies to move: ";
+    int maxPossibleArmies = sourceTerritory->getNumberOfArmies() + sourceTerritory->getPendingIncomingArmies() - sourceTerritory->getPendingOutgoingArmies();
+    int armiesToMove = getValidUserInput(maxPossibleArmies, "Please enter a valid number of armies:");
+
+    if (find(territoriesToAttack.begin(), territoriesToAttack.end(), destinationTerritory) != territoriesToAttack.end())
+    {
+        orders_->add(new AdvanceOrder(armiesToMove, sourceTerritory, destinationTerritory, true));
+    }
+    else
+    {
+        orders_->add(new AdvanceOrder(armiesToMove, sourceTerritory, destinationTerritory, false));
+    }
+
+    sourceTerritory->addPendingOutgoingArmies(armiesToMove);
 }

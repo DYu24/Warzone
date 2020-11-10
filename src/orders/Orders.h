@@ -1,12 +1,23 @@
 #pragma once
 
 #include "../map/Map.h"
+#include "../player/Player.h"
 #include <iostream>
 #include <vector>
 using namespace std;
 
 class Player;
 class Territory;
+
+enum OrderType : short
+{
+    DEPLOY,
+    ADVANCE,
+    BOMB,
+    BLOCKADE,
+    AIRLIFT,
+    NEGOTIATE,
+};
 
 class Order
 {
@@ -17,6 +28,7 @@ public:
     void execute(Player* owner);
     virtual bool validate(Player* owner) = 0;
     int getPriority();
+    virtual OrderType getType() = 0;
 
 protected:
     Order();
@@ -44,6 +56,7 @@ public:
     void move(int source, int destination);
     void remove(int target);
     Order* popTopOrder();
+    Order* peek();
 
 private:
     vector<Order*> orders_;
@@ -61,6 +74,7 @@ public:
     void addArmies(int additional);
     Order* clone() const;
     bool validate(Player* owner);
+    OrderType getType();
 
 protected:
     void execute_();
@@ -75,11 +89,12 @@ class AdvanceOrder : public Order
 {
 public:
     AdvanceOrder();
-    AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination);
+    AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination, bool offensive);
     AdvanceOrder(const AdvanceOrder &order);
     const AdvanceOrder &operator=(const AdvanceOrder &order);
     Order* clone() const;
     bool validate(Player* owner);
+    OrderType getType();
 
 protected:
     void execute_();
@@ -101,6 +116,7 @@ public:
     const BombOrder &operator=(const BombOrder &order);
     Order* clone() const;
     bool validate(Player* owner);
+    OrderType getType();
 
 protected:
     void execute_();
@@ -119,6 +135,7 @@ public:
     const BlockadeOrder &operator=(const BlockadeOrder &order);
     Order* clone() const;
     bool validate(Player* owner);
+    OrderType getType();
 
 protected:
     void execute_();
@@ -137,6 +154,7 @@ public:
     const AirliftOrder &operator=(const AirliftOrder &order);
     Order* clone() const;
     bool validate(Player* owner);
+    OrderType getType();
 
 protected:
     void execute_();
@@ -157,6 +175,7 @@ public:
     const NegotiateOrder &operator=(const NegotiateOrder &order);
     Order* clone() const;
     bool validate(Player* owner);
+    OrderType getType();
 
 protected:
     void execute_();

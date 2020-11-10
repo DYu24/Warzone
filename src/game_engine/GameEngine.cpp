@@ -1,12 +1,14 @@
 #include "GameEngine.h"
 #include "../map/Map.h"
 #include "../map_loader/MapLoader.h"
+#include "../orders/Orders.h"
 #include <algorithm>
 #include <limits>
 #include <math.h>
 #include <random>
 #include <string>
 #include <time.h>
+#include <unordered_set>
 
 #ifdef WINDOWS
 #include <windows.h>
@@ -290,28 +292,38 @@ void GameEngine::issueOrdersPhase()
  */
 void GameEngine::executeOrdersPhase()
 {
-    while (true)
+    unordered_set<Player*> playersFinishedExecutingOrders;
+    unordered_set<Player*> playersFinishedDeploying;
+
+    while (playersFinishedExecutingOrders.size() != players_.size())
     {
-        int playersFinishedExecutingOrders = 0;
-        for (auto const &player : players_)
+        for (auto player : players_)
         {
-            Order* order = player->getNextOrder();
+            Order* order = player->peekNextOrder();
+            // Current player still has orders to execute
             if (order != NULL)
             {
+                // Ignore non-deploy orders until everyone has finished executing their deployments
+                if (order->getType() != DEPLOY && playersFinishedDeploying.size() != players_.size())
+                {
+                    playersFinishedDeploying.insert(player);
+                    continue;
+                }
+
+                order = player->getNextOrder();
                 order->execute(player);
+                delete order;
+                order = NULL;
             }
+            // Current player has no orders left to execute this turn
             else
             {
                 player->clearDiplomaticRelations();
-                playersFinishedExecutingOrders++;
+                playersFinishedExecutingOrders.insert(player);
             }
         }
-
-        if (playersFinishedExecutingOrders == players_.size())
-        {
-            break;
-        }
     }
+    cout << "Finished executing all orders" << endl;
 }
 
 /*
