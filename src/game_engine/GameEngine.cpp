@@ -311,6 +311,7 @@ void GameEngine::executeOrdersPhase()
                 }
 
                 order = player->getNextOrder();
+                cout << "[" << player->getName() << "] ";
                 order->execute(player);
                 delete order;
                 order = NULL;
@@ -323,7 +324,6 @@ void GameEngine::executeOrdersPhase()
             }
         }
     }
-    cout << "Finished executing all orders" << endl;
 }
 
 /*

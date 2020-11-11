@@ -20,6 +20,7 @@ int main()
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
     p1.addCardToHand(new BombCard());
+    p1.addReinforcements(20);
 
     // Show the Player object
     cout << p1 << endl;

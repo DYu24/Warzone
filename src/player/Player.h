@@ -47,6 +47,6 @@ class Player
         Map* map_;
         vector<Territory*> ownedTerritories_;
         vector<Player*> diplomaticRelations_;
-        void issueDeploy(vector<Territory*> territoriesToDefend, vector<DeployOrder*> &existingOrders);
-        void issueAdvance(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
+        void issueDeployOrders(vector<Territory*> territoriesToDefend);
+        void issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
 };
