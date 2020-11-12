@@ -103,7 +103,7 @@ namespace
     /*
     * Create players based on user's input
     */
-    vector<Player*> setupPlayers(Map* map)
+    vector<Player*> setupPlayers()
     {
         vector<Player*> players;
         cout << "Enter the number of players for this game: ";
@@ -131,42 +131,35 @@ namespace
             string name;
             cin >> name;
 
-            players.push_back(new Player(name, map));
+            players.push_back(new Player(name));
         }
 
         return players;
     }
 }
 
-// Constructors
-GameEngine::GameEngine() : deck_(new Deck()), map_(new Map()) {}
+Deck* GameEngine::deck_ = new Deck();
+Map* GameEngine::map_ = new Map();
+vector<Player*> GameEngine::players_;
 
-GameEngine::GameEngine(const GameEngine &gameEngine) : deck_(new Deck(*gameEngine.deck_)), map_(new Map(*gameEngine.map_))
-{
-    for (auto player: gameEngine.players_)
-    {
-        players_.push_back(new Player(*player));
-    }
-}
+// Constructor
+GameEngine::GameEngine() {}
 
 // Operator overloading
-const GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
-{
-    deck_ = new Deck(*gameEngine.deck_);
-    map_ = new Map(*gameEngine.map_);
-    setPlayers(gameEngine.players_);
-    return *this;
-}
-
 ostream &operator<<(ostream &output, const GameEngine &gameEngine)
 {
     return output;
 }
 
-// Getters and setter
-Map GameEngine::getMap()
+// Getters
+Deck* GameEngine::getDeck()
 {
-    return *map_;
+    return deck_;
+}
+
+Map* GameEngine::getMap()
+{
+    return map_;
 }
 
 vector<Player*> GameEngine::getPlayers()
@@ -174,18 +167,19 @@ vector<Player*> GameEngine::getPlayers()
     return players_;
 }
 
-void GameEngine::setPlayers(vector<Player*> players)
+// Find the player who owns the specified territory. Return NULL if the territory is unowned.
+Player* GameEngine::getOwnerOf(Territory* territory)
 {
     for (auto player : players_)
     {
-        delete player;
+        vector<Territory*> territories = player->getOwnedTerritories();
+        if (find(territories.begin(), territories.end(), territory) != territories.end())
+        {
+            return player;
+        }
     }
-    players_.clear();
 
-    for (auto player: players)
-    {
-        players_.push_back(new Player(*player));
-    }
+    return NULL;
 }
 
 /*
@@ -203,7 +197,7 @@ void GameEngine::startGame()
     map_ = selectMap();
     cout << endl;
 
-    players_ = setupPlayers(map_);
+    players_ = setupPlayers();
     cout << endl;
 
     deck_->generateCards(20);
@@ -249,12 +243,12 @@ void GameEngine::reinforcementPhase()
 {
     for (auto const &player : players_)
     {
-        int reinforcements = 0;
         vector<Territory*> playerTerritories = player->getOwnedTerritories();
-        sort(playerTerritories.begin(), playerTerritories.end());
-
-        reinforcements += floor(playerTerritories.size() / 3);
+        int reinforcements = floor(playerTerritories.size() / 3);
     
+        // List of territories need to be sorted so that it can be used to check if the player owns all members of a continent
+        sort(playerTerritories.begin(), playerTerritories.end());
+        // Check if the player owns all members of any territories
         for (auto const &continent : map_->getContinents())
         {
             vector<Territory*> continentMembers;
@@ -295,6 +289,16 @@ void GameEngine::executeOrdersPhase()
     unordered_set<Player*> playersFinishedExecutingOrders;
     unordered_set<Player*> playersFinishedDeploying;
 
+    // ====== PRE-EXECUTION ======
+    // Take a snapshot of the players' owned territories before proceeding with the order executions
+    int preExecuteSnapshot[players_.size()] {};
+    for (int i = 0; i < players_.size(); i++)
+    {
+        Player* player = players_.at(i);
+        preExecuteSnapshot[i] = player->getOwnedTerritories().size();
+    }
+
+    // ====== EXECUTION ======
     while (playersFinishedExecutingOrders.size() != players_.size())
     {
         for (auto player : players_)
@@ -322,6 +326,18 @@ void GameEngine::executeOrdersPhase()
                 player->clearDiplomaticRelations();
                 playersFinishedExecutingOrders.insert(player);
             }
+        }
+    }
+
+    // ====== POST-EXECUTION ======
+    // If a player has conquered at least one territory, draw a card
+    for (int i = 0; i < players_.size(); i++)
+    {
+        Player* player = players_.at(i);
+        if (preExecuteSnapshot[i] < player->getOwnedTerritories().size())
+        {
+            Card* randomCard = deck_->draw();
+            player->addCardToHand(randomCard);
         }
     }
 }

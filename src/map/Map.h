@@ -68,6 +68,8 @@ public:
     friend ostream &operator<<(ostream &output, const Map &map);
     unordered_map<Territory*, vector<Territory*>> getAdjacencyList();
     vector<Continent*> getContinents();
+    void setAdjacencyList(unordered_map<Territory*, vector<Territory*>> adjacencyList);
+    void setContinents(vector<Continent*> continents);
     vector<Territory*> getTerritories();
     vector<Territory*> getAdjacentTerritories(Territory* territory);
     bool validate();

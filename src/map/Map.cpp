@@ -216,7 +216,7 @@ ostream &operator<<(ostream &output, const Map &map)
     return output;
 }
 
-// Getters
+// Getters and setters
 unordered_map<Territory*, vector<Territory*>> Map::getAdjacencyList()
 {
     return adjacencyList_;
@@ -225,6 +225,31 @@ unordered_map<Territory*, vector<Territory*>> Map::getAdjacencyList()
 vector<Continent*> Map::getContinents()
 {
     return continents_;
+}
+
+void Map::setAdjacencyList(unordered_map<Territory*, vector<Territory*>> adjacencyList)
+{
+    for (auto entry : adjacencyList_)
+    {
+        entry.second.clear();
+        delete entry.first;
+    }
+    adjacencyList_.clear();
+
+    for (auto entry : adjacencyList)
+    {
+        adjacencyList_.insert(entry);
+    }
+}
+
+void Map::setContinents(vector<Continent*> continents)
+{
+    for (auto continent : continents_)
+    {
+        delete continent;
+    }
+    continents_.clear();
+    continents_.insert(continents_.end(), continents.begin(), continents.end());
 }
 
 // Return a list of all the territories in the Map

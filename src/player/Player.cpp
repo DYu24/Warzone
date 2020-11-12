@@ -1,3 +1,4 @@
+#include "../game_engine/GameEngine.h"
 #include "../orders/Orders.h"
 #include "Player.h"
 #include <algorithm>
@@ -20,15 +21,15 @@ namespace
 }
 
 // Default constructor
-Player::Player() : reinforcements_(0), name_("unknown_player"), orders_(new OrdersList()), hand_(new Hand()), map_(NULL) {}
+Player::Player() : reinforcements_(0), name_("unknown_player"), orders_(new OrdersList()), hand_(new Hand()) {}
 
 // Constructor
-Player::Player(string name, Map* map) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), map_(map) {}
+Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()) {}
 
 // Copy constructor
 Player::Player(const Player &player)
     : reinforcements_(player.reinforcements_), name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(new OrdersList(*player.orders_)),
-    hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_), map_(player.map_) {}
+    hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_) {}
 
 // Destructor
 Player::~Player()
@@ -47,7 +48,6 @@ const Player &Player::operator=(const Player &player)
     ownedTerritories_ = player.ownedTerritories_;
     orders_ = new OrdersList(*player.orders_);
     hand_ = new Hand(*player.hand_);
-    map_ = player.map_;
     return *this;
 }
 
@@ -125,10 +125,11 @@ vector<Territory*> Player::toAttack()
 {
     vector<Territory*> attackableTerritories;
     unordered_set<Territory*> territoriesSeen;
+    Map* map = GameEngine::getMap();
 
     for (auto territory : ownedTerritories_)
     {
-        for (auto neighbor : map_->getAdjacentTerritories(territory))
+        for (auto neighbor : map->getAdjacentTerritories(territory))
         {
             bool isEnemyOwned = find(ownedTerritories_.begin(), ownedTerritories_.end(), neighbor) == ownedTerritories_.end();
             bool alreadySeen = territoriesSeen.find(neighbor) != territoriesSeen.end();
@@ -219,6 +220,7 @@ void Player::issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<T
     }
 
     // Iterate over the player's owned territories (only those that have any armies to move) to issue advance orders
+    Map* map = GameEngine::getMap();
     for (auto territory : ownedTerritories_)
     {
         int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
@@ -228,7 +230,7 @@ void Player::issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<T
         }
 
         // Sort the current territory's neighbors according to the priority specified by `toAttack()` and `toDefend()`
-        vector<Territory*> neighboringTerritories = map_->getAdjacentTerritories(territory);
+        vector<Territory*> neighboringTerritories = map->getAdjacentTerritories(territory);
         sort(neighboringTerritories.begin(), neighboringTerritories.end(), [&priorities](auto t1, auto t2) { return priorities[t1] < priorities[t2]; });
 
         // Try to pick the highest priority territory that is possible to advance to

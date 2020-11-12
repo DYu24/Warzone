@@ -26,7 +26,7 @@ int main()
     cout << "========== PART 2 ==========" << endl;
     gameEngine.startupPhase();
 
-    Map map = gameEngine.getMap();
+    Map map = *gameEngine.getMap();
 
     vector<Territory*> allTerritoriesInMap = map.getTerritories();
     vector<Territory*> ownedTerritories;

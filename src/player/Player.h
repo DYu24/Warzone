@@ -19,7 +19,7 @@ class Player
 {
     public:
         Player();
-        Player(string name, Map* map);
+        Player(string name);
         Player(const Player &player);
         ~Player();
         const Player &operator=(const Player &player);
@@ -44,7 +44,6 @@ class Player
         string name_;
         OrdersList* orders_;
         Hand* hand_;
-        Map* map_;
         vector<Territory*> ownedTerritories_;
         vector<Player*> diplomaticRelations_;
         void issueDeployOrders(vector<Territory*> territoriesToDefend);

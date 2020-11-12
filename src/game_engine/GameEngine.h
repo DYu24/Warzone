@@ -10,12 +10,11 @@ class GameEngine
 {
 public:
     GameEngine();
-    GameEngine(const GameEngine &gameEngine);
-    const GameEngine &operator=(const GameEngine &gameEngine);
     friend ostream &operator<<(ostream &output, const GameEngine &gameEngine);
-    Map getMap();
-    vector<Player*> getPlayers();
-    void setPlayers(vector<Player*> players);
+    static Deck* getDeck();
+    static Map* getMap();
+    static vector<Player*> getPlayers();
+    static Player* getOwnerOf(Territory* territory);
     void startGame();
     void startupPhase();
     void reinforcementPhase();
@@ -24,7 +23,7 @@ public:
     void mainGameLoop();
 
 private:
-    Deck* deck_;
-    Map* map_;
-    vector<Player*> players_;
+    static Deck* deck_;
+    static Map* map_;
+    static vector<Player*> players_;
 };

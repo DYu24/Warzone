@@ -1,4 +1,4 @@
-#include "../map/Map.h"
+#include "../game_engine/GameEngine.h"
 #include "../orders/Orders.h"
 #include "Player.h"
 
@@ -15,8 +15,11 @@ int main()
     adjacencyList[t1].push_back(t3);
     adjacencyList[t2].push_back(t4);
     
-    Map* map = new Map(continents, adjacencyList);
-    Player p1 = Player("Player 1", map);
+    Map* map = GameEngine::getMap();
+    map->setAdjacencyList(adjacencyList);
+    map->setContinents(continents);
+
+    Player p1 = Player("Player 1");
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
     p1.addCardToHand(new BombCard());
@@ -58,7 +61,6 @@ int main()
     delete t2;
     delete t3;
     delete t4;
-    delete map;
     
     return 0;
 }
