@@ -53,15 +53,15 @@ namespace
 }
 
 // Default constructor
-Player::Player() : reinforcements_(0), name_("unknown_player"), orders_(new OrdersList()), hand_(new Hand()) {}
+Player::Player() : reinforcements_(0), name_("Neutral_Player"), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(true) {}
 
 // Constructor
-Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()) {}
+Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(false) {}
 
 // Copy constructor
 Player::Player(const Player &player)
     : reinforcements_(player.reinforcements_), name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(new OrdersList(*player.orders_)),
-    hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_) {}
+    hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_), isNeutral_(player.isNeutral_) {}
 
 // Destructor
 Player::~Player()
@@ -80,6 +80,7 @@ const Player &Player::operator=(const Player &player)
     ownedTerritories_ = player.ownedTerritories_;
     orders_ = new OrdersList(*player.orders_);
     hand_ = new Hand(*player.hand_);
+    isNeutral_ = player.isNeutral_;
     return *this;
 }
 
@@ -158,6 +159,12 @@ void Player::drawCardFromDeck()
     hand_->addCard(card);
 }
 
+// Check whether player is neutral or not
+bool Player::isNeutral()
+{
+    return isNeutral_;
+}
+
 // Return a list of territories to defend
 vector<Territory*> Player::toDefend()
 {
@@ -195,6 +202,11 @@ vector<Territory*> Player::toAttack()
 // Create an Order and place it in the Player's list of orders
 void Player::issueOrder()
 {
+    if (isNeutral_)
+    {
+        return;
+    }
+    
     vector<Territory*> territoriesToAttack = toAttack();
     vector<Territory*> territoriesToDefend = toDefend();
     issueDeployOrders(territoriesToDefend);

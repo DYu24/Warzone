@@ -164,7 +164,16 @@ Map* GameEngine::getMap()
 
 vector<Player*> GameEngine::getPlayers()
 {
-    return players_;
+    vector<Player*> allPlayers;
+    for (auto player : players_)
+    {
+        if (!player->isNeutral())
+        {
+            allPlayers.push_back(player);
+        }
+    }
+
+    return allPlayers;
 }
 
 // Find the player who owns the specified territory. Return NULL if the territory is unowned.
@@ -180,6 +189,23 @@ Player* GameEngine::getOwnerOf(Territory* territory)
     }
 
     return NULL;
+}
+
+// Assign a territory to the Neutral Player. If no such player exists, create one.
+void GameEngine::assignToNeutralPlayer(Territory* territory)
+{
+    auto iterator = find_if(players_.begin(), players_.end(), [](auto const &player) { return player->isNeutral(); });
+    if (iterator == players_.end())
+    {
+        Player* neutralPlayer = new Player();
+        neutralPlayer->addOwnedTerritory(territory);
+        players_.push_back(neutralPlayer);
+    }
+    else
+    {
+        Player* neutralPlayer = *iterator;
+        neutralPlayer->addOwnedTerritory(territory);
+    }
 }
 
 /*
@@ -353,16 +379,22 @@ void GameEngine::mainGameLoop()
         // Check for any winner and remove players who do not own any territories
         for (int i = 0; i < players_.size(); i++)
         {
-            if (players_.at(i)->getOwnedTerritories().size() == map_->getAdjacencyList().size())
+            Player* player = players_.at(i);
+            if (player->isNeutral())
+            {
+                continue;
+            }
+
+            if (player->getOwnedTerritories().size() == map_->getAdjacencyList().size())
             {
                 shouldContinueGame = false;
-                cout << players_.at(i)->getName() << " has won the game!" << endl;
+                cout << player->getName() << " has won the game!" << endl;
                 break;
             }
 
-            if (players_.at(i)->getOwnedTerritories().size() == 0)
+            if (player->getOwnedTerritories().size() == 0)
             {
-                cout << players_.at(i)->getName() << " does not control any territories. Removing from game." << endl;
+                cout << player->getName() << " does not control any territories. Removing from game." << endl;
             }
         }
 

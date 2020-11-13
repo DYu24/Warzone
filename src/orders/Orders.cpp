@@ -523,6 +523,7 @@ bool BlockadeOrder::validate(Player* owner)
 void BlockadeOrder::execute_()
 {
     territory_->addArmies(territory_->getNumberOfArmies());
+    GameEngine::assignToNeutralPlayer(territory_);
     cout << "Blockade called on " << territory_->getName() << ". ";
     cout << territory_->getNumberOfArmies() << " neutral armies now occupy this territory." << endl;
 }

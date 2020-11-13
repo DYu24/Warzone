@@ -390,7 +390,7 @@ Card* DiplomacyCard::clone() const
 // Generate an NegotiateOrder when the card is played.
 Order* DiplomacyCard::play()
 {
-    if (owner_ == NULL)
+    if (owner_ == NULL || GameEngine::getPlayers().size() < 2)
     {
         return new NegotiateOrder();
     }

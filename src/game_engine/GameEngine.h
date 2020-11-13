@@ -15,6 +15,7 @@ public:
     static Map* getMap();
     static vector<Player*> getPlayers();
     static Player* getOwnerOf(Territory* territory);
+    static void assignToNeutralPlayer(Territory* territory);
     void startGame();
     void startupPhase();
     void reinforcementPhase();

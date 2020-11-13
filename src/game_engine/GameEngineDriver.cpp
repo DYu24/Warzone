@@ -12,7 +12,8 @@ int main()
     gameEngine.startGame();
 
     // Should output the same number of players as specified during user input
-    for (auto const &player : gameEngine.getPlayers())
+    vector<Player*> players = GameEngine::getPlayers();
+    for (auto const &player : players)
     {
         cout << *player << endl;
     }
@@ -31,7 +32,7 @@ int main()
     vector<Territory*> allTerritoriesInMap = map.getTerritories();
     vector<Territory*> ownedTerritories;
 
-    for (auto const &player : gameEngine.getPlayers())
+    for (auto const &player : players)
     {
         // Print out the player to show that they now have reinforcements assigned to them
         cout << *player << endl;

@@ -28,8 +28,7 @@ int main()
     map->setAdjacencyList(adjacencyList);
     map->setContinents(continents);
 
-    GameEngine::getDeck()->generateCards(10);
-
+    GameEngine::getDeck()->generateCards(5);
     Player p1 = Player("Player 1");
 
     p1.addOwnedTerritory(t1);
@@ -67,8 +66,6 @@ int main()
 
     cout << "\n-----Calling Player.issueOrder(): -----" << endl;
     p1.issueOrder();
-
-    cout << endl;
     cout << p1 << endl;
 
     delete t1;

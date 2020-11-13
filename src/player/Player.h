@@ -36,6 +36,7 @@ class Player
         Order* getNextOrder();
         Order* peekNextOrder();
         void drawCardFromDeck();
+        bool isNeutral();
         vector<Territory*> toDefend();
         vector<Territory*> toAttack();
         void issueOrder();
@@ -47,6 +48,7 @@ class Player
         Hand* hand_;
         vector<Territory*> ownedTerritories_;
         vector<Player*> diplomaticRelations_;
+        bool isNeutral_;
         void issueDeployOrders(vector<Territory*> territoriesToDefend);
         void issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
         void playCard();
