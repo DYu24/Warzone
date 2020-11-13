@@ -14,8 +14,40 @@ namespace
     /*
      * Custom comparator to sort Territories by their number of armies. 
      */
-    bool compareTerritories(Territory* t1, Territory* t2)
+    bool compareTerritoriesByArmies(Territory* t1, Territory* t2)
     {
+        return t1->getNumberOfArmies() < t2->getNumberOfArmies();
+    }
+
+    /*
+     * Custom comparator to sort Territories by the number of adjacent enemy territories and then by the number of armies.
+     */
+    bool compareTerritoriesByEnemiesAndArmies(Territory* t1, Territory* t2, Player* owner)
+    {
+        Map* map = GameEngine::getMap();
+        int t1EnemyNeighbors = 0;
+        for (auto territory : map->getAdjacentTerritories(t1))
+        {
+            if (GameEngine::getOwnerOf(territory) != owner)
+            {
+                t1EnemyNeighbors++;
+            }
+        }
+
+        int t2EnemyNeighbors = 0;
+        for (auto territory : map->getAdjacentTerritories(t2))
+        {
+            if (GameEngine::getOwnerOf(territory) != owner)
+            {
+                t2EnemyNeighbors++;
+            }
+        }
+
+        if (t1EnemyNeighbors != t2EnemyNeighbors)
+        {
+            return t1EnemyNeighbors > t2EnemyNeighbors;   
+        }
+
         return t1->getNumberOfArmies() < t2->getNumberOfArmies();
     }
 }
@@ -130,7 +162,7 @@ void Player::drawCardFromDeck()
 vector<Territory*> Player::toDefend()
 {
     vector<Territory*> territoriesToDefend = ownedTerritories_;
-    sort(territoriesToDefend.begin(), territoriesToDefend.end(), compareTerritories);
+    sort(territoriesToDefend.begin(), territoriesToDefend.end(), [this](auto const &t1, auto const &t2){ return compareTerritoriesByEnemiesAndArmies(t1, t2, this); });
     return territoriesToDefend;
 }
 
@@ -156,7 +188,7 @@ vector<Territory*> Player::toAttack()
         }
     }
 
-    sort(attackableTerritories.begin(), attackableTerritories.end(), compareTerritories);
+    sort(attackableTerritories.begin(), attackableTerritories.end(), compareTerritoriesByArmies);
     return attackableTerritories;
 }
 

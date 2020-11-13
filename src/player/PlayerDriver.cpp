@@ -5,15 +5,24 @@
 int main()
 {
     // Setup
+    vector<Continent*> continents;
+    unordered_map<Territory*, vector<Territory*>> adjacencyList;
+
     Territory* t1 = new Territory("Territory1");
     Territory* t2 = new Territory("Territory2");
     Territory* t3 = new Territory("Territory3");
     Territory* t4 = new Territory("Territory4");
+    Territory* t5 = new Territory("Territory5");
+    t1->addArmies(2);
+    t2->addArmies(2);
+    t3->addArmies(5);
+    t4->addArmies(1);
+    t5->addArmies(1);
 
-    vector<Continent*> continents;
-    unordered_map<Territory*, vector<Territory*>> adjacencyList;
-    adjacencyList[t1].push_back(t3);
+    adjacencyList[t2].push_back(t3);
     adjacencyList[t2].push_back(t4);
+    adjacencyList[t5].push_back(t4);
+
     
     Map* map = GameEngine::getMap();
     map->setAdjacencyList(adjacencyList);
@@ -25,6 +34,7 @@ int main()
 
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
+    p1.addOwnedTerritory(t5);
     p1.drawCardFromDeck();
     p1.addReinforcements(20);
 
@@ -65,6 +75,7 @@ int main()
     delete t2;
     delete t3;
     delete t4;
+    delete t5;
     
     return 0;
 }
