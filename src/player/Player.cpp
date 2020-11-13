@@ -81,12 +81,6 @@ void Player::addReinforcements(int reinforcements)
     reinforcements_ += reinforcements;
 }
 
-// Add a card to the Player's hand
-void Player::addCardToHand(Card* card)
-{
-    hand_->addCard(card);
-}
-
 // Add a territory to the Player's list of owned territories
 void Player::addOwnedTerritory(Territory* territory)
 {
@@ -110,6 +104,26 @@ void Player::addDiplomaticRelation(Player* player)
 void Player::clearDiplomaticRelations()
 {
     diplomaticRelations_.clear();
+}
+
+// Return the next order to be executed from the Player's list of orders
+Order* Player::getNextOrder()
+{
+    return orders_->popTopOrder();
+}
+
+// Return the next order from the Player's list of orders without removing it from the list
+Order* Player::peekNextOrder()
+{
+    return orders_->peek();
+}
+
+// Draw a random card from the deck and place it in the Player's hand
+void Player::drawCardFromDeck()
+{
+    Card* card = GameEngine::getDeck()->draw();
+    card->setOwner(this);
+    hand_->addCard(card);
 }
 
 // Return a list of territories to defend
@@ -146,27 +160,14 @@ vector<Territory*> Player::toAttack()
     return attackableTerritories;
 }
 
-// Return the next order to be executed from the Player's list of orders
-Order* Player::getNextOrder()
-{
-    return orders_->popTopOrder();
-}
-
-// Return the next order from the Player's list of orders without removing it from the list
-Order* Player::peekNextOrder()
-{
-    return orders_->peek();
-}
-
 // Create an Order and place it in the Player's list of orders
 void Player::issueOrder()
 {
-    cout << "~~~ " << name_ << " ~~~" << endl;
     vector<Territory*> territoriesToAttack = toAttack();
     vector<Territory*> territoriesToDefend = toDefend();
     issueDeployOrders(territoriesToDefend);
     issueAdvanceOrders(territoriesToAttack, territoriesToDefend);
-    cout << endl;
+    playCard();
 }
 
 /*
@@ -260,5 +261,31 @@ void Player::issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<T
 
             potentialDestinationIterator++;
         }
+    }
+}
+
+/*
+ * Helper method to play a random Card from the Player's hand, if any
+ */
+void Player::playCard()
+{
+    if (!hand_->getCards().empty())
+    {
+        int randomCardIndex = rand() % hand_->getCards().size();
+        Order* order = hand_->playCardAt(randomCardIndex);
+
+        if (order != NULL)
+        {
+            orders_->add(order);
+        }
+        else if (reinforcements_ > 0)
+        {
+            // Reinforcement card played: deploy the additional reinforcements
+            issueDeployOrders(toDefend());
+        }
+
+        Card* card = hand_->removeCard(randomCardIndex);
+        card->setOwner(NULL);
+        GameEngine::getDeck()->addCard(card);
     }
 }

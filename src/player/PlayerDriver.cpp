@@ -19,13 +19,16 @@ int main()
     map->setAdjacencyList(adjacencyList);
     map->setContinents(continents);
 
+    GameEngine::getDeck()->generateCards(10);
+
     Player p1 = Player("Player 1");
+
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);
-    p1.addCardToHand(new BombCard());
+    p1.drawCardFromDeck();
     p1.addReinforcements(20);
 
-    // Show the Player object
+    // Show the initial Player object
     cout << p1 << endl;
 
     // Show the list of territories to defend
@@ -52,6 +55,7 @@ int main()
 
     cout << endl;
 
+    cout << "\n-----Calling Player.issueOrder(): -----" << endl;
     p1.issueOrder();
 
     cout << endl;

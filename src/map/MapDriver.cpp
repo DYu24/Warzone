@@ -47,7 +47,7 @@ int main()
     // ------ Continent(s) is not a connected graph ------
     // Add a lone territory within a continent
     Territory* t6 = new Territory("Territory6");
-    continents.at(0)->addTerritory(t6);
+    continents.front()->addTerritory(t6);
     invalidAdjacencyList = adjacencyList;
     invalidAdjacencyList[t6];
     Map map3 = Map(continents, invalidAdjacencyList);
@@ -57,7 +57,7 @@ int main()
 
     // ------ Continent(s) is not a subgraph of the Map ------
     Territory* t7 = new Territory("Territory7");
-    continents.at(0)->addTerritory(t7);
+    continents.front()->addTerritory(t7);
     Map map4 = Map(continents, adjacencyList);
     
     cout << boolalpha << "Map 4: VALID = " << map4.validate() << endl;

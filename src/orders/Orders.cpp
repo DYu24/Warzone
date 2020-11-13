@@ -1,3 +1,4 @@
+#include "../game_engine/GameEngine.h"
 #include "Orders.h"
 #include <algorithm>
 #include <iterator>
@@ -200,7 +201,7 @@ Order* OrdersList::peek()
 
     sort(orders_.begin(), orders_.end(), compareOrders);
 
-    return orders_.at(0);
+    return orders_.front();
 }
 
 
@@ -368,6 +369,10 @@ void AdvanceOrder::execute_()
         }
         else
         {
+            Player* attacker = GameEngine::getOwnerOf(source_);
+            Player* defender = GameEngine::getOwnerOf(destination_);
+            attacker->addOwnedTerritory(destination_);
+            defender->removeOwnedTerritory(destination_);
             destination_->addArmies(survivingAttackers);
             cout << "Successful attack on " << destination_->getName() << ". " << survivingAttackers << " armies now occupy this territory." << endl;
         }
@@ -378,6 +383,9 @@ void AdvanceOrder::execute_()
         destination_->addArmies(numberOfArmies_);
         cout << "Advanced " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;
     }
+
+    int newPendingOutgoingArmies = source_->getPendingOutgoingArmies() - numberOfArmies_;
+    source_->setPendingOutgoingArmies(newPendingOutgoingArmies);
 }
 
 // Stream insertion operator overloading
@@ -578,13 +586,23 @@ bool AirliftOrder::validate(Player* owner)
         return false;
     }
 
-    return true;
+    auto currentPlayerTerritories = owner->getOwnedTerritories();
+
+    bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
+    bool validDestinationTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
+    return validSourceTerritory && validDestinationTerritory;
 }
 
 // Executes the AirliftOrder.
 void AirliftOrder::execute_()
 {
-    cout << "Airlift executed!" << endl;
+    source_->removeArmies(numberOfArmies_);
+    destination_->addArmies(numberOfArmies_);
+
+    int newPendingOutgoingArmies = source_->getPendingOutgoingArmies() - numberOfArmies_;
+    source_->setPendingOutgoingArmies(newPendingOutgoingArmies);
+
+    cout << "Airlifted " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;
 }
 
 // Stream insertion operator overloading

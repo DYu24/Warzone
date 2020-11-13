@@ -8,6 +8,7 @@
 using namespace std;
 
 class Order;
+class Player;
 
 class Card
 {
@@ -16,9 +17,11 @@ public:
     friend ostream &operator<<(ostream &output, const Card &card);
     virtual Card* clone() const = 0;
     virtual Order* play() = 0;
+    void setOwner(Player* owner);
 
 protected:
     virtual ostream &print_(ostream &output) const = 0;
+    Player* owner_;
 };
 
 class Deck

@@ -8,6 +8,7 @@
 using namespace std;
 
 class Card;
+class Deck;
 class Hand;
 class Map;
 class Territory;
@@ -28,15 +29,15 @@ class Player
         string getName();
         vector<Player*> getDiplomaticRelations();
         void addReinforcements(int reinforcements);
-        void addCardToHand(Card* card);
         void addOwnedTerritory(Territory* territory);
         void removeOwnedTerritory(Territory* territory);
         void addDiplomaticRelation(Player* player);
         void clearDiplomaticRelations();
-        vector<Territory*> toDefend();
-        vector<Territory*> toAttack();
         Order* getNextOrder();
         Order* peekNextOrder();
+        void drawCardFromDeck();
+        vector<Territory*> toDefend();
+        vector<Territory*> toAttack();
         void issueOrder();
 
     private:
@@ -48,4 +49,5 @@ class Player
         vector<Player*> diplomaticRelations_;
         void issueDeployOrders(vector<Territory*> territoriesToDefend);
         void issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
+        void playCard();
 };

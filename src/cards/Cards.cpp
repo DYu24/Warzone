@@ -1,4 +1,5 @@
 #include "Cards.h"
+#include "../game_engine/GameEngine.h"
 #include <algorithm>
 #include <time.h>
 
@@ -14,6 +15,11 @@ ostream &operator<<(ostream &output, const Card &card)
     return card.print_(output);
 }
 
+// Setter
+void Card::setOwner(Player* owner)
+{
+    owner_ = owner;
+}
 
 /* 
 ===================================
@@ -236,7 +242,14 @@ Card* BombCard::clone() const
 // Generate a BombOrder when the card is played.
 Order* BombCard::play()
 {
-    return new BombOrder();
+    if (owner_ == NULL)
+    {
+        return new BombOrder();
+    }
+
+    // Bomb the highest priority enemy territory
+    Territory* target = owner_->toAttack().front();
+    return new BombOrder(target);
 }
 
 /* 
@@ -261,7 +274,11 @@ Card* ReinforcementCard::clone() const
 // Generate an Order when the card is played.
 Order* ReinforcementCard::play()
 {
-    cout << "Played Reinforcement card." << endl;
+    if (owner_ != NULL)
+    {
+        owner_->addReinforcements(5);
+    }
+
     return NULL;
 }
 
@@ -288,7 +305,14 @@ Card* BlockadeCard::clone() const
 // Generate an BlockadeOrder when the card is played.
 Order* BlockadeCard::play()
 {
-    return new BlockadeOrder();
+    if (owner_ == NULL)
+    {
+        return new BlockadeOrder();
+    }
+
+    // Setup a blockade on the highest priority territory to defend
+    Territory* territory = owner_->toDefend().front();
+    return new BlockadeOrder(territory);
 }
 
 
@@ -314,7 +338,33 @@ Card* AirliftCard::clone() const
 // Generate an AirliftOrder when the card is played.
 Order* AirliftCard::play()
 {
-    return new AirliftOrder();
+    if (owner_ == NULL)
+    {
+        return new AirliftOrder();
+    }
+
+    // Pick the highest priority territory to defend to airlift to
+    Territory* destination = owner_->toDefend().front();
+
+    // Choose the player's territory with the most movable armies as the source
+    int movableArmies = 0;
+    int maxArmies = 0;
+    Territory* source;
+    for (auto territory : owner_->getOwnedTerritories())
+    {
+        movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
+        if (movableArmies > maxArmies && territory != destination)
+        {
+            source = territory;
+            maxArmies = movableArmies;
+        }
+    }
+
+    // Move half (arbitrary) the number of armies from the source territory to the destination
+    int armiesToMove = max(movableArmies, movableArmies / 2);
+    source->addPendingOutgoingArmies(armiesToMove);
+
+    return new AirliftOrder(armiesToMove, source, destination);
 }
 
 
@@ -340,5 +390,58 @@ Card* DiplomacyCard::clone() const
 // Generate an NegotiateOrder when the card is played.
 Order* DiplomacyCard::play()
 {
-    return new NegotiateOrder();
+    if (owner_ == NULL)
+    {
+        return new NegotiateOrder();
+    }
+
+    Player* targetPlayer = NULL;
+    vector<Territory*> ownerTerritories = owner_->getOwnedTerritories();
+    vector<Territory*> territoriesToDefend = owner_->toDefend();
+
+    // Try to pick an enemy player who has the most armies on an adjacent territory to the highest priority territory in
+    // the player's `toDefend()` list
+    auto iterator = territoriesToDefend.begin();
+    while (targetPlayer == NULL && iterator != territoriesToDefend.end())
+    {
+        Territory* highestPriorityTerritory = *iterator;
+
+        int maxArmies = 0;
+        Territory* mostReinforcedEnemyTerritory = NULL;
+        for (auto territory : GameEngine::getMap()->getAdjacentTerritories(highestPriorityTerritory))
+        {
+            bool isEnemyTerritory = find(ownerTerritories.begin(), ownerTerritories.end(), territory) == ownerTerritories.end();
+            if (isEnemyTerritory && territory->getNumberOfArmies() > maxArmies)
+            {
+                mostReinforcedEnemyTerritory = territory;
+                maxArmies = territory->getNumberOfArmies();
+            }
+        }
+
+        if (mostReinforcedEnemyTerritory != NULL)
+        {
+            targetPlayer = GameEngine::getOwnerOf(mostReinforcedEnemyTerritory);
+            break;
+        }
+
+        // If the current territory to defend has no enemy adjacent territories, move to the next territory in the `toDefend()` list
+        iterator++;
+    }
+
+    // If no suitable target player is found, pick a random enemy
+    if (targetPlayer == NULL)
+    {
+        vector<Player*> enemyPlayers;
+        for (auto player : GameEngine::getPlayers())
+        {
+            if (player != owner_)
+            {
+                enemyPlayers.push_back(player);
+            }
+        }
+
+        targetPlayer = enemyPlayers.at(rand() % enemyPlayers.size());
+    }
+
+    return new NegotiateOrder(owner_, targetPlayer);
 }

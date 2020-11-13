@@ -336,8 +336,7 @@ void GameEngine::executeOrdersPhase()
         Player* player = players_.at(i);
         if (preExecuteSnapshot[i] < player->getOwnedTerritories().size())
         {
-            Card* randomCard = deck_->draw();
-            player->addCardToHand(randomCard);
+            player->drawCardFromDeck();
         }
     }
 }
