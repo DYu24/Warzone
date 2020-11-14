@@ -133,10 +133,12 @@ void Player::addDiplomaticRelation(Player* player)
     diplomaticRelations_.push_back(player);
 }
 
-// Clears the list of diplomatic relations with other players
-void Player::clearDiplomaticRelations()
+// Clears the list of diplomatic relations with other players and the map of issued orders to territories
+void Player::endTurn()
 {
     diplomaticRelations_.clear();
+    issuedDeploymentsAndAdvancements_.clear();
+    committed_ = false;
 }
 
 // Return the next order to be executed from the Player's list of orders
@@ -163,6 +165,12 @@ void Player::drawCardFromDeck()
 bool Player::isNeutral()
 {
     return isNeutral_;
+}
+
+// Check if the player is finished issuing orders
+bool Player::isDoneIssuingOrders()
+{
+    return committed_ || isNeutral_;
 }
 
 // Return a list of territories to defend
@@ -209,49 +217,74 @@ void Player::issueOrder()
     
     vector<Territory*> territoriesToAttack = toAttack();
     vector<Territory*> territoriesToDefend = toDefend();
-    issueDeployOrders(territoriesToDefend);
-    issueAdvanceOrders(territoriesToAttack, territoriesToDefend);
-    playCard();
-}
 
-/*
- * Helper method to issue DeployOrders for the Player
- */
-void Player::issueDeployOrders(vector<Territory*> territoriesToDefend)
-{
-    int territoryDeployments[territoriesToDefend.size()] {};
-
-    int idx = 0;
-    while (reinforcements_ > 0)
+    bool finishedDeploying = issueDeployOrder(territoriesToDefend);
+    
+    if (finishedDeploying)
     {
-        const int DEFAULT_ARMIES_TO_DEPLOY = 3;
-
-        int armiesToDeploy = min(DEFAULT_ARMIES_TO_DEPLOY, reinforcements_);
-        territoryDeployments[idx] += armiesToDeploy;
-        reinforcements_ -= armiesToDeploy;
-
-        idx = (idx + 1) % territoriesToDefend.size();
-    }
-
-    for (int i = 0; i < territoriesToDefend.size(); i++)
-    {
-        int numberOfArmies = territoryDeployments[i];
-        Territory* destination = territoriesToDefend.at(i);
-
-        if (numberOfArmies > 0)
+        bool finishedAdvancing = issueAdvanceOrder(territoriesToAttack, territoriesToDefend);
+        
+        if (finishedAdvancing)
         {
-            orders_->add(new DeployOrder(numberOfArmies, destination));
-            destination->addPendingIncomingArmies(numberOfArmies);
+            committed_ = playCard();
         }
     }
 }
 
 /*
- * Helper method to issue AdvanceOrders for the Player
+ * Helper method to issue a DeployOrder for the Player.
+ * Returns `true` if the Player is finished with deployments (i.e. no more reinforcements).
+ * Returns `false` if the Player still has reinforcements to deploy
  */
-void Player::issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend)
+bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
 {
-    // Map territories to defend and to attack to a priority value
+    if (reinforcements_ > 0)
+    {
+        const int DEFAULT_ARMIES_TO_DEPLOY = 3;
+        int armiesToDeploy = min(DEFAULT_ARMIES_TO_DEPLOY, reinforcements_);
+        
+        // In order of highest priority, try to find a territory that hasn't already been deployed to
+        Territory* destination = NULL;
+        auto iterator = territoriesToDefend.begin();
+        while (destination == NULL || iterator != territoriesToDefend.end())
+        {
+            if (issuedDeploymentsAndAdvancements_.find(*iterator) == issuedDeploymentsAndAdvancements_.end())
+            {
+                destination = *iterator;
+                // Initialize the vector at the key specified by this territory
+                issuedDeploymentsAndAdvancements_[*iterator];
+                break;
+            }
+
+            iterator++;
+        }
+
+        // If all territories in `territoriesToDefend` have already been deployed to, then just pick the first one (highest priority)
+        if (destination == NULL)
+        {
+            destination = territoriesToDefend.front();
+        }
+
+        orders_->add(new DeployOrder(armiesToDeploy, destination));
+        destination->addPendingIncomingArmies(armiesToDeploy);
+        reinforcements_ -= armiesToDeploy;
+
+        return false;
+    }
+
+    return true;
+}
+
+/*
+ * Helper method to issue AdvanceOrders for the Player
+ * Returns `true` if the Player is finished with advancements.
+ * Returns `false` if the Player still wants to issue advance orders.
+ */
+bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend)
+{
+    int numberOfExistingOrders = orders_->getOrders().size();
+
+    // Map territories to defend/to attack to a value representing priority
     unordered_map<Territory*, int> priorities;
     for (int i = 0; i < territoriesToAttack.size(); i++)
     {
@@ -264,8 +297,9 @@ void Player::issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<T
         priorities[territory] = i;
     }
 
-    // Iterate over the player's owned territories (only those that have any armies to move) to issue advance orders
+    // Find a territory (and one adjacent to it) to create an advance order
     Map* map = GameEngine::getMap();
+    AdvanceOrder* order = NULL;
     for (auto territory : ownedTerritories_)
     {
         int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
@@ -274,44 +308,78 @@ void Player::issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<T
             continue;
         }
 
-        // Sort the current territory's neighbors according to the priority specified by `toAttack()` and `toDefend()`
-        vector<Territory*> neighboringTerritories = map->getAdjacentTerritories(territory);
+        // Get the adjacent territories and filter out those that have already been advanced to from the current territory in previous orders
+        vector<Territory*> neighboringTerritories;
+        auto issuedIterator = issuedDeploymentsAndAdvancements_.find(territory);
+        if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
+        {
+            vector<Territory*> usedTerritories = issuedIterator->second;
+            for (auto const &neighbor : map->getAdjacentTerritories(territory))
+            {
+                if (find(usedTerritories.begin(), usedTerritories.end(), neighbor) == usedTerritories.end())
+                {
+                    neighboringTerritories.push_back(neighbor);
+                }
+            }
+        }
+        else
+        {
+            neighboringTerritories = map->getAdjacentTerritories(territory);
+        }
+
+        // Sort the current territory's neighbors according to the `priorities` map
         sort(neighboringTerritories.begin(), neighboringTerritories.end(), [&priorities](auto t1, auto t2) { return priorities[t1] < priorities[t2]; });
 
         // Try to pick the highest priority territory that is possible to advance to
         auto potentialDestinationIterator = neighboringTerritories.begin();
-        while (potentialDestinationIterator != neighboringTerritories.end())
+        for (; potentialDestinationIterator != neighboringTerritories.end(); potentialDestinationIterator++)
         {
             Territory* potentialDestination = *potentialDestinationIterator;
-            if (find(territoriesToAttack.begin(), territoriesToAttack.end(), potentialDestination) != territoriesToAttack.end())
+            bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), potentialDestination) != territoriesToAttack.end();
+            int armiesToMove = 0;
+
+            if (isEnemyTerritory)
             {
                 // Pick this destination if there's a chance of conquering it
                 if (movableArmies > ceil(potentialDestination->getNumberOfArmies() / 0.6))
                 {
-                    int armiesToMove = min(movableArmies, (int)ceil(potentialDestination->getNumberOfArmies() / 0.6));
-                    orders_->add(new AdvanceOrder(armiesToMove, territory, potentialDestination, true));
-                    territory->addPendingOutgoingArmies(armiesToMove);
-                    break;
+                    armiesToMove = min(movableArmies, (int)ceil(potentialDestination->getNumberOfArmies() / 0.6));
+                }
+                // Otherwise, try another neighboring territory
+                else
+                {
+                    continue;
                 }
             }
             else
             {
                 // Move half (arbitrary) the number of armies from this territory to the destination
-                int armiesToMove = max(movableArmies, movableArmies / 2);
-                orders_->add(new AdvanceOrder(armiesToMove, territory, potentialDestination, false));
-                territory->addPendingOutgoingArmies(armiesToMove);
-                break;
+                armiesToMove = max(movableArmies, movableArmies / 2);
             }
 
-            potentialDestinationIterator++;
+            order = new AdvanceOrder(armiesToMove, territory, potentialDestination, isEnemyTerritory);
+            territory->addPendingOutgoingArmies(armiesToMove);
+            issuedDeploymentsAndAdvancements_[territory].push_back(potentialDestination);
+            break;
+        }
+
+        if (order != NULL)
+        {
+            orders_->add(order);
+            break;
         }
     }
+
+    // If no new advance orders were issued, then the player is done with advancements
+    return numberOfExistingOrders == orders_->getOrders().size();
 }
 
 /*
- * Helper method to play a random Card from the Player's hand, if any
+ * Helper method to play a random Card from the Player's hand, if any.
+ * Returns `true` if the played Card requires no further action from the Player.
+ * Returns `false` if further action needs to be taken (i.e. Deploy additional units from Reinforcement card).
  */
-void Player::playCard()
+bool Player::playCard()
 {
     if (!hand_->getCards().empty())
     {
@@ -325,11 +393,14 @@ void Player::playCard()
         else if (reinforcements_ > 0)
         {
             // Reinforcement card played: deploy the additional reinforcements
-            issueDeployOrders(toDefend());
+            issueDeployOrder(toDefend());
+            return false;
         }
 
         Card* card = hand_->removeCard(randomCardIndex);
         card->setOwner(NULL);
         GameEngine::getDeck()->addCard(card);
     }
+
+    return true;
 }

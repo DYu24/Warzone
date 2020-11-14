@@ -299,11 +299,24 @@ void GameEngine::reinforcementPhase()
     }
 }
 
+/**
+ * Issue orders one-by-one in a round-robin fashion over all the players
+ */
 void GameEngine::issueOrdersPhase()
 {
-    for (auto const &player : players_)
+    unordered_set<Player*> playersFinishedIssuingOrders;
+    while (playersFinishedIssuingOrders.size() != players_.size())
     {
-        player->issueOrder();
+        for (auto const &player : players_)
+        {
+            if (player->isDoneIssuingOrders())
+            {
+                playersFinishedIssuingOrders.insert(player);
+                continue;
+            }
+            
+            player->issueOrder();
+        }
     }
 }
 
@@ -349,7 +362,7 @@ void GameEngine::executeOrdersPhase()
             // Current player has no orders left to execute this turn
             else
             {
-                player->clearDiplomaticRelations();
+                player->endTurn();
                 playersFinishedExecutingOrders.insert(player);
             }
         }

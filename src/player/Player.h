@@ -5,6 +5,7 @@
 #include "../orders/Orders.h"
 #include <string>
 #include <vector>
+#include <unordered_map>
 using namespace std;
 
 class Card;
@@ -32,11 +33,12 @@ class Player
         void addOwnedTerritory(Territory* territory);
         void removeOwnedTerritory(Territory* territory);
         void addDiplomaticRelation(Player* player);
-        void clearDiplomaticRelations();
+        void endTurn();
         Order* getNextOrder();
         Order* peekNextOrder();
         void drawCardFromDeck();
         bool isNeutral();
+        bool isDoneIssuingOrders();
         vector<Territory*> toDefend();
         vector<Territory*> toAttack();
         void issueOrder();
@@ -49,7 +51,10 @@ class Player
         vector<Territory*> ownedTerritories_;
         vector<Player*> diplomaticRelations_;
         bool isNeutral_;
-        void issueDeployOrders(vector<Territory*> territoriesToDefend);
-        void issueAdvanceOrders(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
-        void playCard();
+        bool committed_;
+        unordered_map<Territory*, vector<Territory*>> issuedDeploymentsAndAdvancements_;
+
+        bool issueDeployOrder(vector<Territory*> territoriesToDefend);
+        bool issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
+        bool playCard();
 };

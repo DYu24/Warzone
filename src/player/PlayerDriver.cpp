@@ -50,8 +50,6 @@ int main()
         cout << "- " << *territory << endl;
     }
 
-    cout << endl;
-
     // Show the list of territories to attack
     cout << "\n-----Calling Player.toAttack(): -----" << endl;
     vector<Territory*> toAttack = p1.toAttack();
@@ -61,8 +59,6 @@ int main()
     {
         cout << "- " << *territory << endl;
     }
-
-    cout << endl;
 
     cout << "\n-----Calling Player.issueOrder(): -----" << endl;
     p1.issueOrder();
