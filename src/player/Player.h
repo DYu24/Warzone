@@ -28,7 +28,10 @@ class Player
         friend ostream &operator<<(ostream &output, const Player &player);
         vector<Territory*> getOwnedTerritories();
         string getName();
+        OrdersList getOrdersList();
+        Hand getHand();
         vector<Player*> getDiplomaticRelations();
+        int getReinforcements();
         void addReinforcements(int reinforcements);
         void addOwnedTerritory(Territory* territory);
         void removeOwnedTerritory(Territory* territory);

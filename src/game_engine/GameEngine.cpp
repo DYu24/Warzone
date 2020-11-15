@@ -46,7 +46,7 @@ namespace
         #else
             DIR *dirp = opendir(directory.c_str());
             struct dirent *dp;
-            while ((dp = readdir(dirp)) != NULL)
+            while ((dp = readdir(dirp)) != nullptr)
             {
                 string filename = dp->d_name;
                 if (filename.find(".map") != string::npos)
@@ -65,40 +65,41 @@ namespace
     */
     Map* selectMap()
     {
-        cout << "Select a map to play on: " << endl;
-        vector<string> maps = getMapFileNames("resources");
-        int i = 1;
-        for (auto const &m : maps)
-        {
-            cout << "[" << i++ << "] " << m << endl;
-        }
+        // cout << "Select a map to play on: " << endl;
+        // vector<string> maps = getMapFileNames("resources");
+        // int i = 1;
+        // for (auto const &m : maps)
+        // {
+        //     cout << "[" << i++ << "] " << m << endl;
+        // }
 
-        while (true)
-        {
-            int selection;
-            cin >> selection;
+        // while (true)
+        // {
+        //     int selection;
+        //     cin >> selection;
 
-            if (cin.fail() || selection - 1 < 0 || selection - 1 >= maps.size())
-            {
-                cout << "That was not a valid option. Please try again:" << endl;
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                continue;
-            }
+        //     if (cin.fail() || selection - 1 < 0 || selection - 1 >= maps.size())
+        //     {
+        //         cout << "That was not a valid option. Please try again:" << endl;
+        //         cin.clear();
+        //         cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        //         continue;
+        //     }
 
-            try
-            {
-                return MapLoader::loadMap("resources/" + maps.at(selection - 1));
-            }
-            catch (char const *errorMessage)
-            {
-                cout << "The selected map was invalid. Please try another option:" << endl;
-            }
-            catch (string const errorMessage)
-            {
-                cout << "The selected map was invalid. Please try another option:" << endl;
-            }
-        }
+        //     try
+        //     {
+        //         return MapLoader::loadMap("resources/" + maps.at(selection - 1));
+        //     }
+        //     catch (char const *errorMessage)
+        //     {
+        //         cout << "The selected map was invalid. Please try another option:" << endl;
+        //     }
+        //     catch (string const errorMessage)
+        //     {
+        //         cout << "The selected map was invalid. Please try another option:" << endl;
+        //     }
+        // }
+        return MapLoader::loadMap("../resources/canada.map");
     }
     /*
     * Create players based on user's input
@@ -135,6 +136,57 @@ namespace
         }
 
         return players;
+    }
+
+    /**
+     * Turn on/off specified observers
+     */
+    void setupObservers(GameEngine* gameEngine)
+    {
+        bool phaseObserverOn = true;
+        bool gameStatsObserverOn = true;
+        int selection;
+
+        while (selection != 3)
+        {
+            cout << "Configure game observers (enter 1 or 2 to toggle):" << endl;
+            cout << "[1] Phase Observer: " << (phaseObserverOn ? "ON" : "OFF") << endl;
+            cout << "[2] Game Statistics Observer: " << (gameStatsObserverOn ? "ON" : "OFF") << endl;
+            cout << "[3] Confirm" << endl;
+
+            while (true)
+            {
+                cin >> selection;
+                if (cin.fail() || selection < 1 || selection > 3)
+                {
+                    cout << "Please select a valid option: ";
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    continue;
+                }
+
+                break;
+            }
+
+            phaseObserverOn = selection == 1 ? !phaseObserverOn : phaseObserverOn;
+            gameStatsObserverOn = selection == 2 ? !gameStatsObserverOn : gameStatsObserverOn;
+        }
+
+        if (phaseObserverOn)
+        {
+            gameEngine->attach(new PhaseObserver(gameEngine));
+        }
+
+        if (gameStatsObserverOn)
+        {
+            gameEngine->attach(new GameStatisticsObserver(gameEngine));
+        }
+    }
+
+    void pause()
+    {
+        cout << "Press [Enter] to Continue..." << endl;
+        cin.ignore(numeric_limits<streamsize>::max(),'\n');
     }
 }
 
@@ -176,7 +228,7 @@ vector<Player*> GameEngine::getPlayers()
     return allPlayers;
 }
 
-// Find the player who owns the specified territory. Return NULL if the territory is unowned.
+// Find the player who owns the specified territory. Return nullptr if the territory is unowned.
 Player* GameEngine::getOwnerOf(Territory* territory)
 {
     for (auto player : players_)
@@ -188,7 +240,7 @@ Player* GameEngine::getOwnerOf(Territory* territory)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 // Assign a territory to the Neutral Player. If no such player exists, create one.
@@ -206,6 +258,21 @@ void GameEngine::assignToNeutralPlayer(Territory* territory)
         Player* neutralPlayer = *iterator;
         neutralPlayer->addOwnedTerritory(territory);
     }
+}
+
+Phase GameEngine::getPhase()
+{
+    return currentPhase_;
+}
+
+Player* GameEngine::getActivePlayer()
+{
+    return activePlayer_;
+}
+
+vector<Player*> GameEngine::getCurrentPlayers()
+{
+    return players_;
 }
 
 /*
@@ -226,6 +293,8 @@ void GameEngine::startGame()
     players_ = setupPlayers();
     cout << endl;
 
+    setupObservers(this);
+
     deck_->generateCards(20);
 }
 
@@ -237,8 +306,12 @@ void GameEngine::startGame()
  */
 void GameEngine::startupPhase()
 {
+    currentPhase_ = STARTUP;
+    activePlayer_ = nullptr;
+    notify();
+
     // Shuffle the order of players in the game
-    shuffle(players_.begin(), players_.end(), default_random_engine(time(NULL)));
+    shuffle(players_.begin(), players_.end(), default_random_engine(time(nullptr)));
 
     // Assign territories
     int playerIndex = 0;
@@ -267,24 +340,29 @@ void GameEngine::startupPhase()
  */
 void GameEngine::reinforcementPhase()
 {
+    currentPhase_ = REINFORCEMENT;
+
     for (auto const &player : players_)
     {
+        activePlayer_ = player;
+
         vector<Territory*> playerTerritories = player->getOwnedTerritories();
         int reinforcements = floor(playerTerritories.size() / 3);
     
-        // List of territories need to be sorted so that it can be used to check if the player owns all members of a continent
-        sort(playerTerritories.begin(), playerTerritories.end());
         // Check if the player owns all members of any territories
         for (auto const &continent : map_->getContinents())
         {
-            vector<Territory*> continentMembers;
-            for (auto const & member : continent->getTerritories())
+            int numberOfContinentMembersOwned = 0;
+            vector<Territory*> continentMembers = continent->getTerritories();
+            for (auto const &member : continentMembers)
             {
-                continentMembers.push_back(member);
+                if (find(playerTerritories.begin(), playerTerritories.end(), member) != playerTerritories.end())
+                {
+                    numberOfContinentMembersOwned++;
+                }
             }
-            sort(continentMembers.begin(), continentMembers.end());
 
-            if (includes(playerTerritories.begin(), playerTerritories.end(), continentMembers.begin(), continentMembers.end()))
+            if (numberOfContinentMembersOwned == continentMembers.size())
             {
                 reinforcements += continent->getControlValue();
             }
@@ -296,6 +374,7 @@ void GameEngine::reinforcementPhase()
         }
 
         player->addReinforcements(reinforcements);
+        notify();
     }
 }
 
@@ -304,18 +383,24 @@ void GameEngine::reinforcementPhase()
  */
 void GameEngine::issueOrdersPhase()
 {
+    currentPhase_ = ISSUE_ORDERS;
+
     unordered_set<Player*> playersFinishedIssuingOrders;
     while (playersFinishedIssuingOrders.size() != players_.size())
     {
         for (auto const &player : players_)
         {
+            activePlayer_ = player;
+
+            player->issueOrder();
+
             if (player->isDoneIssuingOrders())
             {
                 playersFinishedIssuingOrders.insert(player);
                 continue;
             }
-            
-            player->issueOrder();
+
+            notify();
         }
     }
 }
@@ -325,6 +410,8 @@ void GameEngine::issueOrdersPhase()
  */
 void GameEngine::executeOrdersPhase()
 {
+    currentPhase_ = EXECUTE_ORDERS;
+
     unordered_set<Player*> playersFinishedExecutingOrders;
     unordered_set<Player*> playersFinishedDeploying;
 
@@ -342,9 +429,11 @@ void GameEngine::executeOrdersPhase()
     {
         for (auto player : players_)
         {
+            activePlayer_ = player;
             Order* order = player->peekNextOrder();
+
             // Current player still has orders to execute
-            if (order != NULL)
+            if (order != nullptr)
             {
                 // Ignore non-deploy orders until everyone has finished executing their deployments
                 if (order->getType() != DEPLOY && playersFinishedDeploying.size() != players_.size())
@@ -353,11 +442,15 @@ void GameEngine::executeOrdersPhase()
                     continue;
                 }
 
+                notify();
                 order = player->getNextOrder();
-                cout << "[" << player->getName() << "] ";
+
+                cout << *order << endl;
                 order->execute(player);
+                cout << endl;
+
                 delete order;
-                order = NULL;
+                order = nullptr;
             }
             // Current player has no orders left to execute this turn
             else
@@ -387,25 +480,19 @@ void GameEngine::mainGameLoop()
 {
     bool shouldContinueGame = true;
     // while (shouldContinueGame)
-    for (int j = 0; j < 2; j++)
+    for (int j = 0; j < 1; j++)
     {
         // Check for any winner and remove players who do not own any territories
         for (int i = 0; i < players_.size(); i++)
         {
             Player* player = players_.at(i);
-            if (player->isNeutral())
-            {
-                continue;
-            }
-
             if (player->getOwnedTerritories().size() == map_->getAdjacencyList().size())
             {
                 shouldContinueGame = false;
-                cout << player->getName() << " has won the game!" << endl;
                 break;
             }
 
-            if (player->getOwnedTerritories().size() == 0)
+            if (player->getOwnedTerritories().size() == 0 && !player->isNeutral())
             {
                 cout << player->getName() << " does not control any territories. Removing from game." << endl;
             }
@@ -414,8 +501,19 @@ void GameEngine::mainGameLoop()
         auto removeIterator = remove_if(players_.begin(), players_.end(), [](Player* p) { return p->getOwnedTerritories().size() == 0; });
         players_.erase(removeIterator, players_.end());
 
-        reinforcementPhase();
-        issueOrdersPhase();
-        executeOrdersPhase();
+        if (shouldContinueGame)
+        {
+            pause();
+            cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+            reinforcementPhase();
+
+            pause();
+            cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+            issueOrdersPhase();
+
+            pause();
+            cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+            executeOrdersPhase();
+        }
     }
 }

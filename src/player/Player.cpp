@@ -3,7 +3,6 @@
 #include "Player.h"
 #include <algorithm>
 #include <iostream>
-#include <iterator>
 #include <math.h>
 #include <set>
 #include <sstream>
@@ -53,23 +52,23 @@ namespace
 }
 
 // Default constructor
-Player::Player() : reinforcements_(0), name_("Neutral_Player"), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(true) {}
+Player::Player() : reinforcements_(0), name_("Neutral_Player"), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(true), committed_(false) {}
 
 // Constructor
-Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(false) {}
+Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(false), committed_(false) {}
 
 // Copy constructor
 Player::Player(const Player &player)
     : reinforcements_(player.reinforcements_), name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(new OrdersList(*player.orders_)),
-    hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_), isNeutral_(player.isNeutral_) {}
+    hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_), isNeutral_(player.isNeutral_), committed_(player.committed_) {}
 
 // Destructor
 Player::~Player()
 {
     delete orders_;
     delete hand_;
-    orders_ = NULL;
-    hand_ = NULL;
+    orders_ = nullptr;
+    hand_ = nullptr;
 }
 
 // Assignment operator overloading
@@ -88,7 +87,7 @@ const Player &Player::operator=(const Player &player)
 ostream &operator<<(ostream &output, const Player &player)
 {
     output << "[Player] " << player.name_ << " has " << player.reinforcements_ << " reinforcements, " << player.ownedTerritories_.size() << " Territories, ";
-    output << player.orders_->getOrders().size() << " Orders, " << player.hand_->getCards().size() << " cards in Hand";
+    output << player.orders_->size() << " Orders, " << player.hand_->size() << " cards in Hand";
     return output;
 }
 
@@ -103,9 +102,24 @@ string Player::getName()
     return name_;
 }
 
+OrdersList Player::getOrdersList()
+{
+    return *orders_;
+}
+
+Hand Player::getHand()
+{
+    return *hand_;
+}
+
 vector<Player*> Player::getDiplomaticRelations()
 {
     return diplomaticRelations_;
+}
+
+int Player::getReinforcements()
+{
+    return reinforcements_;
 }
 
 // Add a number of reinforcements to the Player's reinforcement pool
@@ -157,8 +171,11 @@ Order* Player::peekNextOrder()
 void Player::drawCardFromDeck()
 {
     Card* card = GameEngine::getDeck()->draw();
-    card->setOwner(this);
-    hand_->addCard(card);
+    if (card != nullptr)
+    {
+        card->setOwner(this);
+        hand_->addCard(card);
+    }
 }
 
 // Check whether player is neutral or not
@@ -240,13 +257,13 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
 {
     if (reinforcements_ > 0)
     {
-        const int DEFAULT_ARMIES_TO_DEPLOY = 3;
+        const int DEFAULT_ARMIES_TO_DEPLOY = 5;
         int armiesToDeploy = min(DEFAULT_ARMIES_TO_DEPLOY, reinforcements_);
         
         // In order of highest priority, try to find a territory that hasn't already been deployed to
-        Territory* destination = NULL;
+        Territory* destination = nullptr;
         auto iterator = territoriesToDefend.begin();
-        while (destination == NULL || iterator != territoriesToDefend.end())
+        for (; iterator != territoriesToDefend.end(); iterator++)
         {
             if (issuedDeploymentsAndAdvancements_.find(*iterator) == issuedDeploymentsAndAdvancements_.end())
             {
@@ -255,12 +272,10 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
                 issuedDeploymentsAndAdvancements_[*iterator];
                 break;
             }
-
-            iterator++;
         }
 
         // If all territories in `territoriesToDefend` have already been deployed to, then just pick the first one (highest priority)
-        if (destination == NULL)
+        if (destination == nullptr)
         {
             destination = territoriesToDefend.front();
         }
@@ -282,7 +297,7 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
  */
 bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend)
 {
-    int numberOfExistingOrders = orders_->getOrders().size();
+    int numberOfExistingOrders = orders_->size();
 
     // Map territories to defend/to attack to a value representing priority
     unordered_map<Territory*, int> priorities;
@@ -299,7 +314,7 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
 
     // Find a territory (and one adjacent to it) to create an advance order
     Map* map = GameEngine::getMap();
-    AdvanceOrder* order = NULL;
+    AdvanceOrder* order = nullptr;
     for (auto territory : ownedTerritories_)
     {
         int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
@@ -341,9 +356,10 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
             if (isEnemyTerritory)
             {
                 // Pick this destination if there's a chance of conquering it
-                if (movableArmies > ceil(potentialDestination->getNumberOfArmies() / 0.6))
+                int minimumArmiesRequiredToWin = (int)ceil(potentialDestination->getNumberOfArmies() / 0.6);
+                if (movableArmies > minimumArmiesRequiredToWin)
                 {
-                    armiesToMove = min(movableArmies, (int)ceil(potentialDestination->getNumberOfArmies() / 0.6));
+                    armiesToMove = max(minimumArmiesRequiredToWin, 1);
                 }
                 // Otherwise, try another neighboring territory
                 else
@@ -354,7 +370,7 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
             else
             {
                 // Move half (arbitrary) the number of armies from this territory to the destination
-                armiesToMove = max(movableArmies, movableArmies / 2);
+                armiesToMove = max(movableArmies / 2, 1);
             }
 
             order = new AdvanceOrder(armiesToMove, territory, potentialDestination, isEnemyTerritory);
@@ -363,7 +379,7 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
             break;
         }
 
-        if (order != NULL)
+        if (order != nullptr)
         {
             orders_->add(order);
             break;
@@ -371,7 +387,7 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
     }
 
     // If no new advance orders were issued, then the player is done with advancements
-    return numberOfExistingOrders == orders_->getOrders().size();
+    return numberOfExistingOrders == orders_->size();
 }
 
 /*
@@ -381,12 +397,12 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
  */
 bool Player::playCard()
 {
-    if (!hand_->getCards().empty())
+    if (hand_->size() != 0)
     {
-        int randomCardIndex = rand() % hand_->getCards().size();
+        int randomCardIndex = rand() % hand_->size();
         Order* order = hand_->playCardAt(randomCardIndex);
 
-        if (order != NULL)
+        if (order != nullptr)
         {
             orders_->add(order);
         }
@@ -398,7 +414,7 @@ bool Player::playCard()
         }
 
         Card* card = hand_->removeCard(randomCardIndex);
-        card->setOwner(NULL);
+        card->setOwner(nullptr);
         GameEngine::getDeck()->addCard(card);
     }
 

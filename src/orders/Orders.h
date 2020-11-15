@@ -57,6 +57,7 @@ public:
     void remove(int target);
     Order* popTopOrder();
     Order* peek();
+    int size();
 
 private:
     vector<Order*> orders_;

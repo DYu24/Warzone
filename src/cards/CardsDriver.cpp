@@ -7,7 +7,7 @@ int main()
     Deck deck;
     deck.generateCards(5);
 
-    cout << "-----" << " Initial Deck of cards - Size=" << deck.getCards().size() << " -----" << endl;
+    cout << "-----" << " Initial Deck of cards - Size=" << deck.size() << " -----" << endl;
     for (auto const &card : deck.getCards())
     {
         cout << *card << endl;
@@ -22,13 +22,13 @@ int main()
     hand.addCard(deck.draw());
     hand.addCard(deck.draw());
 
-    cout << "*****" << " Deck after drawing - Size=" << deck.getCards().size() << " *****" << endl;
+    cout << "*****" << " Deck after drawing - Size=" << deck.size() << " *****" << endl;
     for (auto const &card : deck.getCards())
     {
         cout << *card << endl;
     }
 
-    cout << "*****" << " Hand after drawing - Size=" << hand.getCards().size() << " *****" << endl;
+    cout << "*****" << " Hand after drawing - Size=" << hand.size() << " *****" << endl;
     for (auto const &card : hand.getCards())
     {
         cout << *card << endl;
@@ -38,10 +38,10 @@ int main()
 
     // Play the cards in the hand
     cout << "-----" << " Playing cards in Hand " << " -----" << endl;
-    while (!hand.getCards().empty())
+    while (hand.size() != 0)
     {
         Order* playResult = hand.playCardAt(0);
-        if (playResult != NULL)
+        if (playResult != nullptr)
         {
             cout << *playResult << endl;
         }
@@ -50,13 +50,13 @@ int main()
 
     cout << endl;
 
-    cout << "*****" << " Deck after playing - Size=" << deck.getCards().size() << " *****" << endl;
+    cout << "*****" << " Deck after playing - Size=" << deck.size() << " *****" << endl;
     for (auto const &card : deck.getCards())
     {
         cout << *card << endl;
     }
 
-    cout << "*****" << " Hand after playing - Size=" << hand.getCards().size() << " *****" << endl;
+    cout << "*****" << " Hand after playing - Size=" << hand.size() << " *****" << endl;
     for (auto const &card : hand.getCards())
     {
         cout << *card << endl;

@@ -37,6 +37,7 @@ public:
     void addCard(Card* card);
     Card* draw();
     void generateCards(int numberOfCards);
+    int size();
 
 private:
     vector<Card*> cards_;
@@ -56,6 +57,7 @@ public:
     void addCard(Card* card);
     Card* removeCard(int position);
     Order* playCardAt(int position);
+    int size();
 
 private:
     vector<Card*> cards_;

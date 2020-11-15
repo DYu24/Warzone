@@ -1,0 +1,91 @@
+#pragma once
+
+#include "../player/Player.h"
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Subject;
+
+extern const string RESET_COLOR_CODE;
+
+enum Phase : short
+{
+    STARTUP,
+    REINFORCEMENT,
+    ISSUE_ORDERS,
+    EXECUTE_ORDERS,
+    UNKNOWN
+};
+
+class Observer
+{
+    public:
+        virtual ~Observer(){};
+        virtual void update() = 0;
+
+    protected:
+        Subject* subject_;
+        Observer();
+        Observer(Subject* subject);
+        Observer(const Observer &observer);
+        const Observer &operator=(const Observer &observer);
+        virtual bool stateChanged() = 0;
+        virtual void saveState() = 0;
+};
+
+class PhaseObserver : public Observer
+{
+    public:
+        PhaseObserver();
+        PhaseObserver(Subject* subject);
+        PhaseObserver(const PhaseObserver &observer);
+        const PhaseObserver &operator=(const PhaseObserver &observer);
+        void update();
+        void display();
+
+    protected:
+        bool stateChanged();
+        void saveState();
+
+    private:
+        Phase lastPhase_;
+        Player* lastActivePlayer_;
+};
+
+class GameStatisticsObserver : public Observer
+{
+    public:
+        GameStatisticsObserver();
+        GameStatisticsObserver(Subject* subject);
+        GameStatisticsObserver(const GameStatisticsObserver &observer);
+        const GameStatisticsObserver &operator=(const GameStatisticsObserver &observer);
+        void update();
+        void display();
+
+    protected:
+        bool stateChanged();
+        void saveState();
+};
+
+class Subject
+{
+    public:
+        virtual ~Subject()
+        {
+            for (auto observer : observers_)
+            {
+                delete observer;
+            }
+            observers_.clear();
+        }
+        virtual Phase getPhase() = 0;
+        virtual Player* getActivePlayer() = 0;
+        virtual vector<Player*> getCurrentPlayers() = 0;
+        void attach(Observer* observer);
+        void detach(Observer* observer);
+        void notify();
+    
+    private:
+        vector<Observer*> observers_;
+};
