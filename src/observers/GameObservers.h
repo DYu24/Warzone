@@ -7,15 +7,13 @@ using namespace std;
 
 class Subject;
 
-extern const string RESET_COLOR_CODE;
-
 enum Phase : short
 {
     STARTUP,
     REINFORCEMENT,
     ISSUE_ORDERS,
     EXECUTE_ORDERS,
-    UNKNOWN
+    NONE
 };
 
 class Observer
@@ -66,6 +64,9 @@ class GameStatisticsObserver : public Observer
     protected:
         bool stateChanged();
         void saveState();
+
+    private:
+        vector<Player> lastSetOfPlayers_;
 };
 
 class Subject

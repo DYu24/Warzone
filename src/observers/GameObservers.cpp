@@ -1,7 +1,8 @@
 #include "GameObservers.h"
 #include <algorithm>
+#include <iomanip>
+using namespace std;
 
-const string RESET_COLOR_CODE = "\e[0m";
 
 namespace
 {
@@ -13,6 +14,8 @@ namespace
         {4, "\e[0;36m"}
     };
     const string WHITE_COLOR_CODE = "\e[0;37m";
+    const string WHITE_BOLD_COLOR_CODE = "\e[1;37m";
+    const string RESET_COLOR_CODE = "\e[0m";
 
     string getPlayerColorCode(Player* player, vector<Player*> allPlayers)
     {
@@ -54,9 +57,9 @@ const Observer &Observer::operator=(const Observer &observer)
  */
 
 // Constructors
-PhaseObserver::PhaseObserver() : Observer(), lastPhase_(UNKNOWN), lastActivePlayer_(nullptr) {}
+PhaseObserver::PhaseObserver() : Observer(), lastPhase_(NONE), lastActivePlayer_(nullptr) {}
 
-PhaseObserver::PhaseObserver(Subject* subject) : Observer(subject), lastPhase_(UNKNOWN), lastActivePlayer_(nullptr) {}
+PhaseObserver::PhaseObserver(Subject* subject) : Observer(subject), lastPhase_(NONE), lastActivePlayer_(nullptr) {}
 
 PhaseObserver::PhaseObserver(const PhaseObserver &observer) : Observer(observer), lastPhase_(observer.lastPhase_), lastActivePlayer_(observer.lastActivePlayer_) {}
 
@@ -85,7 +88,7 @@ void PhaseObserver::display()
     if (currentPhase == STARTUP)
     {
         cout << "\n===========================================" << endl;
-        cout << "        STARTUP PHASE        " << endl;
+        cout << "              STARTUP PHASE" << endl;
         cout << "===========================================" << endl;
         cout << "Setting up turns and assigning initial territories to each player..." << endl;
     }
@@ -95,7 +98,7 @@ void PhaseObserver::display()
         string phaseBody;
 
         Player* currentActivePlayer = subject_->getActivePlayer();
-        if (currentActivePlayer != nullptr)
+        if (currentActivePlayer != nullptr && !currentActivePlayer->isNeutral())
         {
             cout << getPlayerColorCode(currentActivePlayer, subject_->getCurrentPlayers());
 
@@ -121,12 +124,16 @@ void PhaseObserver::display()
                     }
                     break;
 
-                default:
+                case EXECUTE_ORDERS:
                     cout << "\n===========================================" << endl;
                     cout << "       " << currentActivePlayer->getName() << " : EXECUTE ORDERS PHASE" << endl;
                     cout << "===========================================" << endl;
                     cout << "Orders left: " << currentActivePlayer->getOrdersList().size() << endl;
                     cout << "Number of territories controlled: " << currentActivePlayer->getOwnedTerritories().size() << endl;
+                    break;
+
+                default:
+                    break;
             }
 
             cout << RESET_COLOR_CODE;
@@ -155,33 +162,97 @@ void PhaseObserver::saveState()
 // Constructors
 GameStatisticsObserver::GameStatisticsObserver() : Observer() {}
 
-GameStatisticsObserver::GameStatisticsObserver(Subject* subject) : Observer(subject) {}
+GameStatisticsObserver::GameStatisticsObserver(Subject* subject) : Observer(subject)
+{
+    for (auto const &player : subject_->getCurrentPlayers())
+    {
+        lastSetOfPlayers_.push_back(*player);
+    }
+}
 
-GameStatisticsObserver::GameStatisticsObserver(const GameStatisticsObserver &observer) : Observer(observer) {}
+GameStatisticsObserver::GameStatisticsObserver(const GameStatisticsObserver &observer) : Observer(observer), lastSetOfPlayers_(observer.lastSetOfPlayers_) {}
 
 // Assignment operator overloading
 const GameStatisticsObserver &GameStatisticsObserver::operator=(const GameStatisticsObserver &observer)
 {
     Observer::operator=(observer);
+    lastSetOfPlayers_ = observer.lastSetOfPlayers_;
     return *this;
 }
 
 void GameStatisticsObserver::update()
 {
-    display();
+    if (stateChanged())
+    {
+        display();
+        saveState();
+    }
 }
 
 void GameStatisticsObserver::display()
 {
+    vector<Player*> allPlayers = subject_->getCurrentPlayers();
+
+    int totalNumberOfTerritories = 0;
+    for (auto const &player : allPlayers)
+    {
+        totalNumberOfTerritories += player->getOwnedTerritories().size();
+    }
+
+    cout << WHITE_BOLD_COLOR_CODE;
+    cout << "\n===========================================" << endl;
+    cout << "              GAME STATISTICS" << endl;
+    cout << "===========================================" << endl;
+    cout << left << setw(20) << setfill(' ') << "Player";
+    cout << left << setw(20) << setfill(' ') << "Territories";
+    cout << left << setw(20) << setfill(' ') << "% Controlled" << endl;
+
+    for (auto const &player : allPlayers)
+    {
+        int territoriesOwned = player->getOwnedTerritories().size();
+        double percentControlled = (double)territoriesOwned / totalNumberOfTerritories * 100;
+        
+        cout << left << setw(20) << setfill(' ') << player->getName();
+        cout << left << setw(20) << setfill(' ') << territoriesOwned;
+        cout << left << setw(20) << setfill(' ') << fixed << setprecision(2) << percentControlled << endl;
+    }
+    cout << endl;
+
+    if (allPlayers.size() == 1)
+    {
+        Player* winner = allPlayers.front();
+        cout << winner->getName() << " wins. Congratulations!" << endl;
+    }
+
+    cout << RESET_COLOR_CODE;
 }
 
 bool GameStatisticsObserver::stateChanged()
 {
-    return false;
+    vector<Player*> allPlayers = subject_->getCurrentPlayers();
+    if (lastSetOfPlayers_.size() == allPlayers.size())
+    {
+        bool changed = false;
+        for (int i = 0; i < lastSetOfPlayers_.size(); i++)
+        {
+            Player oldPlayer = lastSetOfPlayers_.at(i);
+            Player newPlayer = *allPlayers.at(i);
+            changed |= oldPlayer.getOwnedTerritories() != newPlayer.getOwnedTerritories();
+        }
+
+        return changed;
+    }
+
+    return true;
 }
 
 void GameStatisticsObserver::saveState()
 {
+    lastSetOfPlayers_.clear();
+    for (auto const &player : subject_->getCurrentPlayers())
+    {
+        lastSetOfPlayers_.push_back(*player);
+    }
 }
 
 /* 

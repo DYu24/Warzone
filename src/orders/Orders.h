@@ -90,7 +90,7 @@ class AdvanceOrder : public Order
 {
 public:
     AdvanceOrder();
-    AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination, bool offensive);
+    AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination);
     AdvanceOrder(const AdvanceOrder &order);
     const AdvanceOrder &operator=(const AdvanceOrder &order);
     Order* clone() const;
@@ -105,7 +105,6 @@ private:
     int numberOfArmies_;
     Territory* source_;
     Territory* destination_;
-    bool offensive_;
 };
 
 class BombOrder : public Order

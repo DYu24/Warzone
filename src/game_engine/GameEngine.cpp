@@ -143,15 +143,15 @@ namespace
      */
     void setupObservers(GameEngine* gameEngine)
     {
-        bool phaseObserverOn = true;
         bool gameStatsObserverOn = true;
+        bool phaseObserverOn = true;
         int selection;
 
         while (selection != 3)
         {
             cout << "Configure game observers (enter 1 or 2 to toggle):" << endl;
-            cout << "[1] Phase Observer: " << (phaseObserverOn ? "ON" : "OFF") << endl;
-            cout << "[2] Game Statistics Observer: " << (gameStatsObserverOn ? "ON" : "OFF") << endl;
+            cout << "[1] Game Statistics Observer: " << (gameStatsObserverOn ? "ON" : "OFF") << endl;
+            cout << "[2] Phase Observer: " << (phaseObserverOn ? "ON" : "OFF") << endl;
             cout << "[3] Confirm" << endl;
 
             while (true)
@@ -168,23 +168,28 @@ namespace
                 break;
             }
 
-            phaseObserverOn = selection == 1 ? !phaseObserverOn : phaseObserverOn;
-            gameStatsObserverOn = selection == 2 ? !gameStatsObserverOn : gameStatsObserverOn;
-        }
-
-        if (phaseObserverOn)
-        {
-            gameEngine->attach(new PhaseObserver(gameEngine));
+            gameStatsObserverOn = selection == 1 ? !gameStatsObserverOn : gameStatsObserverOn;
+            phaseObserverOn = selection == 2 ? !phaseObserverOn : phaseObserverOn;
         }
 
         if (gameStatsObserverOn)
         {
             gameEngine->attach(new GameStatisticsObserver(gameEngine));
         }
+
+        if (phaseObserverOn)
+        {
+            gameEngine->attach(new PhaseObserver(gameEngine));
+        }
     }
 
+    bool shouldPause = false;
     void pause()
     {
+        if (!shouldPause)
+        {
+            return;
+        }
         cout << "Press [Enter] to Continue..." << endl;
         cin.ignore(numeric_limits<streamsize>::max(),'\n');
     }
@@ -246,6 +251,9 @@ Player* GameEngine::getOwnerOf(Territory* territory)
 // Assign a territory to the Neutral Player. If no such player exists, create one.
 void GameEngine::assignToNeutralPlayer(Territory* territory)
 {
+    Player* owner = getOwnerOf(territory);
+    owner->removeOwnedTerritory(territory);
+
     auto iterator = find_if(players_.begin(), players_.end(), [](auto const &player) { return player->isNeutral(); });
     if (iterator == players_.end())
     {
@@ -296,6 +304,7 @@ void GameEngine::startGame()
     setupObservers(this);
 
     deck_->generateCards(20);
+    activePlayer_ = nullptr;
 }
 
 /*
@@ -307,7 +316,6 @@ void GameEngine::startGame()
 void GameEngine::startupPhase()
 {
     currentPhase_ = STARTUP;
-    activePlayer_ = nullptr;
     notify();
 
     // Shuffle the order of players in the game
@@ -340,8 +348,6 @@ void GameEngine::startupPhase()
  */
 void GameEngine::reinforcementPhase()
 {
-    currentPhase_ = REINFORCEMENT;
-
     for (auto const &player : players_)
     {
         activePlayer_ = player;
@@ -383,8 +389,6 @@ void GameEngine::reinforcementPhase()
  */
 void GameEngine::issueOrdersPhase()
 {
-    currentPhase_ = ISSUE_ORDERS;
-
     unordered_set<Player*> playersFinishedIssuingOrders;
     while (playersFinishedIssuingOrders.size() != players_.size())
     {
@@ -392,15 +396,14 @@ void GameEngine::issueOrdersPhase()
         {
             activePlayer_ = player;
 
-            player->issueOrder();
-
             if (player->isDoneIssuingOrders())
             {
                 playersFinishedIssuingOrders.insert(player);
-                continue;
+                continue;                
             }
 
             notify();
+            player->issueOrder();
         }
     }
 }
@@ -410,24 +413,24 @@ void GameEngine::issueOrdersPhase()
  */
 void GameEngine::executeOrdersPhase()
 {
-    currentPhase_ = EXECUTE_ORDERS;
-
+    vector<Player*> playersInTurn = players_;
     unordered_set<Player*> playersFinishedExecutingOrders;
     unordered_set<Player*> playersFinishedDeploying;
 
     // ====== PRE-EXECUTION ======
     // Take a snapshot of the players' owned territories before proceeding with the order executions
-    int preExecuteSnapshot[players_.size()] {};
-    for (int i = 0; i < players_.size(); i++)
+    unordered_map<Player*, vector<Territory*>> preExecuteSnapshot;
+    for (int i = 0; i < playersInTurn.size(); i++)
     {
-        Player* player = players_.at(i);
-        preExecuteSnapshot[i] = player->getOwnedTerritories().size();
+        Player* player = playersInTurn.at(i);
+        preExecuteSnapshot[player] = player->getOwnedTerritories();
     }
-
+    int iter = 0;
     // ====== EXECUTION ======
-    while (playersFinishedExecutingOrders.size() != players_.size())
+    while (playersFinishedExecutingOrders.size() != playersInTurn.size())
     {
-        for (auto player : players_)
+        iter++;
+        for (auto player : playersInTurn)
         {
             activePlayer_ = player;
             Order* order = player->peekNextOrder();
@@ -436,7 +439,7 @@ void GameEngine::executeOrdersPhase()
             if (order != nullptr)
             {
                 // Ignore non-deploy orders until everyone has finished executing their deployments
-                if (order->getType() != DEPLOY && playersFinishedDeploying.size() != players_.size())
+                if (order->getType() != DEPLOY && playersFinishedDeploying.size() != playersInTurn.size())
                 {
                     playersFinishedDeploying.insert(player);
                     continue;
@@ -451,22 +454,32 @@ void GameEngine::executeOrdersPhase()
 
                 delete order;
                 order = nullptr;
+
+                notify();
             }
             // Current player has no orders left to execute this turn
             else
             {
                 player->endTurn();
                 playersFinishedExecutingOrders.insert(player);
+                playersFinishedDeploying.insert(player);
             }
+        }
+        if (iter > 100)
+        {
+            shouldPause = true;
         }
     }
 
     // ====== POST-EXECUTION ======
     // If a player has conquered at least one territory, draw a card
-    for (int i = 0; i < players_.size(); i++)
+    for (int i = 0; i < playersInTurn.size(); i++)
     {
-        Player* player = players_.at(i);
-        if (preExecuteSnapshot[i] < player->getOwnedTerritories().size())
+        Player* player = playersInTurn.at(i);
+        vector<Territory*> preExecuteTerritories = preExecuteSnapshot.at(player);
+        vector<Territory*> postExecuteTerritories = player->getOwnedTerritories();
+
+        if (preExecuteTerritories.size() <= postExecuteTerritories.size() && preExecuteTerritories != postExecuteTerritories)
         {
             player->drawCardFromDeck();
         }
@@ -479,9 +492,26 @@ void GameEngine::executeOrdersPhase()
 void GameEngine::mainGameLoop()
 {
     bool shouldContinueGame = true;
-    // while (shouldContinueGame)
-    for (int j = 0; j < 1; j++)
+    while (shouldContinueGame)
+    // for (int j = 0; j < 2; j++)
     {
+        pause();
+        cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        currentPhase_ = REINFORCEMENT;
+        reinforcementPhase();
+
+        pause();
+        cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        currentPhase_ = ISSUE_ORDERS;
+        issueOrdersPhase();
+
+        pause();
+        cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        currentPhase_ = EXECUTE_ORDERS;
+        executeOrdersPhase();
+
+        currentPhase_ = NONE;
+
         // Check for any winner and remove players who do not own any territories
         for (int i = 0; i < players_.size(); i++)
         {
@@ -491,29 +521,11 @@ void GameEngine::mainGameLoop()
                 shouldContinueGame = false;
                 break;
             }
-
-            if (player->getOwnedTerritories().size() == 0 && !player->isNeutral())
-            {
-                cout << player->getName() << " does not control any territories. Removing from game." << endl;
-            }
         }
 
         auto removeIterator = remove_if(players_.begin(), players_.end(), [](Player* p) { return p->getOwnedTerritories().size() == 0; });
         players_.erase(removeIterator, players_.end());
 
-        if (shouldContinueGame)
-        {
-            pause();
-            cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-            reinforcementPhase();
-
-            pause();
-            cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-            issueOrdersPhase();
-
-            pause();
-            cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-            executeOrdersPhase();
-        }
+        notify();
     }
 }

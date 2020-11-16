@@ -40,12 +40,13 @@ int main()
     cout << "-----" << " Playing cards in Hand " << " -----" << endl;
     while (hand.size() != 0)
     {
-        Order* playResult = hand.playCardAt(0);
+        Card* card = hand.removeCard(0);
+        Order* playResult = card->play();
         if (playResult != nullptr)
         {
             cout << *playResult << endl;
         }
-        deck.addCard(hand.removeCard(0));
+        deck.addCard(card);
     }
 
     cout << endl;

@@ -52,7 +52,7 @@ namespace
 }
 
 // Default constructor
-Player::Player() : reinforcements_(0), name_("Neutral_Player"), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(true), committed_(false) {}
+Player::Player() : reinforcements_(0), name_("Neutral Player"), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(true), committed_(false) {}
 
 // Constructor
 Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(false), committed_(false) {}
@@ -170,11 +170,14 @@ Order* Player::peekNextOrder()
 // Draw a random card from the deck and place it in the Player's hand
 void Player::drawCardFromDeck()
 {
-    Card* card = GameEngine::getDeck()->draw();
-    if (card != nullptr)
+    if (!isNeutral_)
     {
-        card->setOwner(this);
-        hand_->addCard(card);
+        Card* card = GameEngine::getDeck()->draw();
+        if (card != nullptr)
+        {
+            card->setOwner(this);
+            hand_->addCard(card);
+        }
     }
 }
 
@@ -239,11 +242,11 @@ void Player::issueOrder()
     
     if (finishedDeploying)
     {
-        bool finishedAdvancing = issueAdvanceOrder(territoriesToAttack, territoriesToDefend);
+        bool finishedPlayingCards = playCard();
         
-        if (finishedAdvancing)
+        if (finishedPlayingCards)
         {
-            committed_ = playCard();
+            committed_ = issueAdvanceOrder(territoriesToAttack, territoriesToDefend);
         }
     }
 }
@@ -283,7 +286,8 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
         orders_->add(new DeployOrder(armiesToDeploy, destination));
         destination->addPendingIncomingArmies(armiesToDeploy);
         reinforcements_ -= armiesToDeploy;
-
+        
+        cout << "Issued deploy order." << endl;
         return false;
     }
 
@@ -297,97 +301,167 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
  */
 bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend)
 {
-    int numberOfExistingOrders = orders_->size();
-
-    // Map territories to defend/to attack to a value representing priority
-    unordered_map<Territory*, int> priorities;
-    for (int i = 0; i < territoriesToAttack.size(); i++)
-    {
-        Territory* territory = territoriesToAttack.at(i);
-        priorities[territory] = i;
-    }
-    for (int i = 0; i < territoriesToDefend.size(); i++)
-    {
-        Territory* territory = territoriesToDefend.at(i);
-        priorities[territory] = i;
-    }
-
-    // Find a territory (and one adjacent to it) to create an advance order
     Map* map = GameEngine::getMap();
-    AdvanceOrder* order = nullptr;
-    for (auto territory : ownedTerritories_)
+    for (auto const &territory : territoriesToAttack)
     {
-        int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
-        if (movableArmies <= 0)
+        vector<Territory*> neighboringTerritories = map->getAdjacentTerritories(territory);
+        for (auto const &potentialSource : neighboringTerritories)
         {
-            continue;
-        }
-
-        // Get the adjacent territories and filter out those that have already been advanced to from the current territory in previous orders
-        vector<Territory*> neighboringTerritories;
-        auto issuedIterator = issuedDeploymentsAndAdvancements_.find(territory);
-        if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
-        {
-            vector<Territory*> usedTerritories = issuedIterator->second;
-            for (auto const &neighbor : map->getAdjacentTerritories(territory))
+            if (this == GameEngine::getOwnerOf(potentialSource))
             {
-                if (find(usedTerritories.begin(), usedTerritories.end(), neighbor) == usedTerritories.end())
+                // Check if player has already issued an advance order from this `potentialSource` to this `territory`
+                auto issuedIterator = issuedDeploymentsAndAdvancements_.find(potentialSource);
+                if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
                 {
-                    neighboringTerritories.push_back(neighbor);
+                    vector<Territory*> pastAdvancements = issuedIterator->second;
+                    if (find(pastAdvancements.begin(), pastAdvancements.end(), territory) != pastAdvancements.end())
+                    {
+                        continue;
+                    }
+                }
+
+                // Only advance to this enemy territory if the player has any chance of conquering it
+                int movableArmies = potentialSource->getNumberOfArmies() + potentialSource->getPendingIncomingArmies() - potentialSource->getPendingOutgoingArmies();
+                int minimumArmiesRequiredToWin = (int)ceil(territory->getNumberOfArmies() / 0.6);
+                if (minimumArmiesRequiredToWin > 1 && movableArmies > minimumArmiesRequiredToWin)
+                {
+                    int armiesToMove = max(movableArmies / 2, minimumArmiesRequiredToWin);
+                    orders_->add(new AdvanceOrder(armiesToMove, potentialSource, territory));
+                    potentialSource->addPendingOutgoingArmies(armiesToMove);
+                    issuedDeploymentsAndAdvancements_[potentialSource].push_back(territory);
+                    
+                    cout << "Issued advance order." << endl;
+                    return false;
                 }
             }
-        }
-        else
-        {
-            neighboringTerritories = map->getAdjacentTerritories(territory);
-        }
-
-        // Sort the current territory's neighbors according to the `priorities` map
-        sort(neighboringTerritories.begin(), neighboringTerritories.end(), [&priorities](auto t1, auto t2) { return priorities[t1] < priorities[t2]; });
-
-        // Try to pick the highest priority territory that is possible to advance to
-        auto potentialDestinationIterator = neighboringTerritories.begin();
-        for (; potentialDestinationIterator != neighboringTerritories.end(); potentialDestinationIterator++)
-        {
-            Territory* potentialDestination = *potentialDestinationIterator;
-            bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), potentialDestination) != territoriesToAttack.end();
-            int armiesToMove = 0;
-
-            if (isEnemyTerritory)
-            {
-                // Pick this destination if there's a chance of conquering it
-                int minimumArmiesRequiredToWin = (int)ceil(potentialDestination->getNumberOfArmies() / 0.6);
-                if (movableArmies > minimumArmiesRequiredToWin)
-                {
-                    armiesToMove = max(minimumArmiesRequiredToWin, 1);
-                }
-                // Otherwise, try another neighboring territory
-                else
-                {
-                    continue;
-                }
-            }
-            else
-            {
-                // Move half (arbitrary) the number of armies from this territory to the destination
-                armiesToMove = max(movableArmies / 2, 1);
-            }
-
-            order = new AdvanceOrder(armiesToMove, territory, potentialDestination, isEnemyTerritory);
-            territory->addPendingOutgoingArmies(armiesToMove);
-            issuedDeploymentsAndAdvancements_[territory].push_back(potentialDestination);
-            break;
-        }
-
-        if (order != nullptr)
-        {
-            orders_->add(order);
-            break;
         }
     }
 
-    // If no new advance orders were issued, then the player is done with advancements
-    return numberOfExistingOrders == orders_->size();
+    for (auto const &territory : territoriesToDefend)
+    {
+        // If the target territory already has 10 armies, then ignore since there's already enough
+        if (territory->getNumberOfArmies() <= 10)
+        {
+            vector<Territory*> neighboringTerritories = map->getAdjacentTerritories(territory);
+            for (auto const &potentialSource : neighboringTerritories)
+            {
+                if (this == GameEngine::getOwnerOf(potentialSource))
+                {
+                    // Check if player has already issued an advance order from this `potentialSource` to this `territory`
+                    auto issuedIterator = issuedDeploymentsAndAdvancements_.find(potentialSource);
+                    if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
+                    {
+                        vector<Territory*> pastAdvancements = issuedIterator->second;
+                        if (find(pastAdvancements.begin(), pastAdvancements.end(), territory) != pastAdvancements.end())
+                        {
+                            continue;
+                        }
+                    }
+
+                    // Only choose source territories that can move at least 5 armies
+                    int movableArmies = potentialSource->getNumberOfArmies() + potentialSource->getPendingIncomingArmies() - potentialSource->getPendingOutgoingArmies();
+                    int armiesToMove = movableArmies / 2;
+                    if (armiesToMove >= 5)
+                    {
+                        orders_->add(new AdvanceOrder(armiesToMove, potentialSource, territory));
+                        potentialSource->addPendingOutgoingArmies(armiesToMove);
+                        issuedDeploymentsAndAdvancements_[potentialSource].push_back(territory);
+
+                        cout << "Issued advance order." << endl;
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    return true;
+    
+    // // Map territories to defend/to attack to a value representing priority
+    // unordered_map<Territory*, int> priorities;
+    // for (int i = 0; i < territoriesToAttack.size(); i++)
+    // {
+    //     Territory* territory = territoriesToAttack.at(i);
+    //     priorities[territory] = i;
+    // }
+    // for (int i = 0; i < territoriesToDefend.size(); i++)
+    // {
+    //     Territory* territory = territoriesToDefend.at(i);
+    //     priorities[territory] = i;
+    // }
+
+    // // Find a territory (and one adjacent to it) to create an advance order
+    // Map* map = GameEngine::getMap();
+    // AdvanceOrder* order = nullptr;
+    // for (auto territory : ownedTerritories_)
+    // {
+    //     int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
+    //     if (movableArmies <= 3)
+    //     {
+    //         continue;
+    //     }
+
+    //     // Get the adjacent territories and filter out those that have already been advanced to from the current territory in previous orders
+    //     vector<Territory*> neighboringTerritories;
+    //     auto issuedIterator = issuedDeploymentsAndAdvancements_.find(territory);
+    //     if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
+    //     {
+    //         vector<Territory*> usedTerritories = issuedIterator->second;
+    //         for (auto const &neighbor : map->getAdjacentTerritories(territory))
+    //         {
+    //             if (find(usedTerritories.begin(), usedTerritories.end(), neighbor) == usedTerritories.end())
+    //             {
+    //                 neighboringTerritories.push_back(neighbor);
+    //             }
+    //         }
+    //     }
+    //     else
+    //     {
+    //         neighboringTerritories = map->getAdjacentTerritories(territory);
+    //     }
+
+    //     // Sort the current territory's neighbors according to the `priorities` map
+    //     sort(neighboringTerritories.begin(), neighboringTerritories.end(), [&priorities](auto t1, auto t2) { return priorities[t1] < priorities[t2]; });
+
+    //     // Try to pick the highest priority territory that is possible to advance to
+    //     auto potentialDestinationIterator = neighboringTerritories.begin();
+    //     for (; potentialDestinationIterator != neighboringTerritories.end(); potentialDestinationIterator++)
+    //     {
+    //         Territory* potentialDestination = *potentialDestinationIterator;
+    //         bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), potentialDestination) != territoriesToAttack.end();
+    //         int armiesToMove = 0;
+
+    //         if (isEnemyTerritory)
+    //         {
+    //             // Pick this destination if there's a chance of conquering it
+    //             int minimumArmiesRequiredToWin = (int)ceil(potentialDestination->getNumberOfArmies() / 0.6);
+    //             if (movableArmies > minimumArmiesRequiredToWin)
+    //             {
+    //                 armiesToMove = max(minimumArmiesRequiredToWin, 1);
+    //             }
+    //             // Otherwise, try another neighboring territory
+    //             else
+    //             {
+    //                 continue;
+    //             }
+    //         }
+    //         else
+    //         {
+    //             // Move half the number of armies from this territory to the destination
+    //             armiesToMove = max(movableArmies / 2, 1);
+    //         }
+
+    //         // order = new AdvanceOrder(armiesToMove, territory, potentialDestination);
+    //         orders_->add(new AdvanceOrder(armiesToMove, territory, potentialDestination));
+    //         territory->addPendingOutgoingArmies(armiesToMove);
+    //         issuedDeploymentsAndAdvancements_[territory].push_back(potentialDestination);
+            
+    //         cout << "Issued advance order." << endl;
+    //         return false;
+    //     }
+    // }
+
+    // return true;
 }
 
 /*
@@ -400,7 +474,13 @@ bool Player::playCard()
     if (hand_->size() != 0)
     {
         int randomCardIndex = rand() % hand_->size();
-        Order* order = hand_->playCardAt(randomCardIndex);
+        Card* card = hand_->removeCard(randomCardIndex);
+        Order* order = card->play();
+
+        cout << "Played card from hand." << endl;
+
+        card->setOwner(nullptr);
+        GameEngine::getDeck()->addCard(card);
 
         if (order != nullptr)
         {
@@ -412,10 +492,6 @@ bool Player::playCard()
             issueDeployOrder(toDefend());
             return false;
         }
-
-        Card* card = hand_->removeCard(randomCardIndex);
-        card->setOwner(nullptr);
-        GameEngine::getDeck()->addCard(card);
     }
 
     return true;

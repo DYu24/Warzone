@@ -16,19 +16,16 @@ namespace
 
     /**
      * Helper function to check whether a territory can be attacked by a specific player.
+     * Returns `true` if the attacker already owns the target territory
+     * OR
+     * if there is no diplomacy between the attacker and the owner of the target.
      */
     bool canAttack(Player* attacker, Territory* target)
     {
-        for (auto enemy : attacker->getDiplomaticRelations())
-        {
-            auto enemyTerritories = enemy->getOwnedTerritories();
-            if (find(enemyTerritories.begin(), enemyTerritories.end(), target) != enemyTerritories.end())
-            {
-                return false;
-            }
-        }
+        Player* ownerOfTarget = GameEngine::getOwnerOf(target);
+        vector<Player*> diplomaticRelations = attacker->getDiplomaticRelations();
 
-        return true;
+        return attacker == ownerOfTarget || find(diplomaticRelations.begin(), diplomaticRelations.end(), ownerOfTarget) == diplomaticRelations.end();
     }
 }
 
@@ -307,15 +304,15 @@ OrderType DeployOrder::getType()
  */
 
 // Default constructor
-AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), offensive_(false), source_(nullptr), destination_(nullptr) {}
+AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(nullptr), destination_(nullptr) {}
 
 // Constructor
-AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination, bool offensive)
-    : numberOfArmies_(numberOfArmies), source_(source), destination_(destination), offensive_(offensive) {}
+AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination)
+    : numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
 // Copy constructor
 AdvanceOrder::AdvanceOrder(const AdvanceOrder &order)
-    : Order(order), numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_), offensive_(order.offensive_) {}
+    : Order(order), numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
 
 // Assignment operator overloading
 const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
@@ -324,7 +321,6 @@ const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
     numberOfArmies_ = order.numberOfArmies_;
     source_ = order.source_;
     destination_ = order.destination_;
-    offensive_ = order.offensive_;
     return *this;
 }
 
@@ -346,16 +342,21 @@ bool AdvanceOrder::validate(Player* owner)
 
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     bool hasAnyArmiesToAdvance = source_->getNumberOfArmies() > 0;
-    return validSourceTerritory && canAttack(owner, destination_) && hasAnyArmiesToAdvance;
+
+    return validSourceTerritory && hasAnyArmiesToAdvance && canAttack(owner, destination_);
 }
 
 // Executes the AdvanceOrder.
 void AdvanceOrder::execute_()
 {
+    Player* attacker = GameEngine::getOwnerOf(source_);
+    Player* defender = GameEngine::getOwnerOf(destination_);
+    bool offensive = attacker != defender;
+
     // Recalculate how many armies could actually be moved in case the state of the territory has changed due to an attack
     int movableArmiesFromSource = min(source_->getNumberOfArmies(), numberOfArmies_); 
 
-    if (offensive_)
+    if (offensive)
     {
         source_->removeArmies(movableArmiesFromSource);
 
@@ -382,8 +383,6 @@ void AdvanceOrder::execute_()
         }
         else
         {
-            Player* attacker = GameEngine::getOwnerOf(source_);
-            Player* defender = GameEngine::getOwnerOf(destination_);
             attacker->addOwnedTerritory(destination_);
             defender->removeOwnedTerritory(destination_);
             destination_->addArmies(survivingAttackers);
@@ -547,7 +546,7 @@ ostream &BlockadeOrder::print_(ostream &output) const
 
     if (territory_ != nullptr)
     {
-        output << " Territory: " << territory_->getName();
+        output << " Territory: " << territory_->getName() << " (" << territory_->getNumberOfArmies() << " present)";
     }
 
     return output;

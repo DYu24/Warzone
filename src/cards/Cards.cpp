@@ -257,8 +257,8 @@ Order* BombCard::play()
         return new BombOrder();
     }
 
-    // Bomb the highest priority enemy territory
-    Territory* target = owner_->toAttack().front();
+    // Bomb enemy territory with the most armies (last one in the `toAttack()` list)
+    Territory* target = owner_->toAttack().back();
     return new BombOrder(target);
 }
 
@@ -320,9 +320,17 @@ Order* BlockadeCard::play()
         return new BlockadeOrder();
     }
 
-    // Setup a blockade on the highest priority territory to defend
-    Territory* territory = owner_->toDefend().front();
-    return new BlockadeOrder(territory);
+    // Setup a blockade on the highest priority territory to defend that has any armies
+    vector<Territory*> territoriesToDefend = owner_->toDefend();
+    for (auto const &potentialTerritory : territoriesToDefend)
+    {
+        if (potentialTerritory->getNumberOfArmies() > 0)
+        {
+            return new BlockadeOrder(potentialTerritory);
+        }
+    }
+
+    return new BlockadeOrder(territoriesToDefend.front());
 }
 
 
@@ -370,7 +378,7 @@ Order* AirliftCard::play()
         }
     }
 
-    // Move half (arbitrary) the number of armies from the source territory to the destination
+    // Move half the number of armies from the source territory to the destination
     int armiesToMove = max(movableArmies / 2, 1);
     source->addPendingOutgoingArmies(armiesToMove);
 

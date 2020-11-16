@@ -11,7 +11,7 @@ int main()
 
     OrdersList ordersList;
     ordersList.add(new DeployOrder(5, territory));
-    ordersList.add(new AdvanceOrder(5, territory, targetTerritory, false));
+    ordersList.add(new AdvanceOrder(5, territory, targetTerritory));
     ordersList.add(new BombOrder(targetTerritory));
     ordersList.add(new BlockadeOrder(territory));
     ordersList.add(new AirliftOrder(10, territory, targetTerritory));
