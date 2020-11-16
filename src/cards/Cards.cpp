@@ -259,7 +259,7 @@ Order* BombCard::play()
 
     // Bomb enemy territory with the most armies (last one in the `toAttack()` list)
     Territory* target = owner_->toAttack().back();
-    return new BombOrder(target);
+    return new BombOrder(owner_, target);
 }
 
 /* 
@@ -326,11 +326,11 @@ Order* BlockadeCard::play()
     {
         if (potentialTerritory->getNumberOfArmies() > 0)
         {
-            return new BlockadeOrder(potentialTerritory);
+            return new BlockadeOrder(owner_, potentialTerritory);
         }
     }
 
-    return new BlockadeOrder(territoriesToDefend.front());
+    return new BlockadeOrder(owner_, territoriesToDefend.front());
 }
 
 
@@ -382,7 +382,7 @@ Order* AirliftCard::play()
     int armiesToMove = max(movableArmies / 2, 1);
     source->addPendingOutgoingArmies(armiesToMove);
 
-    return new AirliftOrder(armiesToMove, source, destination);
+    return new AirliftOrder(owner_, armiesToMove, source, destination);
 }
 
 

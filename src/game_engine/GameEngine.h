@@ -19,8 +19,9 @@ public:
     static Map* getMap();
     static vector<Player*> getPlayers();
     static Player* getOwnerOf(Territory* territory);
+    static void setPlayers(vector<Player*> players);
     static void assignToNeutralPlayer(Territory* territory);
-    
+
     Phase getPhase();
     Player* getActivePlayer();
     vector<Player*> getCurrentPlayers();

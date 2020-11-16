@@ -1,29 +1,36 @@
+#include "../game_engine/GameEngine.h"
 #include "Orders.h"
 
 int main()
 {
     // Setup
-    Territory* territory = new Territory("Quebec");
-    Territory* targetTerritory = new Territory("Ontario");
+    Territory* t1 = new Territory("Quebec");
+    Territory* t2 = new Territory("BC");
+    Territory* t3 = new Territory("Ontario");
 
     Player* player = new Player("Bob");
-    player->addOwnedTerritory(territory);
+    Player* enemy = new Player("Alice");
+    player->addOwnedTerritory(t1);
+    player->addOwnedTerritory(t2);
+    enemy->addOwnedTerritory(t3);
+
+    GameEngine::setPlayers({ player, enemy });
 
     OrdersList ordersList;
-    ordersList.add(new DeployOrder(5, territory));
-    ordersList.add(new AdvanceOrder(5, territory, targetTerritory));
-    ordersList.add(new BombOrder(targetTerritory));
-    ordersList.add(new BlockadeOrder(territory));
-    ordersList.add(new AirliftOrder(10, territory, targetTerritory));
-    ordersList.add(new NegotiateOrder(player, new Player("Alice")));
+    ordersList.add(new DeployOrder(player, 5, t1));
+    ordersList.add(new AdvanceOrder(player, 5, t1, t3));
+    ordersList.add(new BombOrder(player, t3));
+    ordersList.add(new AirliftOrder(player, 10, t1, t2));
+    ordersList.add(new BlockadeOrder(player, t1));
+    ordersList.add(new NegotiateOrder(player, enemy));
 
     // Show the OrderList
     cout << "------" << "Original orders list: " << ordersList << "------" << endl;
     for (auto const &orderPointer : ordersList.getOrders())
     {
         cout << *orderPointer << endl;
-        cout << boolalpha << "Order is valid: " << orderPointer->validate(player) << endl;
-        orderPointer->execute(player);
+        cout << boolalpha << "Order is valid: " << orderPointer->validate() << endl;
+        orderPointer->execute();
         cout << endl;
     }
 
@@ -43,9 +50,11 @@ int main()
         cout << *orderPointer << endl;
     }
 
-    delete territory;
-    delete targetTerritory;
+    delete t1;
+    delete t2;
+    delete t3;
     delete player;
+    delete enemy;
 
     return 0;
 }

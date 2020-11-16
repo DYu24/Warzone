@@ -43,23 +43,24 @@ namespace
  */
 
 // Constructors
-Order::Order(): priority_(4) {}
+Order::Order(): issuer_(nullptr), priority_(4) {}
 
-Order::Order(int priority) : priority_(priority) {}
+Order::Order(Player* issuer, int priority) : issuer_(issuer), priority_(priority) {}
 
-Order::Order(const Order &order) : priority_(order.priority_) {}
+Order::Order(const Order &order) : issuer_(order.issuer_), priority_(order.priority_) {}
 
 // Assignment operator overloading
 const Order &Order::operator=(const Order &order)
 {
+    issuer_ = order.issuer_;
     priority_ = order.priority_;
     return *this;
 }
 
 // Validate and execute the Order. Invalid orders will have no effect.
-void Order::execute(Player* owner)
+void Order::execute()
 {
-    if (validate(owner))
+    if (validate())
     {
         execute_();
     }
@@ -224,10 +225,10 @@ int OrdersList::size()
  */
 
 // Default constructor
-DeployOrder::DeployOrder() : Order(1), numberOfArmies_(0), destination_(nullptr) {}
+DeployOrder::DeployOrder() : Order(nullptr, 1), numberOfArmies_(0), destination_(nullptr) {}
 
 // Constructor
-DeployOrder::DeployOrder(int numberOfArmies, Territory* destination) : Order(1), numberOfArmies_(numberOfArmies), destination_(destination) {}
+DeployOrder::DeployOrder(Player* issuer, int numberOfArmies, Territory* destination) : Order(issuer, 1), numberOfArmies_(numberOfArmies), destination_(destination) {}
 
 // Copy constructor
 DeployOrder::DeployOrder(const DeployOrder &order) : Order(order), numberOfArmies_(order.numberOfArmies_), destination_(order.destination_) {}
@@ -265,14 +266,14 @@ Order* DeployOrder::clone() const
 }
 
 // Checks that the DeployOrder is valid.
-bool DeployOrder::validate(Player* owner)
+bool DeployOrder::validate()
 {   
-    if (destination_ == nullptr)
+    if (issuer_ == nullptr || destination_ == nullptr)
     {
         return false;
     }
 
-    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
 }
 
@@ -310,11 +311,11 @@ OrderType DeployOrder::getType()
  */
 
 // Default constructor
-AdvanceOrder::AdvanceOrder() : numberOfArmies_(0), source_(nullptr), destination_(nullptr) {}
+AdvanceOrder::AdvanceOrder() : Order(), numberOfArmies_(0), source_(nullptr), destination_(nullptr) {}
 
 // Constructor
-AdvanceOrder::AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination)
-    : numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
+AdvanceOrder::AdvanceOrder(Player* issuer, int numberOfArmies, Territory* source, Territory* destination)
+    : Order(issuer, 4), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
 // Copy constructor
 AdvanceOrder::AdvanceOrder(const AdvanceOrder &order)
@@ -337,27 +338,26 @@ Order* AdvanceOrder::clone() const
 }
 
 // Checks that the AdvanceOrder is valid.
-bool AdvanceOrder::validate(Player* owner)
+bool AdvanceOrder::validate()
 {
-    if (source_ == nullptr || destination_ == nullptr)
+    if (issuer_ == nullptr || source_ == nullptr || destination_ == nullptr)
     {
         return false;
     }
 
-    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
 
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     bool hasAnyArmiesToAdvance = source_->getNumberOfArmies() > 0;
 
-    return validSourceTerritory && hasAnyArmiesToAdvance && canAttack(owner, destination_);
+    return validSourceTerritory && hasAnyArmiesToAdvance && canAttack(issuer_, destination_);
 }
 
 // Executes the AdvanceOrder.
 void AdvanceOrder::execute_()
 {
-    Player* attacker = GameEngine::getOwnerOf(source_);
     Player* defender = GameEngine::getOwnerOf(destination_);
-    bool offensive = attacker != defender;
+    bool offensive = issuer_ != defender;
 
     // Recalculate how many armies could actually be moved in case the state of the territory has changed due to an attack
     int movableArmiesFromSource = min(source_->getNumberOfArmies(), numberOfArmies_); 
@@ -389,7 +389,7 @@ void AdvanceOrder::execute_()
         }
         else
         {
-            attacker->addOwnedTerritory(destination_);
+            issuer_->addOwnedTerritory(destination_);
             defender->removeOwnedTerritory(destination_);
             destination_->addArmies(survivingAttackers);
             cout << "Successful attack on " << destination_->getName() << ". " << survivingAttackers << " armies now occupy this territory." << endl;
@@ -432,10 +432,10 @@ OrderType AdvanceOrder::getType()
  */
 
 // Default constructor
-BombOrder::BombOrder() : target_(nullptr) {}
+BombOrder::BombOrder() : Order(), target_(nullptr) {}
 
 // Constructor
-BombOrder::BombOrder(Territory* target) : target_(target) {}
+BombOrder::BombOrder(Player* issuer, Territory* target) : Order(issuer, 4), target_(target) {}
 
 // Copy constructor
 BombOrder::BombOrder(const BombOrder &order) : Order(order), target_(order.target_) {}
@@ -455,16 +455,16 @@ Order* BombOrder::clone() const
 }
 
 // Checks that the BombOrder is valid.
-bool BombOrder::validate(Player* owner)
+bool BombOrder::validate()
 {
-    if (target_ == nullptr)
+    if (issuer_ == nullptr || target_ == nullptr)
     {
         return false;
     }
 
-    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
     bool validTargetTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), target_) == currentPlayerTerritories.end();
-    return validTargetTerritory && canAttack(owner, target_);
+    return validTargetTerritory && canAttack(issuer_, target_);
 }
 
 // Executes the BombOrder.
@@ -503,10 +503,10 @@ OrderType BombOrder::getType()
  */
 
 // Default constructor
-BlockadeOrder::BlockadeOrder() : Order(3), territory_(nullptr) {}
+BlockadeOrder::BlockadeOrder() : Order(nullptr, 3), territory_(nullptr) {}
 
 // Constructor
-BlockadeOrder::BlockadeOrder(Territory* territory) : Order(3), territory_(territory) {}
+BlockadeOrder::BlockadeOrder(Player* issuer, Territory* territory) : Order(issuer, 3), territory_(territory) {}
 
 // Copy constructor
 BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order), territory_(order.territory_) {}
@@ -526,14 +526,14 @@ Order* BlockadeOrder::clone() const
 }
 
 // Checks that the BlockadeOrder is valid.
-bool BlockadeOrder::validate(Player* owner)
+bool BlockadeOrder::validate()
 {
-    if (territory_ == nullptr)
+    if (issuer_ == nullptr || territory_ == nullptr)
     {
         return false;
     }
 
-    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), territory_) != currentPlayerTerritories.end();
 }
 
@@ -573,10 +573,11 @@ OrderType BlockadeOrder::getType()
  */
 
 // Default constructor
-AirliftOrder::AirliftOrder() : Order(2), numberOfArmies_(0), source_(nullptr), destination_(nullptr) {}
+AirliftOrder::AirliftOrder() : Order(nullptr, 2), numberOfArmies_(0), source_(nullptr), destination_(nullptr) {}
 
 // Constructor
-AirliftOrder::AirliftOrder(int numberOfArmies, Territory* source, Territory* destination) : Order(2), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
+AirliftOrder::AirliftOrder(Player* issuer, int numberOfArmies, Territory* source, Territory* destination)
+    : Order(issuer, 2), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
 // Copy constructor
 AirliftOrder::AirliftOrder(const AirliftOrder &order) : Order(order), numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
@@ -598,18 +599,18 @@ Order* AirliftOrder::clone() const
 }
 
 // Checks that the AirliftOrder is valid.
-bool AirliftOrder::validate(Player* owner)
+bool AirliftOrder::validate()
 {
-    if (source_ == nullptr || destination_ == nullptr || source_ == destination_)
+    if (issuer_ == nullptr || source_ == nullptr || destination_ == nullptr || source_ == destination_)
     {
         return false;
     }
 
-    auto currentPlayerTerritories = owner->getOwnedTerritories();
+    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
 
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     bool validDestinationTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
-    bool hasAnyArmiesToAirlift= source_->getNumberOfArmies() > 0;
+    bool hasAnyArmiesToAirlift = source_->getNumberOfArmies() > 0;
     return validSourceTerritory && validDestinationTerritory && hasAnyArmiesToAirlift;
 }
 
@@ -654,19 +655,18 @@ OrderType AirliftOrder::getType()
  */
 
 // Default constructor
-NegotiateOrder::NegotiateOrder() : initiator_(nullptr), target_(nullptr) {}
+NegotiateOrder::NegotiateOrder() : Order(), target_(nullptr) {}
 
 // Constructor
-NegotiateOrder::NegotiateOrder(Player* initiator, Player* target) : initiator_(initiator), target_(target) {}
+NegotiateOrder::NegotiateOrder(Player* issuer, Player* target) : Order(issuer, 4), target_(target) {}
 
 // Copy constructor
-NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order), initiator_(order.initiator_), target_(order.target_) {}
+NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order), target_(order.target_) {}
 
 // Assignment operator overloading
 const NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order)
 {
     Order::operator=(order);
-    initiator_ = order.initiator_;
     target_ = order.target_;
     return *this;
 }
@@ -678,22 +678,22 @@ Order* NegotiateOrder::clone() const
 }
 
 // Checks that the NegotiateOrder is valid.
-bool NegotiateOrder::validate(Player* owner)
+bool NegotiateOrder::validate()
 {
-    if (initiator_ == nullptr || target_ == nullptr)
+    if (issuer_ == nullptr || target_ == nullptr)
     {
         return false;
     }
 
-    return owner != target_;
+    return issuer_ != target_;
 }
 
 // Executes the NegotiateOrder.
 void NegotiateOrder::execute_()
 {
-    initiator_->addDiplomaticRelation(target_);
-    target_->addDiplomaticRelation(initiator_);
-    cout << "Negotiated diplomacy between " << initiator_->getName() << " and " << target_->getName() << "." << endl;
+    issuer_->addDiplomaticRelation(target_);
+    target_->addDiplomaticRelation(issuer_);
+    cout << "Negotiated diplomacy between " << issuer_->getName() << " and " << target_->getName() << "." << endl;
 }
 
 // Stream insertion operator overloading
@@ -701,9 +701,9 @@ ostream &NegotiateOrder::print_(ostream &output) const
 {
     output << "[NegotiateOrder]";
 
-    if (initiator_ != nullptr && target_ != nullptr)
+    if (issuer_ != nullptr && target_ != nullptr)
     {
-        output << " Initiator: " << initiator_->getName() << ", Target: " << target_->getName();
+        output << " Initiator: " << issuer_->getName() << ", Target: " << target_->getName();
     }
 
     return output;

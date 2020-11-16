@@ -25,14 +25,16 @@ public:
     virtual ~Order(){};
     friend ostream &operator<<(ostream &output, const Order &order);
     virtual Order* clone() const = 0;
-    void execute(Player* owner);
-    virtual bool validate(Player* owner) = 0;
+    void execute();
+    virtual bool validate() = 0;
     int getPriority();
     virtual OrderType getType() = 0;
 
 protected:
+    Player* issuer_;
+
     Order();
-    Order(int priority);
+    Order(Player* issuer, int priority);
     Order(const Order &order);
     const Order &operator=(const Order &order);
     virtual void execute_() = 0;
@@ -67,14 +69,14 @@ class DeployOrder : public Order
 {
 public:
     DeployOrder();
-    DeployOrder(int numberOfArmies, Territory* destination);
+    DeployOrder(Player* issuer, int numberOfArmies, Territory* destination);
     DeployOrder(const DeployOrder &order);
     const DeployOrder &operator=(const DeployOrder &order);
     int getNumberOfArmies();
     Territory getDestination();
     void addArmies(int additional);
     Order* clone() const;
-    bool validate(Player* owner);
+    bool validate();
     OrderType getType();
 
 protected:
@@ -90,11 +92,11 @@ class AdvanceOrder : public Order
 {
 public:
     AdvanceOrder();
-    AdvanceOrder(int numberOfArmies, Territory* source, Territory* destination);
+    AdvanceOrder(Player* issuer, int numberOfArmies, Territory* source, Territory* destination);
     AdvanceOrder(const AdvanceOrder &order);
     const AdvanceOrder &operator=(const AdvanceOrder &order);
     Order* clone() const;
-    bool validate(Player* owner);
+    bool validate();
     OrderType getType();
 
 protected:
@@ -111,11 +113,11 @@ class BombOrder : public Order
 {
 public:
     BombOrder();
-    BombOrder(Territory* target);
+    BombOrder(Player* issuer, Territory* target);
     BombOrder(const BombOrder &order);
     const BombOrder &operator=(const BombOrder &order);
     Order* clone() const;
-    bool validate(Player* owner);
+    bool validate();
     OrderType getType();
 
 protected:
@@ -130,11 +132,11 @@ class BlockadeOrder : public Order
 {
 public:
     BlockadeOrder();
-    BlockadeOrder(Territory* territory);
+    BlockadeOrder(Player* issuer, Territory* territory);
     BlockadeOrder(const BlockadeOrder &order);
     const BlockadeOrder &operator=(const BlockadeOrder &order);
     Order* clone() const;
-    bool validate(Player* owner);
+    bool validate();
     OrderType getType();
 
 protected:
@@ -149,11 +151,11 @@ class AirliftOrder : public Order
 {
 public:
     AirliftOrder();
-    AirliftOrder(int numberOfArmies, Territory* source, Territory* destination);
+    AirliftOrder(Player* issuer, int numberOfArmies, Territory* source, Territory* destination);
     AirliftOrder(const AirliftOrder &order);
     const AirliftOrder &operator=(const AirliftOrder &order);
     Order* clone() const;
-    bool validate(Player* owner);
+    bool validate();
     OrderType getType();
 
 protected:
@@ -170,11 +172,11 @@ class NegotiateOrder : public Order
 {
 public:
     NegotiateOrder();
-    NegotiateOrder(Player* initiator, Player* target);
+    NegotiateOrder(Player* issuer, Player* target);
     NegotiateOrder(const NegotiateOrder &order);
     const NegotiateOrder &operator=(const NegotiateOrder &order);
     Order* clone() const;
-    bool validate(Player* owner);
+    bool validate();
     OrderType getType();
 
 protected:
@@ -182,6 +184,5 @@ protected:
     ostream &print_(ostream &output) const;
     
 private:
-    Player* initiator_;
     Player* target_;
 };

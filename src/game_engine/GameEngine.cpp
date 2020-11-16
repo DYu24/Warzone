@@ -248,6 +248,12 @@ vector<Player*> GameEngine::getPlayers()
     return allPlayers;
 }
 
+// Static setter
+void GameEngine::setPlayers(vector<Player*> players)
+{
+    players_ = players;
+}
+
 // Getters (for subject state)
 Phase GameEngine::getPhase()
 {
@@ -462,7 +468,7 @@ void GameEngine::executeOrdersPhase()
                 order = player->getNextOrder();
 
                 cout << "[" << player->getName() << "] ";
-                order->execute(player);
+                order->execute();
 
                 delete order;
                 order = nullptr;

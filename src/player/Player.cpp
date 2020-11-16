@@ -288,7 +288,7 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
             destination = territoriesToDefend.front();
         }
 
-        DeployOrder* order = new DeployOrder(armiesToDeploy, destination);
+        DeployOrder* order = new DeployOrder(this, armiesToDeploy, destination);
         orders_->add(order);
         destination->addPendingIncomingArmies(armiesToDeploy);
         reinforcements_ -= armiesToDeploy;
@@ -332,7 +332,7 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
                 if (minimumArmiesRequiredToWin > 1 && movableArmies > minimumArmiesRequiredToWin)
                 {
                     int armiesToMove = max(movableArmies / 2, minimumArmiesRequiredToWin);
-                    AdvanceOrder* order = new AdvanceOrder(armiesToMove, potentialSource, territory);
+                    AdvanceOrder* order = new AdvanceOrder(this, armiesToMove, potentialSource, territory);
                     orders_->add(order);
                     potentialSource->addPendingOutgoingArmies(armiesToMove);
                     issuedDeploymentsAndAdvancements_[potentialSource].push_back(territory);
@@ -370,7 +370,7 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
                     int armiesToMove = movableArmies / 2;
                     if (armiesToMove >= 5)
                     {
-                        AdvanceOrder* order = new AdvanceOrder(armiesToMove, potentialSource, territory);
+                        AdvanceOrder* order = new AdvanceOrder(this, armiesToMove, potentialSource, territory);
                         orders_->add(order);
                         potentialSource->addPendingOutgoingArmies(armiesToMove);
                         issuedDeploymentsAndAdvancements_[potentialSource].push_back(territory);
