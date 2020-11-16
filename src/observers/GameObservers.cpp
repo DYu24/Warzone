@@ -87,6 +87,7 @@ void PhaseObserver::display()
 
     if (currentPhase == STARTUP)
     {
+        cout << WHITE_BOLD_COLOR_CODE;
         cout << "\n===========================================" << endl;
         cout << "              STARTUP PHASE" << endl;
         cout << "===========================================" << endl;
@@ -118,10 +119,7 @@ void PhaseObserver::display()
                     cout << "===========================================" << endl;
                     cout << "Orders placed: " << currentActivePlayer->getOrdersList().size() << endl;
                     cout << "Cards in hand: " << currentActivePlayer->getHand().size() << endl;
-                    if (currentActivePlayer->getReinforcements() > 0)
-                    {
-                        cout << "Reinforcements left: " << currentActivePlayer->getReinforcements() << endl;
-                    }
+                    cout << "Reinforcements left: " << currentActivePlayer->getReinforcements() << endl;
                     break;
 
                 case EXECUTE_ORDERS:
@@ -135,10 +133,9 @@ void PhaseObserver::display()
                 default:
                     break;
             }
-
-            cout << RESET_COLOR_CODE;
         }
     }
+    cout << RESET_COLOR_CODE;
 }
 
 bool PhaseObserver::stateChanged()

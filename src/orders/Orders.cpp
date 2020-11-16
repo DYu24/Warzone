@@ -24,8 +24,14 @@ namespace
     {
         Player* ownerOfTarget = GameEngine::getOwnerOf(target);
         vector<Player*> diplomaticRelations = attacker->getDiplomaticRelations();
+        bool diplomacyWithOwnerOfTarget = find(diplomaticRelations.begin(), diplomaticRelations.end(), ownerOfTarget) != diplomaticRelations.end();
 
-        return attacker == ownerOfTarget || find(diplomaticRelations.begin(), diplomaticRelations.end(), ownerOfTarget) == diplomaticRelations.end();
+        if (diplomacyWithOwnerOfTarget)
+        {
+            cout << attacker->getName() << " and " << ownerOfTarget->getName() << " cannot attack each other for the rest of this turn. ";
+        }
+
+        return attacker == ownerOfTarget || !diplomacyWithOwnerOfTarget;
     }
 }
 
@@ -466,7 +472,8 @@ void BombOrder::execute_()
 {
     int armiesOnTarget = target_->getNumberOfArmies();
     target_->removeArmies(armiesOnTarget / 2);
-    cout << "Bombed " << armiesOnTarget / 2 << " enemy armies on " << target_->getName() << "." << endl;
+    cout << "Bombed " << armiesOnTarget / 2 << " enemy armies on " << target_->getName() << ". ";
+    cout << target_->getNumberOfArmies() << " remaining." << endl;
 }
 
 // Stream insertion operator overloading

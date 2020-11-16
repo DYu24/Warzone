@@ -8,12 +8,15 @@ int main()
     // ==============================
     // Part 1:
     // ==============================
-    cout << "========== PART 1 ==========" << endl;
+
+    cout << "\n********** PART 1 **********" << endl;
     gameEngine.startGame();
 
-    // Should output the same number of players as specified during user input
-    vector<Player*> players = GameEngine::getPlayers();
-    for (auto const &player : players)
+    // Output the created deck
+    cout << '\n' << *GameEngine::getDeck() << endl;
+
+    // Output the created players
+    for (auto const &player : GameEngine::getPlayers())
     {
         cout << *player << endl;
     }
@@ -21,18 +24,23 @@ int main()
     cout << endl;
 
 
+    // ====================================================================================================================
+
+
     // ==============================
     // Part 2:
     // ==============================
-    cout << "========== PART 2 ==========" << endl;
+
+    cout << "\n********** PART 2 **********" << endl;
     gameEngine.startupPhase();
 
-    Map map = *GameEngine::getMap();
+    cout << endl;
 
+    Map map = *GameEngine::getMap();
     vector<Territory*> allTerritoriesInMap = map.getTerritories();
     vector<Territory*> ownedTerritories;
 
-    for (auto const &player : players)
+    for (auto const &player : GameEngine::getPlayers())
     {
         // Print out the player to show that they now have reinforcements assigned to them
         cout << *player << endl;
@@ -48,12 +56,16 @@ int main()
     cout << "Number of territories owned by players: " << ownedTerritories.size() << endl;
 
     cout << endl;
-    
+
+
+    // ====================================================================================================================
+
 
     // ==============================
     // Part 3:
     // ==============================
-    cout << "========== PART 3 ==========" << endl;
+
+    cout << "\n********** PART 3 **********" << endl;
     gameEngine.mainGameLoop();
 
     return 0;

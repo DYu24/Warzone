@@ -234,20 +234,25 @@ void Player::issueOrder()
     {
         return;
     }
+
+    int oldNumberOfOrders = orders_->size();
     
     vector<Territory*> territoriesToAttack = toAttack();
     vector<Territory*> territoriesToDefend = toDefend();
 
     bool finishedDeploying = issueDeployOrder(territoriesToDefend);
-    
     if (finishedDeploying)
     {
         bool finishedPlayingCards = playCard();
-        
         if (finishedPlayingCards)
         {
             committed_ = issueAdvanceOrder(territoriesToAttack, territoriesToDefend);
         }
+    }
+
+    if (oldNumberOfOrders == orders_->size())
+    {
+        cout << "No new order issued." << endl;
     }
 }
 
@@ -283,11 +288,12 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
             destination = territoriesToDefend.front();
         }
 
-        orders_->add(new DeployOrder(armiesToDeploy, destination));
+        DeployOrder* order = new DeployOrder(armiesToDeploy, destination);
+        orders_->add(order);
         destination->addPendingIncomingArmies(armiesToDeploy);
         reinforcements_ -= armiesToDeploy;
         
-        cout << "Issued deploy order." << endl;
+        cout << "Issued: " << *order << endl;
         return false;
     }
 
@@ -326,11 +332,12 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
                 if (minimumArmiesRequiredToWin > 1 && movableArmies > minimumArmiesRequiredToWin)
                 {
                     int armiesToMove = max(movableArmies / 2, minimumArmiesRequiredToWin);
-                    orders_->add(new AdvanceOrder(armiesToMove, potentialSource, territory));
+                    AdvanceOrder* order = new AdvanceOrder(armiesToMove, potentialSource, territory);
+                    orders_->add(order);
                     potentialSource->addPendingOutgoingArmies(armiesToMove);
                     issuedDeploymentsAndAdvancements_[potentialSource].push_back(territory);
                     
-                    cout << "Issued advance order." << endl;
+                    cout << "Issued: " << *order << endl;
                     return false;
                 }
             }
@@ -363,11 +370,12 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
                     int armiesToMove = movableArmies / 2;
                     if (armiesToMove >= 5)
                     {
-                        orders_->add(new AdvanceOrder(armiesToMove, potentialSource, territory));
+                        AdvanceOrder* order = new AdvanceOrder(armiesToMove, potentialSource, territory);
+                        orders_->add(order);
                         potentialSource->addPendingOutgoingArmies(armiesToMove);
                         issuedDeploymentsAndAdvancements_[potentialSource].push_back(territory);
 
-                        cout << "Issued advance order." << endl;
+                        cout << "Issued: " << *order << endl;
                         return false;
                     }
                 }
@@ -391,7 +399,7 @@ bool Player::playCard()
         Card* card = hand_->removeCard(randomCardIndex);
         Order* order = card->play();
 
-        cout << "Played card from hand." << endl;
+        cout << "Played :" << *card << endl;
 
         card->setOwner(nullptr);
         GameEngine::getDeck()->addCard(card);

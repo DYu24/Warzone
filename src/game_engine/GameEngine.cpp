@@ -20,6 +20,15 @@
 namespace
 {
     /**
+     * Helper method for debugging/demo. Pauses game execution until the user presses ENTER on the console.
+     */
+    void pause()
+    {
+        // cout << "Press [Enter] to Continue..." << endl;
+        // cin.ignore(numeric_limits<streamsize>::max(),'\n');
+    }
+
+    /**
      * Reads the specified directory and returns a vector of filenames for all the `.map` files
      */
     vector<string> getMapFileNames(const string &directory)
@@ -182,33 +191,39 @@ namespace
             gameEngine->attach(new PhaseObserver(gameEngine));
         }
     }
-
-    bool shouldPause = false;
-    void pause()
-    {
-        if (!shouldPause)
-        {
-            return;
-        }
-        cout << "Press [Enter] to Continue..." << endl;
-        cin.ignore(numeric_limits<streamsize>::max(),'\n');
-    }
 }
 
+// Initialize static members
 Deck* GameEngine::deck_ = new Deck();
 Map* GameEngine::map_ = new Map();
 vector<Player*> GameEngine::players_;
 
-// Constructor
-GameEngine::GameEngine() {}
+
+/* 
+===================================
+ Implementation for GameEngine class
+===================================
+ */
+
+// Constructors
+GameEngine::GameEngine() : currentPhase_(NONE), activePlayer_(nullptr) {}
+
+GameEngine::GameEngine(const GameEngine &gameEngine) : currentPhase_(gameEngine.currentPhase_), activePlayer_(gameEngine.activePlayer_) {}
 
 // Operator overloading
+const GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
+{
+    currentPhase_ = gameEngine.currentPhase_;
+    activePlayer_ = gameEngine.activePlayer_;
+    return *this;
+}
+
 ostream &operator<<(ostream &output, const GameEngine &gameEngine)
 {
     return output;
 }
 
-// Getters
+// Static getters
 Deck* GameEngine::getDeck()
 {
     return deck_;
@@ -231,6 +246,22 @@ vector<Player*> GameEngine::getPlayers()
     }
 
     return allPlayers;
+}
+
+// Getters (for subject state)
+Phase GameEngine::getPhase()
+{
+    return currentPhase_;
+}
+
+Player* GameEngine::getActivePlayer()
+{
+    return activePlayer_;
+}
+
+vector<Player*> GameEngine::getCurrentPlayers()
+{
+    return players_;
 }
 
 // Find the player who owns the specified territory. Return nullptr if the territory is unowned.
@@ -268,32 +299,14 @@ void GameEngine::assignToNeutralPlayer(Territory* territory)
     }
 }
 
-Phase GameEngine::getPhase()
-{
-    return currentPhase_;
-}
-
-Player* GameEngine::getActivePlayer()
-{
-    return activePlayer_;
-}
-
-vector<Player*> GameEngine::getCurrentPlayers()
-{
-    return players_;
-}
-
 /*
  * Setup the map and players to be included in the game based on the user's input
  */
 void GameEngine::startGame()
 {
-    string title = R"(
-    ====================================================
-                          WARZONE
-    ====================================================
-    )";
-    cout << title << endl;
+    cout << "====================================================" << endl;
+    cout << "                      WARZONE" << endl;
+    cout << "====================================================" << endl;
 
     map_ = selectMap();
     cout << endl;
@@ -304,7 +317,6 @@ void GameEngine::startGame()
     setupObservers(this);
 
     deck_->generateCards(20);
-    activePlayer_ = nullptr;
 }
 
 /*
@@ -381,6 +393,7 @@ void GameEngine::reinforcementPhase()
 
         player->addReinforcements(reinforcements);
         notify();
+        cout << "[" << player->getName() << "] received " << reinforcements << " reinforcements and now has " << player->getReinforcements() << " in total." << endl;
     }
 }
 
@@ -403,6 +416,7 @@ void GameEngine::issueOrdersPhase()
             }
 
             notify();
+            cout << "[" << player->getName() << "] ";
             player->issueOrder();
         }
     }
@@ -425,11 +439,10 @@ void GameEngine::executeOrdersPhase()
         Player* player = playersInTurn.at(i);
         preExecuteSnapshot[player] = player->getOwnedTerritories();
     }
-    int iter = 0;
+
     // ====== EXECUTION ======
     while (playersFinishedExecutingOrders.size() != playersInTurn.size())
     {
-        iter++;
         for (auto player : playersInTurn)
         {
             activePlayer_ = player;
@@ -448,9 +461,8 @@ void GameEngine::executeOrdersPhase()
                 notify();
                 order = player->getNextOrder();
 
-                cout << *order << endl;
+                cout << "[" << player->getName() << "] ";
                 order->execute(player);
-                cout << endl;
 
                 delete order;
                 order = nullptr;
@@ -464,10 +476,6 @@ void GameEngine::executeOrdersPhase()
                 playersFinishedExecutingOrders.insert(player);
                 playersFinishedDeploying.insert(player);
             }
-        }
-        if (iter > 100)
-        {
-            shouldPause = true;
         }
     }
 
@@ -487,26 +495,25 @@ void GameEngine::executeOrdersPhase()
 }
 
 /*
- * Core game
+ * Core game loop
  */
 void GameEngine::mainGameLoop()
 {
     bool shouldContinueGame = true;
     while (shouldContinueGame)
-    // for (int j = 0; j < 2; j++)
     {
         pause();
-        cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        cout << "\n=====================================================================================================================" << endl;
         currentPhase_ = REINFORCEMENT;
         reinforcementPhase();
 
         pause();
-        cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        cout << "\n=====================================================================================================================" << endl;
         currentPhase_ = ISSUE_ORDERS;
         issueOrdersPhase();
 
         pause();
-        cout << "\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
+        cout << "\n=====================================================================================================================" << endl;
         currentPhase_ = EXECUTE_ORDERS;
         executeOrdersPhase();
 
