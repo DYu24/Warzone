@@ -134,6 +134,8 @@ Map* MapLoader::loadMap(string filename)
 
         if (!map->validate())
         {
+            delete map;
+            map = nullptr;
             throw "Invalid map structure.";
         }
 

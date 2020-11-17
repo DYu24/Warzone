@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../player/Player.h"
-
 #include <string>
 #include <unordered_map>
 #include <vector>

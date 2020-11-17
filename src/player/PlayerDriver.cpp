@@ -5,8 +5,6 @@
 int main()
 {
     // Setup
-    vector<Continent*> continents;
-
     Territory* t1 = new Territory("Territory1");
     Territory* t2 = new Territory("Territory2");
     Territory* t3 = new Territory("Territory3");
@@ -22,6 +20,10 @@ int main()
         {t2, {t3, t4}},
         {t5, {t4}}
     };
+
+    Continent* c1 = new Continent("Continent1", 3);
+    c1->setTerritories({ t1, t2, t3, t4, t5 });
+    vector<Continent*> continents{ c1 };
     
     Map* map = new Map(continents, adjacencyList);
     GameEngine::setMap(map);
@@ -45,7 +47,7 @@ int main()
     vector<Territory*> toDefend = p1.toDefend();
 
     cout << "\nTerritories to defend: \n" << endl;
-    for (auto const &territory : toDefend)
+    for (const auto &territory : toDefend)
     {
         cout << "- " << *territory << endl;
     }
@@ -55,7 +57,7 @@ int main()
     vector<Territory*> toAttack = p1.toAttack();
 
     cout << "\nTerritories to attack: \n" << endl;
-    for (auto territory : toAttack)
+    for (const auto &territory : toAttack)
     {
         cout << "- " << *territory << endl;
     }
@@ -64,12 +66,7 @@ int main()
     p1.issueOrder();
     cout << p1 << endl;
 
-    delete t1;
-    delete t2;
-    delete t3;
-    delete t4;
-    delete t5;
-    delete map;
+    GameEngine::resetGameEngine();
     
     return 0;
 }

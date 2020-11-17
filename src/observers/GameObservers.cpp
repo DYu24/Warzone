@@ -332,6 +332,8 @@ void Subject::detach(Observer* observer)
 {
     auto removeIterator = remove(observers_.begin(), observers_.end(), observer);
     observers_.erase(removeIterator, observers_.end());
+    delete observer;
+    observer = nullptr;
 }
 
 // Notify all observers to update

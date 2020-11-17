@@ -208,7 +208,9 @@ void OrdersList::move(int source, int destination)
 // Delete an order from the OrderList specified by the `target` index.
 void OrdersList::remove(int target)
 {
-    orders_.erase(orders_.begin() + target);
+    auto orderToRemoveIterator = orders_.begin() + target;
+    delete *orderToRemoveIterator;
+    orders_.erase(orderToRemoveIterator);
 }
 
 

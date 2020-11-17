@@ -7,6 +7,9 @@ int main()
     Territory* t1 = new Territory("Quebec");
     Territory* t2 = new Territory("BC");
     Territory* t3 = new Territory("Ontario");
+    t1->addArmies(10);
+    t2->addArmies(5);
+    t3->addArmies(10);
 
     Player* player = new Player("Bob");
     Player* enemy = new Player("Alice");
@@ -20,7 +23,7 @@ int main()
     ordersList.add(new DeployOrder(player, 5, t1));
     ordersList.add(new AdvanceOrder(player, 5, t1, t3));
     ordersList.add(new BombOrder(player, t3));
-    ordersList.add(new AirliftOrder(player, 10, t1, t2));
+    ordersList.add(new AirliftOrder(player, 5, t1, t2));
     ordersList.add(new BlockadeOrder(player, t1));
     ordersList.add(new NegotiateOrder(player, enemy));
 
@@ -55,8 +58,7 @@ int main()
     delete t1;
     delete t2;
     delete t3;
-    delete player;
-    delete enemy;
+    GameEngine::resetGameEngine();
 
     return 0;
 }

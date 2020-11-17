@@ -36,8 +36,8 @@ int main()
 
     cout << endl;
 
-    Map map = *GameEngine::getMap();
-    vector<Territory*> allTerritoriesInMap = map.getTerritories();
+    Map* map = GameEngine::getMap();
+    vector<Territory*> allTerritoriesInMap = map->getTerritories();
     vector<Territory*> ownedTerritories;
 
     for (const auto &player : GameEngine::getPlayers())
@@ -62,11 +62,13 @@ int main()
 
 
     // ==============================
-    // Part 3 & 4:
+    // Part 3 & 4 & 5:
     // ==============================
 
-    cout << "\n********** PART 3 & 4 **********" << endl;
+    cout << "\n********** PART 3 & 4 & 5**********" << endl;
     gameEngine.mainGameLoop();
+
+    GameEngine::resetGameEngine();
 
     return 0;
 }

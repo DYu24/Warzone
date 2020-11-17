@@ -345,15 +345,15 @@ bool Map::checkContinentsValidity()
 // Helper method to validate that the map's territories all belong to only one continent.
 bool Map::checkTerritoriesValidity()
 {
-    unordered_set<Territory*> visitedTerritories;
+    unordered_set<string> visitedTerritories;
     for (const auto &continent : getContinents())
     {
         for (const auto &territory : continent->getTerritories())
         {
             // If territory has not been visited, add to set
-            if (visitedTerritories.find(territory) == visitedTerritories.end())
+            if (visitedTerritories.find(territory->getName()) == visitedTerritories.end())
             {
-                visitedTerritories.insert(territory);
+                visitedTerritories.insert(territory->getName());
             }
             else
             {

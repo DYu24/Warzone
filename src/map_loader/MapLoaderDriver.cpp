@@ -1,3 +1,4 @@
+#include "../game_engine/GameEngine.h"
 #include "MapLoader.h"
 #include <utility>
 #include <string>
@@ -21,7 +22,7 @@ int main()
     maps.push_back(make_pair("disconnected_continent", "INVALID MAP: CONTINENT IS NOT A CONNECTED SUBGRAPH"));
     maps.push_back(make_pair("empty", "INVALID MAP: EMPTY FILE"));
 
-    for (auto const &mapPair : maps)
+    for (const auto &mapPair : maps)
     {
         try
         {
@@ -39,6 +40,8 @@ int main()
             cout << errorMessage << "\n" << endl;
         }
     }
+
+    GameEngine::resetGameEngine();
 
     return 0;
 };

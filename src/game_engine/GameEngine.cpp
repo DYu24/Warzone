@@ -107,7 +107,6 @@ namespace
     // Create players based on user's input.
     vector<Player*> setupPlayers()
     {
-        vector<Player*> players;
         cout << "Enter the number of players for this game: ";
         
         int numberOfPlayers;
@@ -127,6 +126,7 @@ namespace
             break;
         }
 
+        vector<Player*> players;
         for (int i = 1; i <= numberOfPlayers; i++)
         {
             cout << "Enter a name for Player " << i << ": ";
@@ -144,7 +144,7 @@ namespace
     {
         bool gameStatsObserverOn = true;
         bool phaseObserverOn = true;
-        int selection;
+        int selection = 0;
 
         while (selection != 3)
         {
@@ -242,11 +242,17 @@ vector<Player*> GameEngine::getPlayers()
 // Static setters
 void GameEngine::setMap(Map* map)
 {
+    delete map_;
     map_ = map;
 }
 
 void GameEngine::setPlayers(vector<Player*> players)
 {
+    for (const auto &player : players_)
+    {
+        delete player;
+    }
+    players_.clear();
     players_ = players;
 }
 
@@ -309,7 +315,7 @@ void GameEngine::startGame()
     cout << "                      WARZONE" << endl;
     cout << "====================================================" << endl;
 
-    map_ = selectMap();
+    setMap(selectMap());
     cout << endl;
 
     players_ = setupPlayers();
@@ -508,18 +514,39 @@ void GameEngine::mainGameLoop()
         currentPhase_ = NONE;
 
         // Check for any winner and remove players who do not own any territories
-        for (const auto &player : players_)
+        for (auto &player : players_)
         {
             if (player->getOwnedTerritories().size() == map_->getAdjacencyList().size())
             {
                 shouldContinueGame = false;
                 break;
             }
+                        
+            if (player->getOwnedTerritories().size() == 0)
+            {
+                delete player;
+                player = nullptr;
+            }
         }
 
-        auto removeIterator = remove_if(players_.begin(), players_.end(), [](Player* p) { return p->getOwnedTerritories().size() == 0; });
+        auto removeIterator = remove_if(players_.begin(), players_.end(), [](const auto &p) { return p == nullptr; });
         players_.erase(removeIterator, players_.end());
 
         notify();
     }
+}
+
+// Deallocate static members of GameEngine class
+void GameEngine::resetGameEngine()
+{
+    delete deck_;
+    delete map_;
+    deck_ = nullptr;
+    map_ = nullptr;
+
+    for (const auto &player : players_)
+    {
+        delete player;
+    }
+    players_.clear();
 }

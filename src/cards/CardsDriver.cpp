@@ -1,3 +1,4 @@
+#include "../game_engine/GameEngine.h"
 #include "Cards.h"
 
 int main()
@@ -50,6 +51,7 @@ int main()
         if (playResult != nullptr)
         {
             cout << *playResult << endl;
+            delete playResult;
         }
         else
         {
@@ -74,6 +76,8 @@ int main()
     {
         cout << *card << endl;
     }
+
+    GameEngine::resetGameEngine();
 
     return 0;
 }

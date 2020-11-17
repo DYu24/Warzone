@@ -21,6 +21,7 @@ public:
     static void setMap(Map* map);
     static void setPlayers(vector<Player*> players);
     static void assignToNeutralPlayer(Territory* territory);
+    static void resetGameEngine();
     Phase getPhase() const;
     Player* getActivePlayer() const;
     vector<Player*> getCurrentPlayers() const;
