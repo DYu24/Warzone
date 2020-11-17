@@ -26,12 +26,12 @@ class Player
         ~Player();
         const Player &operator=(const Player &player);
         friend ostream &operator<<(ostream &output, const Player &player);
-        vector<Territory*> getOwnedTerritories();
-        string getName();
-        OrdersList getOrdersList();
-        Hand getHand();
-        vector<Player*> getDiplomaticRelations();
-        int getReinforcements();
+        vector<Territory*> getOwnedTerritories() const;
+        string getName() const;
+        OrdersList getOrdersList() const;
+        Hand getHand() const;
+        vector<Player*> getDiplomaticRelations() const;
+        int getReinforcements() const;
         void addReinforcements(int reinforcements);
         void addOwnedTerritory(Territory* territory);
         void removeOwnedTerritory(Territory* territory);
@@ -40,10 +40,10 @@ class Player
         Order* getNextOrder();
         Order* peekNextOrder();
         void drawCardFromDeck();
-        bool isNeutral();
-        bool isDoneIssuingOrders();
-        vector<Territory*> toDefend();
-        vector<Territory*> toAttack();
+        bool isNeutral() const;
+        bool isDoneIssuingOrders() const;
+        vector<Territory*> toDefend() const;
+        vector<Territory*> toAttack() const;
         void issueOrder();
 
     private:
@@ -60,4 +60,5 @@ class Player
         bool issueDeployOrder(vector<Territory*> territoriesToDefend);
         bool issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
         bool playCard();
+        bool advancePairingExists(Territory* source, Territory* destination);
 };

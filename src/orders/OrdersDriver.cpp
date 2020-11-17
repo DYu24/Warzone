@@ -24,30 +24,32 @@ int main()
     ordersList.add(new BlockadeOrder(player, t1));
     ordersList.add(new NegotiateOrder(player, enemy));
 
+
+
     // Show the OrderList
-    cout << "------" << "Original orders list: " << ordersList << "------" << endl;
-    for (auto const &orderPointer : ordersList.getOrders())
+    cout << "===== " << "Original orders list: " << ordersList << " =====" << endl;
+    for (const auto &order : ordersList.getOrders())
     {
-        cout << *orderPointer << endl;
-        cout << boolalpha << "Order is valid: " << orderPointer->validate() << endl;
-        orderPointer->execute();
+        cout << *order << endl;
+        cout << boolalpha << "Order is valid: " << order->validate() << endl;
+        order->execute();
         cout << endl;
     }
 
     // Show the OrderList after moving an order from index 1 to index 4
     ordersList.move(1, 4);
-    cout << "------" << "Orders list after moving an order: " << ordersList << "------" << endl;
-    for (auto const &orderPointer : ordersList.getOrders())
+    cout << "===== " << "Orders list after moving an order: " << ordersList << " =====" << endl;
+    for (const auto &order : ordersList.getOrders())
     {
-        cout << *orderPointer << endl;
+        cout << *order << endl;
     }
 
     // Show the OrderList after deleting an order at index 5
     ordersList.remove(5);
-    cout << "\n------" << "Orders list after deleting an order: " << ordersList << "------" << endl;
-    for (auto const &orderPointer : ordersList.getOrders())
+    cout << "\n===== " << "Orders list after deleting an order: " << ordersList << " =====" << endl;
+    for (const auto &order : ordersList.getOrders())
     {
-        cout << *orderPointer << endl;
+        cout << *order << endl;
     }
 
     delete t1;

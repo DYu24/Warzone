@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <time.h>
 
+
 /* 
 ===================================
  Implementation for Card class
@@ -15,11 +16,17 @@ ostream &operator<<(ostream &output, const Card &card)
     return card.print_(output);
 }
 
-// Setter
+// Getter and Setter
+Player Card::getOwner() const
+{
+    return *owner_;
+}
+
 void Card::setOwner(Player* owner)
 {
     owner_ = owner;
 }
+
 
 /* 
 ===================================
@@ -27,13 +34,12 @@ void Card::setOwner(Player* owner)
 ===================================
  */
 
-// Constructor
+// Constructors
 Deck::Deck() {}
 
-// Copy constructor
 Deck::Deck(const Deck &deck)
 {
-    for (auto card : deck.cards_)
+    for (const auto &card : deck.cards_)
     {
         cards_.push_back(card->clone());
     }
@@ -42,49 +48,47 @@ Deck::Deck(const Deck &deck)
 // Destructor
 Deck::~Deck()
 {
-    for (auto card : cards_)
+    for (const auto &card : cards_)
     {
         delete card;
     }
     cards_.clear();
 }
 
-// Assignment operator overloading
+// Operator overloading
 const Deck &Deck::operator=(const Deck &deck)
 {
     setCards(deck.cards_);
     return *this;
 }
 
-// Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Deck &deck)
 {
-    output << "[Deck] Size=" << deck.cards_.size();
+    output << "[Deck] Size=" << deck.size();
     return output;
 }
 
 // Getter and setter
-vector<Card*> Deck::getCards()
+vector<Card*> Deck::getCards() const
 {
     return cards_;
 }
 
 void Deck::setCards(vector<Card*> cards)
 {
-    for (auto card : cards_)
+    for (const auto &card : cards_)
     {
         delete card;
     }
     cards_.clear();
 
-    for (auto card : cards)
+    for (const auto &card : cards)
     {
         cards_.push_back(card->clone());
     }
 }
 
-// Pick a random card from the deck and return a pointer to it.
-// The selected card is removed from the deck.
+// Pick a random card from the deck and return a pointer to it. The selected card is removed from the deck.
 Card* Deck::draw()
 {
     if (cards_.empty())
@@ -101,15 +105,19 @@ Card* Deck::draw()
     return randomCard;
 }
 
+// Get the number of cards in the deck.
+int Deck::size() const
+{
+    return cards_.size();
+}
+
 // Add a card to the deck.
 void Deck::addCard(Card* card)
 {
     cards_.push_back(card);
 }
 
-/**
- * Generate a number of cards and insert into the deck.
- */
+// Generate a number of cards and insert into the deck.
 void Deck::generateCards(int numberOfCards)
 {
     const int NUMBER_OF_CARD_TYPES = 5;
@@ -135,11 +143,6 @@ void Deck::generateCards(int numberOfCards)
     }
 }
 
-int Deck::size()
-{
-    return cards_.size();
-}
-
 
 /* 
 ===================================
@@ -147,10 +150,9 @@ int Deck::size()
 ===================================
  */
 
-// Default constructor
+// Constructors
 Hand::Hand() {}
 
-// Copy constructor
 Hand::Hand(const Hand &hand)
 {
     for (auto card : hand.cards_)
@@ -162,45 +164,50 @@ Hand::Hand(const Hand &hand)
 // Destructor
 Hand::~Hand()
 {
-    for (auto card : cards_)
+    for (const auto &card : cards_)
     {
         delete card;
     }
     cards_.clear();
 }
 
-// Assignment operator overloading
+// Operator overloading
 const Hand &Hand::operator=(const Hand &hand)
 {
     setCards(hand.cards_);
     return *this;
 }
 
-// Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Hand &hand)
 {
-    output << "[Hand] Size=" << hand.cards_.size();
+    output << "[Hand] Size=" << hand.size();
     return output;
 }
 
 // Getter and setter
-vector<Card*> Hand::getCards()
+vector<Card*> Hand::getCards() const
 {
     return cards_;
 }
 
 void Hand::setCards(vector<Card*> cards)
 {
-    for (auto card : cards_)
+    for (const auto &card : cards_)
     {
         delete card;
     }
     cards_.clear();
 
-    for (auto card : cards)
+    for (const auto &card : cards)
     {
         cards_.push_back(card->clone());
     }
+}
+
+// Get the number of cards in the hand.
+int Hand::size() const
+{
+    return cards_.size();
 }
 
 // Add a card to the player's hand.
@@ -209,12 +216,13 @@ void Hand::addCard(Card* card)
     cards_.push_back(card);
 }
 
-// Remove and return a card from the player's hand indicated by its position.
+// Remove and return a card from the player's hand indicated by `position`.
 Card* Hand::removeCard(int position)
 {
     auto cardPosition = cards_.begin() + position;
     Card* card = *cardPosition;
     cards_.erase(cardPosition);
+
     return card;
 }
 
@@ -224,11 +232,6 @@ Order* Hand::playCardAt(int position)
     return cards_.at(position)->play();
 }
 
-int Hand::size()
-{
-    return cards_.size();
-}
-
 
 /* 
 ===================================
@@ -236,7 +239,7 @@ int Hand::size()
 ===================================
  */
 
-// Stream insertion operator overloading.
+// Operator overloading.
 ostream &BombCard::print_(ostream &output) const
 {
     output << "[BombCard]";
@@ -262,13 +265,14 @@ Order* BombCard::play()
     return new BombOrder(owner_, target);
 }
 
+
 /* 
 ===================================
  Implementation for ReinforcementCard class
 ===================================
  */
 
-// Stream insertion operator overloading.
+// Operator overloading.
 ostream &ReinforcementCard::print_(ostream &output) const
 {
     output << "[ReinforcementCard]";
@@ -281,7 +285,7 @@ Card* ReinforcementCard::clone() const
     return new ReinforcementCard();
 }
 
-// Generate an Order when the card is played.
+// Add 5 reinforcements to the player's pool when the card is played.
 Order* ReinforcementCard::play()
 {
     if (owner_ != nullptr)
@@ -299,7 +303,7 @@ Order* ReinforcementCard::play()
 ===================================
  */
 
-// Stream insertion operator overloading.
+// Operator overloading.
 ostream &BlockadeCard::print_(ostream &output) const
 {
     output << "[BlockadeCard]";
@@ -312,7 +316,7 @@ Card* BlockadeCard::clone() const
     return new BlockadeCard();
 }
 
-// Generate an BlockadeOrder when the card is played.
+// Generate a BlockadeOrder when the card is played.
 Order* BlockadeCard::play()
 {
     if (owner_ == nullptr)
@@ -322,7 +326,7 @@ Order* BlockadeCard::play()
 
     // Setup a blockade on the highest priority territory to defend that has any armies
     vector<Territory*> territoriesToDefend = owner_->toDefend();
-    for (auto const &potentialTerritory : territoriesToDefend)
+    for (const auto &potentialTerritory : territoriesToDefend)
     {
         if (potentialTerritory->getNumberOfArmies() > 0)
         {
@@ -330,6 +334,7 @@ Order* BlockadeCard::play()
         }
     }
 
+    // If unable to find suitable territory, then just pick the first one from the `toDefend()` list
     return new BlockadeOrder(owner_, territoriesToDefend.front());
 }
 
@@ -340,7 +345,7 @@ Order* BlockadeCard::play()
 ===================================
  */
 
-// Stream insertion operator overloading.
+// Operator overloading.
 ostream &AirliftCard::print_(ostream &output) const
 {
     output << "[AirliftCard]";
@@ -361,14 +366,14 @@ Order* AirliftCard::play()
         return new AirliftOrder();
     }
 
-    // Pick the highest priority territory to defend to airlift to
+    // Pick the highest priority territory to defend
     Territory* destination = owner_->toDefend().front();
 
     // Choose the player's territory with the most movable armies as the source
     int movableArmies = 0;
     int maxArmies = 0;
     Territory* source = owner_->getOwnedTerritories().front();
-    for (auto territory : owner_->getOwnedTerritories())
+    for (const auto &territory : owner_->getOwnedTerritories())
     {
         movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
         if (movableArmies > maxArmies)
@@ -392,7 +397,7 @@ Order* AirliftCard::play()
 ===================================
  */
 
-// Stream insertion operator overloading.
+// Operator overloading.
 ostream &DiplomacyCard::print_(ostream &output) const
 {
     output << "[DiplomacyCard]";
@@ -405,7 +410,7 @@ Card* DiplomacyCard::clone() const
     return new DiplomacyCard();
 }
 
-// Generate an NegotiateOrder when the card is played.
+// Generate a NegotiateOrder when the card is played.
 Order* DiplomacyCard::play()
 {
     if (owner_ == nullptr || GameEngine::getPlayers().size() < 2)
@@ -413,7 +418,7 @@ Order* DiplomacyCard::play()
         return new NegotiateOrder();
     }
 
-    Player* targetPlayer = nullptr;
+    Map* map = GameEngine::getMap();
     vector<Territory*> ownerTerritories = owner_->getOwnedTerritories();
     vector<Territory*> territoriesToDefend = owner_->toDefend();
 
@@ -423,10 +428,10 @@ Order* DiplomacyCard::play()
     for (; iterator != territoriesToDefend.end(); iterator++)
     {
         Territory* highestPriorityTerritory = *iterator;
-
-        int maxArmies = 0;
         Territory* mostReinforcedEnemyTerritory = nullptr;
-        for (auto territory : GameEngine::getMap()->getAdjacentTerritories(highestPriorityTerritory))
+        int maxArmies = 0;
+
+        for (const auto &territory : map->getAdjacentTerritories(highestPriorityTerritory))
         {
             bool isEnemyTerritory = find(ownerTerritories.begin(), ownerTerritories.end(), territory) == ownerTerritories.end();
             if (isEnemyTerritory && territory->getNumberOfArmies() > maxArmies)
@@ -438,25 +443,20 @@ Order* DiplomacyCard::play()
 
         if (mostReinforcedEnemyTerritory != nullptr)
         {
-            targetPlayer = GameEngine::getOwnerOf(mostReinforcedEnemyTerritory);
-            break;
+            Player* targetPlayer = GameEngine::getOwnerOf(mostReinforcedEnemyTerritory);
+            return new NegotiateOrder(owner_, targetPlayer);
         }
     }
 
     // If no suitable target player is found, pick a random enemy
-    if (targetPlayer == nullptr)
+    vector<Player*> enemyPlayers;
+    for (const auto &player : GameEngine::getPlayers())
     {
-        vector<Player*> enemyPlayers;
-        for (auto player : GameEngine::getPlayers())
+        if (player != owner_)
         {
-            if (player != owner_)
-            {
-                enemyPlayers.push_back(player);
-            }
+            enemyPlayers.push_back(player);
         }
-
-        targetPlayer = enemyPlayers.at(rand() % enemyPlayers.size());
     }
-
+    Player* targetPlayer = enemyPlayers.at(rand() % enemyPlayers.size());
     return new NegotiateOrder(owner_, targetPlayer);
 }

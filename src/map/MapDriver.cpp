@@ -12,6 +12,7 @@ int main()
     Continent* c1 = new Continent("Continent1", 3);
     Continent* c2 = new Continent("Continent2", 4);
 
+
     // ====== Create a valid map ======
     unordered_map<Territory*, vector<Territory*>> adjacencyList;
     adjacencyList[t1].push_back(t2);
@@ -30,6 +31,7 @@ int main()
     Map map1 = Map(continents, adjacencyList);
 
     cout << boolalpha << "Map 1: VALID = " << map1.validate() << endl;
+
 
 
     // ====== Create invalid maps ======

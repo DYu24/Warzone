@@ -16,7 +16,7 @@ int main()
     cout << '\n' << *GameEngine::getDeck() << endl;
 
     // Output the created players
-    for (auto const &player : GameEngine::getPlayers())
+    for (const auto &player : GameEngine::getPlayers())
     {
         cout << *player << endl;
     }
@@ -40,7 +40,7 @@ int main()
     vector<Territory*> allTerritoriesInMap = map.getTerritories();
     vector<Territory*> ownedTerritories;
 
-    for (auto const &player : GameEngine::getPlayers())
+    for (const auto &player : GameEngine::getPlayers())
     {
         // Print out the player to show that they now have reinforcements assigned to them
         cout << *player << endl;
@@ -62,10 +62,10 @@ int main()
 
 
     // ==============================
-    // Part 3:
+    // Part 3 & 4:
     // ==============================
 
-    cout << "\n********** PART 3 **********" << endl;
+    cout << "\n********** PART 3 & 4 **********" << endl;
     gameEngine.mainGameLoop();
 
     return 0;

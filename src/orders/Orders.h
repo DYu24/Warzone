@@ -26,19 +26,18 @@ public:
     friend ostream &operator<<(ostream &output, const Order &order);
     virtual Order* clone() const = 0;
     void execute();
-    virtual bool validate() = 0;
-    int getPriority();
-    virtual OrderType getType() = 0;
+    virtual bool validate() const = 0;
+    int getPriority() const;
+    virtual OrderType getType() const = 0;
 
 protected:
-    Player* issuer_;
-
     Order();
     Order(Player* issuer, int priority);
     Order(const Order &order);
     const Order &operator=(const Order &order);
     virtual void execute_() = 0;
     virtual ostream &print_(ostream &output) const = 0;
+    Player* issuer_;
 
 private:
     int priority_;
@@ -52,14 +51,14 @@ public:
     ~OrdersList();
     const OrdersList &operator=(const OrdersList &orders);
     friend ostream &operator<<(ostream &output, const OrdersList &orders);
-    vector<Order*> getOrders();
+    vector<Order*> getOrders() const;
     void setOrders(vector<Order*> orders);
+    Order* popTopOrder();
+    Order* peek();
+    int size() const;
     void add(Order* order);
     void move(int source, int destination);
     void remove(int target);
-    Order* popTopOrder();
-    Order* peek();
-    int size();
 
 private:
     vector<Order*> orders_;
@@ -72,12 +71,10 @@ public:
     DeployOrder(Player* issuer, int numberOfArmies, Territory* destination);
     DeployOrder(const DeployOrder &order);
     const DeployOrder &operator=(const DeployOrder &order);
-    int getNumberOfArmies();
-    Territory getDestination();
-    void addArmies(int additional);
     Order* clone() const;
-    bool validate();
-    OrderType getType();
+    void addArmies(int additional);
+    bool validate() const;
+    OrderType getType() const;
 
 protected:
     void execute_();
@@ -96,8 +93,8 @@ public:
     AdvanceOrder(const AdvanceOrder &order);
     const AdvanceOrder &operator=(const AdvanceOrder &order);
     Order* clone() const;
-    bool validate();
-    OrderType getType();
+    bool validate() const;
+    OrderType getType() const;
 
 protected:
     void execute_();
@@ -117,8 +114,8 @@ public:
     BombOrder(const BombOrder &order);
     const BombOrder &operator=(const BombOrder &order);
     Order* clone() const;
-    bool validate();
-    OrderType getType();
+    bool validate() const;
+    OrderType getType() const;
 
 protected:
     void execute_();
@@ -136,8 +133,8 @@ public:
     BlockadeOrder(const BlockadeOrder &order);
     const BlockadeOrder &operator=(const BlockadeOrder &order);
     Order* clone() const;
-    bool validate();
-    OrderType getType();
+    bool validate() const;
+    OrderType getType() const;
 
 protected:
     void execute_();
@@ -155,8 +152,8 @@ public:
     AirliftOrder(const AirliftOrder &order);
     const AirliftOrder &operator=(const AirliftOrder &order);
     Order* clone() const;
-    bool validate();
-    OrderType getType();
+    bool validate() const;
+    OrderType getType() const;
 
 protected:
     void execute_();
@@ -176,8 +173,8 @@ public:
     NegotiateOrder(const NegotiateOrder &order);
     const NegotiateOrder &operator=(const NegotiateOrder &order);
     Order* clone() const;
-    bool validate();
-    OrderType getType();
+    bool validate() const;
+    OrderType getType() const;
 
 protected:
     void execute_();

@@ -10,22 +10,18 @@
 
 namespace
 {
-    /*
-     * Custom comparator to sort Territories by their number of armies. 
-     */
+    // Custom comparator to sort Territories by their number of armies. 
     bool compareTerritoriesByArmies(Territory* t1, Territory* t2)
     {
         return t1->getNumberOfArmies() < t2->getNumberOfArmies();
     }
 
-    /*
-     * Custom comparator to sort Territories by the number of adjacent enemy territories and then by the number of armies.
-     */
-    bool compareTerritoriesByEnemiesAndArmies(Territory* t1, Territory* t2, Player* owner)
+    // Custom comparator to sort Territories by the number of adjacent enemy territories and then by the number of armies.
+    bool compareTerritoriesByEnemiesAndArmies(Territory* t1, Territory* t2, const Player* owner)
     {
         Map* map = GameEngine::getMap();
         int t1EnemyNeighbors = 0;
-        for (auto territory : map->getAdjacentTerritories(t1))
+        for (const auto &territory : map->getAdjacentTerritories(t1))
         {
             if (GameEngine::getOwnerOf(territory) != owner)
             {
@@ -34,7 +30,7 @@ namespace
         }
 
         int t2EnemyNeighbors = 0;
-        for (auto territory : map->getAdjacentTerritories(t2))
+        for (const auto &territory : map->getAdjacentTerritories(t2))
         {
             if (GameEngine::getOwnerOf(territory) != owner)
             {
@@ -51,16 +47,20 @@ namespace
     }
 }
 
-// Default constructor
+// Constructors
 Player::Player() : reinforcements_(0), name_("Neutral Player"), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(true), committed_(false) {}
 
-// Constructor
 Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), isNeutral_(false), committed_(false) {}
 
-// Copy constructor
 Player::Player(const Player &player)
-    : reinforcements_(player.reinforcements_), name_(player.name_), ownedTerritories_(player.ownedTerritories_), orders_(new OrdersList(*player.orders_)),
-    hand_(new Hand(*player.hand_)), diplomaticRelations_(player.diplomaticRelations_), isNeutral_(player.isNeutral_), committed_(player.committed_) {}
+    : reinforcements_(player.reinforcements_),
+      name_(player.name_),
+      ownedTerritories_(player.ownedTerritories_),
+      orders_(new OrdersList(*player.orders_)),
+      hand_(new Hand(*player.hand_)),
+      diplomaticRelations_(player.diplomaticRelations_),
+      isNeutral_(player.isNeutral_),
+      committed_(player.committed_) {}
 
 // Destructor
 Player::~Player()
@@ -71,7 +71,7 @@ Player::~Player()
     hand_ = nullptr;
 }
 
-// Assignment operator overloading
+// Operator overloading
 const Player &Player::operator=(const Player &player)
 {
     reinforcements_ = player.reinforcements_;
@@ -83,7 +83,6 @@ const Player &Player::operator=(const Player &player)
     return *this;
 }
 
-// Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Player &player)
 {
     output << "[Player] " << player.name_ << " has " << player.reinforcements_ << " reinforcements, " << player.ownedTerritories_.size() << " Territories, ";
@@ -92,32 +91,32 @@ ostream &operator<<(ostream &output, const Player &player)
 }
 
 // Getters
-vector<Territory*> Player::getOwnedTerritories()
+vector<Territory*> Player::getOwnedTerritories() const
 {
     return ownedTerritories_;
 }
 
-string Player::getName()
+string Player::getName() const
 {
     return name_;
 }
 
-OrdersList Player::getOrdersList()
+OrdersList Player::getOrdersList() const
 {
     return *orders_;
 }
 
-Hand Player::getHand()
+Hand Player::getHand() const
 {
     return *hand_;
 }
 
-vector<Player*> Player::getDiplomaticRelations()
+vector<Player*> Player::getDiplomaticRelations() const
 {
     return diplomaticRelations_;
 }
 
-int Player::getReinforcements()
+int Player::getReinforcements() const
 {
     return reinforcements_;
 }
@@ -141,13 +140,13 @@ void Player::removeOwnedTerritory(Territory* territory)
     ownedTerritories_.erase(removeIterator, ownedTerritories_.end());
 }
 
-// Adds a player to the list of diplomatic relations
+// Add an enemy player to the list of diplomatic relations for this current player
 void Player::addDiplomaticRelation(Player* player)
 {
     diplomaticRelations_.push_back(player);
 }
 
-// Clears the list of diplomatic relations with other players and the map of issued orders to territories
+// Clear the list of diplomatic relations and the map of issued orders to territories
 void Player::endTurn()
 {
     diplomaticRelations_.clear();
@@ -155,7 +154,7 @@ void Player::endTurn()
     committed_ = false;
 }
 
-// Return the next order to be executed from the Player's list of orders
+// Remove and return the next order to be executed from the Player's list of orders
 Order* Player::getNextOrder()
 {
     return orders_->popTopOrder();
@@ -182,35 +181,36 @@ void Player::drawCardFromDeck()
 }
 
 // Check whether player is neutral or not
-bool Player::isNeutral()
+bool Player::isNeutral() const
 {
     return isNeutral_;
 }
 
 // Check if the player is finished issuing orders
-bool Player::isDoneIssuingOrders()
+bool Player::isDoneIssuingOrders() const
 {
     return committed_ || isNeutral_;
 }
 
 // Return a list of territories to defend
-vector<Territory*> Player::toDefend()
+vector<Territory*> Player::toDefend() const
 {
     vector<Territory*> territoriesToDefend = ownedTerritories_;
-    sort(territoriesToDefend.begin(), territoriesToDefend.end(), [this](auto const &t1, auto const &t2){ return compareTerritoriesByEnemiesAndArmies(t1, t2, this); });
+    auto sortLambda = [this](auto t1, auto t2){ return compareTerritoriesByEnemiesAndArmies(t1, t2, this); };
+    sort(territoriesToDefend.begin(), territoriesToDefend.end(), sortLambda);
     return territoriesToDefend;
 }
 
 // Return a list of territories to attack
-vector<Territory*> Player::toAttack()
+vector<Territory*> Player::toAttack() const
 {
     vector<Territory*> attackableTerritories;
     unordered_set<Territory*> territoriesSeen;
     Map* map = GameEngine::getMap();
 
-    for (auto territory : ownedTerritories_)
+    for (const auto &territory : ownedTerritories_)
     {
-        for (auto neighbor : map->getAdjacentTerritories(territory))
+        for (const auto &neighbor : map->getAdjacentTerritories(territory))
         {
             bool isEnemyOwned = find(ownedTerritories_.begin(), ownedTerritories_.end(), neighbor) == ownedTerritories_.end();
             bool alreadySeen = territoriesSeen.find(neighbor) != territoriesSeen.end();
@@ -227,7 +227,7 @@ vector<Territory*> Player::toAttack()
     return attackableTerritories;
 }
 
-// Create an Order and place it in the Player's list of orders
+// Create an order and place it in the Player's list of orders
 void Player::issueOrder()
 {
     if (isNeutral_)
@@ -256,11 +256,9 @@ void Player::issueOrder()
     }
 }
 
-/*
- * Helper method to issue a DeployOrder for the Player.
- * Returns `true` if the Player is finished with deployments (i.e. no more reinforcements).
- * Returns `false` if the Player still has reinforcements to deploy
- */
+// Helper method to issue a DeployOrder for the Player.
+// Returns `true` if the Player is finished with deployments (i.e. no more reinforcements).
+// Returns `false` if the Player still has reinforcements to deploy
 bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
 {
     if (reinforcements_ > 0)
@@ -275,9 +273,9 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
         {
             if (issuedDeploymentsAndAdvancements_.find(*iterator) == issuedDeploymentsAndAdvancements_.end())
             {
-                destination = *iterator;
                 // Initialize the vector at the key specified by this territory
                 issuedDeploymentsAndAdvancements_[*iterator];
+                destination = *iterator;
                 break;
             }
         }
@@ -300,32 +298,19 @@ bool Player::issueDeployOrder(vector<Territory*> territoriesToDefend)
     return true;
 }
 
-/*
- * Helper method to issue AdvanceOrders for the Player
- * Returns `true` if the Player is finished with advancements.
- * Returns `false` if the Player still wants to issue advance orders.
- */
+// Helper method to issue AdvanceOrders for the Player
+// Returns `true` if the Player is finished with advancements.
+// Returns `false` if the Player still wants to issue advance orders.
 bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend)
 {
     Map* map = GameEngine::getMap();
-    for (auto const &territory : territoriesToAttack)
+    for (const auto &territory : territoriesToAttack)
     {
         vector<Territory*> neighboringTerritories = map->getAdjacentTerritories(territory);
-        for (auto const &potentialSource : neighboringTerritories)
+        for (const auto &potentialSource : neighboringTerritories)
         {
-            if (this == GameEngine::getOwnerOf(potentialSource))
+            if (this == GameEngine::getOwnerOf(potentialSource) && !advancePairingExists(potentialSource, territory))
             {
-                // Check if player has already issued an advance order from this `potentialSource` to this `territory`
-                auto issuedIterator = issuedDeploymentsAndAdvancements_.find(potentialSource);
-                if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
-                {
-                    vector<Territory*> pastAdvancements = issuedIterator->second;
-                    if (find(pastAdvancements.begin(), pastAdvancements.end(), territory) != pastAdvancements.end())
-                    {
-                        continue;
-                    }
-                }
-
                 // Only advance to this enemy territory if the player has any chance of conquering it
                 int movableArmies = potentialSource->getNumberOfArmies() + potentialSource->getPendingIncomingArmies() - potentialSource->getPendingOutgoingArmies();
                 int minimumArmiesRequiredToWin = (int)ceil(territory->getNumberOfArmies() / 0.6);
@@ -344,27 +329,16 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
         }
     }
 
-    for (auto const &territory : territoriesToDefend)
+    for (const auto &territory : territoriesToDefend)
     {
         // If the target territory already has 10 armies, then ignore since there's already enough
         if (territory->getNumberOfArmies() <= 10)
         {
             vector<Territory*> neighboringTerritories = map->getAdjacentTerritories(territory);
-            for (auto const &potentialSource : neighboringTerritories)
+            for (const auto &potentialSource : neighboringTerritories)
             {
-                if (this == GameEngine::getOwnerOf(potentialSource))
+                if (this == GameEngine::getOwnerOf(potentialSource) && !advancePairingExists(potentialSource, territory))
                 {
-                    // Check if player has already issued an advance order from this `potentialSource` to this `territory`
-                    auto issuedIterator = issuedDeploymentsAndAdvancements_.find(potentialSource);
-                    if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
-                    {
-                        vector<Territory*> pastAdvancements = issuedIterator->second;
-                        if (find(pastAdvancements.begin(), pastAdvancements.end(), territory) != pastAdvancements.end())
-                        {
-                            continue;
-                        }
-                    }
-
                     // Only choose source territories that can move at least 5 armies
                     int movableArmies = potentialSource->getNumberOfArmies() + potentialSource->getPendingIncomingArmies() - potentialSource->getPendingOutgoingArmies();
                     int armiesToMove = movableArmies / 2;
@@ -386,21 +360,21 @@ bool Player::issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Te
     return true;
 }
 
-/*
- * Helper method to play a random Card from the Player's hand, if any.
- * Returns `true` if the played Card requires no further action from the Player.
- * Returns `false` if further action needs to be taken (i.e. Deploy additional units from Reinforcement card).
- */
+// Helper method to play a random Card from the Player's hand, if any.
+// Returns `true` if the played Card requires no further action from the Player.
+// Returns `false` if further action needs to be taken (i.e. Deploy additional units from Reinforcement card).
 bool Player::playCard()
 {
     if (hand_->size() != 0)
     {
+        // Play a random card from hand
         int randomCardIndex = rand() % hand_->size();
         Card* card = hand_->removeCard(randomCardIndex);
         Order* order = card->play();
 
         cout << "Played :" << *card << endl;
 
+        // Return the played card back to the deck
         card->setOwner(nullptr);
         GameEngine::getDeck()->addCard(card);
 
@@ -417,4 +391,20 @@ bool Player::playCard()
     }
 
     return true;
+}
+
+// Check if player has already issued an advance order from `source` to `destination`
+bool Player::advancePairingExists(Territory* source, Territory* destination)
+{
+    auto issuedIterator = issuedDeploymentsAndAdvancements_.find(source);
+    if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
+    {
+        vector<Territory*> pastAdvancements = issuedIterator->second;
+        if (find(pastAdvancements.begin(), pastAdvancements.end(), destination) != pastAdvancements.end())
+        {
+            return true;
+        }
+    }
+
+    return false;
 }

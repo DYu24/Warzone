@@ -16,16 +16,16 @@ public:
     const Territory &operator=(const Territory &territory);
     friend bool operator== (const Territory &t1, const Territory &t2);
     friend ostream &operator<<(ostream &output, const Territory &territory);
-    string getName();
+    string getName() const;
+    int getNumberOfArmies() const;
+    int getPendingIncomingArmies() const;
+    int getPendingOutgoingArmies() const;
     void setName(string name);
-    int getNumberOfArmies();
-    void addArmies(int armies);
-    void removeArmies(int armies);
-    int getPendingIncomingArmies();
     void setPendingIncomingArmies(int armies);
-    void addPendingIncomingArmies(int armies);
-    int getPendingOutgoingArmies();
     void setPendingOutgoingArmies(int armies);
+    void removeArmies(int armies);
+    void addArmies(int armies);
+    void addPendingIncomingArmies(int armies);
     void addPendingOutgoingArmies(int armies);
 
 private:
@@ -41,13 +41,14 @@ public:
     Continent();
     Continent(string name, int controlValue);
     Continent(const Continent &continent);
+    ~Continent();
     const Continent &operator=(const Continent &continent);
     friend ostream &operator<<(ostream &output, const Continent &continent);
-    string getName();
+    string getName() const;
+    int getControlValue() const;
+    vector<Territory*> getTerritories() const;
     void setName(string name);
-    int getControlValue();
     void setControlValue(int value);
-    vector<Territory*> getTerritories();
     void setTerritories(vector<Territory*> territories);
     void addTerritory(Territory* territory);
 
@@ -66,11 +67,9 @@ public:
     ~Map();
     const Map &operator=(const Map &map);
     friend ostream &operator<<(ostream &output, const Map &map);
-    unordered_map<Territory*, vector<Territory*>> getAdjacencyList();
-    vector<Continent*> getContinents();
-    void setAdjacencyList(unordered_map<Territory*, vector<Territory*>> adjacencyList);
-    void setContinents(vector<Continent*> continents);
-    vector<Territory*> getTerritories();
+    unordered_map<Territory*, vector<Territory*>> getAdjacencyList() const;
+    vector<Continent*> getContinents() const;
+    vector<Territory*> getTerritories() const;
     vector<Territory*> getAdjacentTerritories(Territory* territory);
     bool validate();
 

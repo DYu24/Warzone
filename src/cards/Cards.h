@@ -17,6 +17,7 @@ public:
     friend ostream &operator<<(ostream &output, const Card &card);
     virtual Card* clone() const = 0;
     virtual Order* play() = 0;
+    Player getOwner() const;
     void setOwner(Player* owner);
 
 protected:
@@ -32,12 +33,12 @@ public:
     ~Deck();
     const Deck &operator=(const Deck &deck);
     friend ostream &operator<<(ostream &output, const Deck &deck);
-    vector<Card*> getCards();
+    vector<Card*> getCards() const;
     void setCards(vector<Card*> cards);
+    int size() const;
     void addCard(Card* card);
-    Card* draw();
     void generateCards(int numberOfCards);
-    int size();
+    Card* draw();
 
 private:
     vector<Card*> cards_;
@@ -52,12 +53,12 @@ public:
     ~Hand();
     const Hand &operator=(const Hand &hand);
     friend ostream &operator<<(ostream &output, const Hand &hand);
-    vector<Card*> getCards();
+    vector<Card*> getCards() const;
     void setCards(vector<Card*> cards);
+    int size() const;
     void addCard(Card* card);
     Card* removeCard(int position);
     Order* playCardAt(int position);
-    int size();
 
 private:
     vector<Card*> cards_;

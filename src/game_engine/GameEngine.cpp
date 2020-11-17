@@ -19,19 +19,15 @@
 
 namespace
 {
-    /**
-     * Helper method for debugging/demo. Pauses game execution until the user presses ENTER on the console.
-     */
+    // Helper method for debugging/demo. Pauses game execution until the user presses ENTER on the console.
     void pause()
     {
         // cout << "Press [Enter] to Continue..." << endl;
         // cin.ignore(numeric_limits<streamsize>::max(),'\n');
     }
 
-    /**
-     * Reads the specified directory and returns a vector of filenames for all the `.map` files
-     */
-    vector<string> getMapFileNames(const string &directory)
+    // Reads the specified directory and returns a vector of filenames for all the `.map` files.
+    vector<string> getMapFileNames(string directory)
     {
         vector<string> fileNames;
 
@@ -69,17 +65,15 @@ namespace
         return fileNames;
     }
 
-    /*
-    * Select and create a game map based on the user's selection
-    */
+    // Select and create a game map based on the user's selection.
     Map* selectMap()
     {
         // cout << "Select a map to play on: " << endl;
         // vector<string> maps = getMapFileNames("resources");
         // int i = 1;
-        // for (auto const &m : maps)
+        // for (const auto &map : maps)
         // {
-        //     cout << "[" << i++ << "] " << m << endl;
+        //     cout << "[" << i++ << "] " << map << endl;
         // }
 
         // while (true)
@@ -110,9 +104,8 @@ namespace
         // }
         return MapLoader::loadMap("../resources/canada.map");
     }
-    /*
-    * Create players based on user's input
-    */
+
+    // Create players based on user's input.
     vector<Player*> setupPlayers()
     {
         vector<Player*> players;
@@ -147,9 +140,7 @@ namespace
         return players;
     }
 
-    /**
-     * Turn on/off specified observers
-     */
+    // Turn on/off specified observers
     void setupObservers(GameEngine* gameEngine)
     {
         bool gameStatsObserverOn = true;
@@ -192,6 +183,7 @@ namespace
         }
     }
 }
+
 
 // Initialize static members
 Deck* GameEngine::deck_ = new Deck();
@@ -237,7 +229,7 @@ Map* GameEngine::getMap()
 vector<Player*> GameEngine::getPlayers()
 {
     vector<Player*> allPlayers;
-    for (auto player : players_)
+    for (const auto &player : players_)
     {
         if (!player->isNeutral())
         {
@@ -248,24 +240,29 @@ vector<Player*> GameEngine::getPlayers()
     return allPlayers;
 }
 
-// Static setter
+// Static setters
+void GameEngine::setMap(Map* map)
+{
+    map_ = map;
+}
+
 void GameEngine::setPlayers(vector<Player*> players)
 {
     players_ = players;
 }
 
 // Getters (for subject state)
-Phase GameEngine::getPhase()
+Phase GameEngine::getPhase() const
 {
     return currentPhase_;
 }
 
-Player* GameEngine::getActivePlayer()
+Player* GameEngine::getActivePlayer() const
 {
     return activePlayer_;
 }
 
-vector<Player*> GameEngine::getCurrentPlayers()
+vector<Player*> GameEngine::getCurrentPlayers() const
 {
     return players_;
 }
@@ -273,7 +270,7 @@ vector<Player*> GameEngine::getCurrentPlayers()
 // Find the player who owns the specified territory. Return nullptr if the territory is unowned.
 Player* GameEngine::getOwnerOf(Territory* territory)
 {
-    for (auto player : players_)
+    for (const auto &player : players_)
     {
         vector<Territory*> territories = player->getOwnedTerritories();
         if (find(territories.begin(), territories.end(), territory) != territories.end())
@@ -291,7 +288,8 @@ void GameEngine::assignToNeutralPlayer(Territory* territory)
     Player* owner = getOwnerOf(territory);
     owner->removeOwnedTerritory(territory);
 
-    auto iterator = find_if(players_.begin(), players_.end(), [](auto const &player) { return player->isNeutral(); });
+    auto isNeutralPlayer = [](auto const &player) { return player->isNeutral(); };
+    auto iterator = find_if(players_.begin(), players_.end(), isNeutralPlayer);
     if (iterator == players_.end())
     {
         Player* neutralPlayer = new Player();
@@ -305,9 +303,7 @@ void GameEngine::assignToNeutralPlayer(Territory* territory)
     }
 }
 
-/*
- * Setup the map and players to be included in the game based on the user's input
- */
+// Setup the map and players to be included in the game based on the user's input
 void GameEngine::startGame()
 {
     cout << "====================================================" << endl;
@@ -325,12 +321,10 @@ void GameEngine::startGame()
     deck_->generateCards(20);
 }
 
-/*
- * Goes through the startup phase of the game where:
- * - Order of the players is determined at random
- * - Territories are assigned to each player at random
- * - A base number of armies are assigned to each player
- */
+// Goes through the startup phase of the game where:
+// - Order of the players is determined at random
+// - Territories are assigned to each player at random
+// - A base number of armies are assigned to each player
 void GameEngine::startupPhase()
 {
     currentPhase_ = STARTUP;
@@ -341,7 +335,6 @@ void GameEngine::startupPhase()
 
     // Assign territories
     int playerIndex = 0;
-
     vector<Territory*> assignableTerritories = map_->getTerritories();
     while (!assignableTerritories.empty())
     {
@@ -355,18 +348,16 @@ void GameEngine::startupPhase()
     }
 
     const int NUMBER_OF_INITIAL_ARMIES = (-5 * players_.size()) + 50;
-    for (auto const &player : players_)
+    for (auto &player : players_)
     {
         player->addReinforcements(NUMBER_OF_INITIAL_ARMIES);
     }
 }
 
-/*
- * Assigns the appropriate amount of reinforcements for each player based on the territories they control.
- */
+// Assigns the appropriate amount of reinforcements for each player based on the territories they control.
 void GameEngine::reinforcementPhase()
 {
-    for (auto const &player : players_)
+    for (auto &player : players_)
     {
         activePlayer_ = player;
 
@@ -374,11 +365,11 @@ void GameEngine::reinforcementPhase()
         int reinforcements = floor(playerTerritories.size() / 3);
     
         // Check if the player owns all members of any territories
-        for (auto const &continent : map_->getContinents())
+        for (const auto &continent : map_->getContinents())
         {
             int numberOfContinentMembersOwned = 0;
             vector<Territory*> continentMembers = continent->getTerritories();
-            for (auto const &member : continentMembers)
+            for (const auto &member : continentMembers)
             {
                 if (find(playerTerritories.begin(), playerTerritories.end(), member) != playerTerritories.end())
                 {
@@ -403,15 +394,13 @@ void GameEngine::reinforcementPhase()
     }
 }
 
-/**
- * Issue orders one-by-one in a round-robin fashion over all the players
- */
+// Issue orders one-by-one in a round-robin fashion over all the players
 void GameEngine::issueOrdersPhase()
 {
     unordered_set<Player*> playersFinishedIssuingOrders;
     while (playersFinishedIssuingOrders.size() != players_.size())
     {
-        for (auto const &player : players_)
+        for (auto &player : players_)
         {
             activePlayer_ = player;
 
@@ -428,9 +417,7 @@ void GameEngine::issueOrdersPhase()
     }
 }
 
-/*
- * Executes players' orders in a round-robin fashion until all players have no orders left to execute.
- */
+// Executes players' orders in a round-robin fashion until all players have no orders left to execute.
 void GameEngine::executeOrdersPhase()
 {
     vector<Player*> playersInTurn = players_;
@@ -440,16 +427,15 @@ void GameEngine::executeOrdersPhase()
     // ====== PRE-EXECUTION ======
     // Take a snapshot of the players' owned territories before proceeding with the order executions
     unordered_map<Player*, vector<Territory*>> preExecuteSnapshot;
-    for (int i = 0; i < playersInTurn.size(); i++)
+    for (const auto &player : playersInTurn)
     {
-        Player* player = playersInTurn.at(i);
         preExecuteSnapshot[player] = player->getOwnedTerritories();
     }
 
     // ====== EXECUTION ======
     while (playersFinishedExecutingOrders.size() != playersInTurn.size())
     {
-        for (auto player : playersInTurn)
+        for (auto &player : playersInTurn)
         {
             activePlayer_ = player;
             Order* order = player->peekNextOrder();
@@ -464,15 +450,16 @@ void GameEngine::executeOrdersPhase()
                     continue;
                 }
 
+                // Notify for phase observer
                 notify();
-                order = player->getNextOrder();
 
+                order = player->getNextOrder();
                 cout << "[" << player->getName() << "] ";
                 order->execute();
-
                 delete order;
                 order = nullptr;
 
+                // Notify for game statistics observer
                 notify();
             }
             // Current player has no orders left to execute this turn
@@ -487,12 +474,10 @@ void GameEngine::executeOrdersPhase()
 
     // ====== POST-EXECUTION ======
     // If a player has conquered at least one territory, draw a card
-    for (int i = 0; i < playersInTurn.size(); i++)
+    for (auto &player : playersInTurn)
     {
-        Player* player = playersInTurn.at(i);
         vector<Territory*> preExecuteTerritories = preExecuteSnapshot.at(player);
         vector<Territory*> postExecuteTerritories = player->getOwnedTerritories();
-
         if (preExecuteTerritories.size() <= postExecuteTerritories.size() && preExecuteTerritories != postExecuteTerritories)
         {
             player->drawCardFromDeck();
@@ -500,9 +485,7 @@ void GameEngine::executeOrdersPhase()
     }
 }
 
-/*
- * Core game loop
- */
+// Core game loop
 void GameEngine::mainGameLoop()
 {
     bool shouldContinueGame = true;
@@ -526,9 +509,8 @@ void GameEngine::mainGameLoop()
         currentPhase_ = NONE;
 
         // Check for any winner and remove players who do not own any territories
-        for (int i = 0; i < players_.size(); i++)
+        for (const auto &player : players_)
         {
-            Player* player = players_.at(i);
             if (player->getOwnedTerritories().size() == map_->getAdjacencyList().size())
             {
                 shouldContinueGame = false;

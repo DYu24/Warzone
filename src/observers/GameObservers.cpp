@@ -6,6 +6,7 @@ using namespace std;
 
 namespace
 {
+    // Color codes to make console output more distinct
     const unordered_map<int, string> PLAYER_COLOR_CODES{
         {0, "\e[0;31m"},
         {1, "\e[0;32m"},
@@ -17,6 +18,7 @@ namespace
     const string WHITE_BOLD_COLOR_CODE = "\e[1;37m";
     const string RESET_COLOR_CODE = "\e[0m";
 
+    // Helper function to determine which player gets which color code based on its index
     string getPlayerColorCode(Player* player, vector<Player*> allPlayers)
     {
         if (player->isNeutral())
@@ -61,7 +63,8 @@ PhaseObserver::PhaseObserver() : Observer(), lastPhase_(NONE), lastActivePlayer_
 
 PhaseObserver::PhaseObserver(Subject* subject) : Observer(subject), lastPhase_(NONE), lastActivePlayer_(nullptr) {}
 
-PhaseObserver::PhaseObserver(const PhaseObserver &observer) : Observer(observer), lastPhase_(observer.lastPhase_), lastActivePlayer_(observer.lastActivePlayer_) {}
+PhaseObserver::PhaseObserver(const PhaseObserver &observer)
+    : Observer(observer), lastPhase_(observer.lastPhase_), lastActivePlayer_(observer.lastActivePlayer_) {}
 
 // Assignment operator overloading
 const PhaseObserver &PhaseObserver::operator=(const PhaseObserver &observer)
@@ -72,6 +75,7 @@ const PhaseObserver &PhaseObserver::operator=(const PhaseObserver &observer)
     return *this;
 }
 
+// Update observer
 void PhaseObserver::update()
 {
     if (stateChanged())
@@ -81,7 +85,8 @@ void PhaseObserver::update()
     }
 }
 
-void PhaseObserver::display()
+// Output the subject state to console
+void PhaseObserver::display() const
 {
     Phase currentPhase = subject_->getPhase();
 
@@ -138,11 +143,13 @@ void PhaseObserver::display()
     cout << RESET_COLOR_CODE;
 }
 
-bool PhaseObserver::stateChanged()
+// Check if the state of the subject has changed
+bool PhaseObserver::stateChanged() const
 {
     return lastPhase_ != subject_->getPhase() || lastActivePlayer_ != subject_->getActivePlayer();
 }
 
+// Take a snapshot of the subject's state
 void PhaseObserver::saveState()
 {
     lastPhase_ = subject_->getPhase();
@@ -161,13 +168,14 @@ GameStatisticsObserver::GameStatisticsObserver() : Observer() {}
 
 GameStatisticsObserver::GameStatisticsObserver(Subject* subject) : Observer(subject)
 {
-    for (auto const &player : subject_->getCurrentPlayers())
+    for (const auto &player : subject_->getCurrentPlayers())
     {
         lastSetOfPlayers_.push_back(*player);
     }
 }
 
-GameStatisticsObserver::GameStatisticsObserver(const GameStatisticsObserver &observer) : Observer(observer), lastSetOfPlayers_(observer.lastSetOfPlayers_) {}
+GameStatisticsObserver::GameStatisticsObserver(const GameStatisticsObserver &observer)
+    : Observer(observer), lastSetOfPlayers_(observer.lastSetOfPlayers_) {}
 
 // Assignment operator overloading
 const GameStatisticsObserver &GameStatisticsObserver::operator=(const GameStatisticsObserver &observer)
@@ -177,6 +185,7 @@ const GameStatisticsObserver &GameStatisticsObserver::operator=(const GameStatis
     return *this;
 }
 
+// Update observer
 void GameStatisticsObserver::update()
 {
     if (stateChanged())
@@ -186,12 +195,13 @@ void GameStatisticsObserver::update()
     }
 }
 
-void GameStatisticsObserver::display()
+// Output the subject state to console
+void GameStatisticsObserver::display() const
 {
     vector<Player*> allPlayers = subject_->getCurrentPlayers();
 
     int totalNumberOfTerritories = 0;
-    for (auto const &player : allPlayers)
+    for (const auto &player : allPlayers)
     {
         totalNumberOfTerritories += player->getOwnedTerritories().size();
     }
@@ -204,7 +214,7 @@ void GameStatisticsObserver::display()
     cout << left << setw(20) << setfill(' ') << "Territories";
     cout << left << setw(20) << setfill(' ') << "% Controlled" << endl;
 
-    for (auto const &player : allPlayers)
+    for (const auto &player : allPlayers)
     {
         int territoriesOwned = player->getOwnedTerritories().size();
         double percentControlled = (double)territoriesOwned / totalNumberOfTerritories * 100;
@@ -224,7 +234,8 @@ void GameStatisticsObserver::display()
     cout << RESET_COLOR_CODE;
 }
 
-bool GameStatisticsObserver::stateChanged()
+// Check if the state of the subject has changed
+bool GameStatisticsObserver::stateChanged() const
 {
     vector<Player*> allPlayers = subject_->getCurrentPlayers();
     if (lastSetOfPlayers_.size() == allPlayers.size())
@@ -243,6 +254,7 @@ bool GameStatisticsObserver::stateChanged()
     return true;
 }
 
+// Take a snapshot of the subject's state
 void GameStatisticsObserver::saveState()
 {
     lastSetOfPlayers_.clear();
@@ -274,7 +286,7 @@ void Subject::detach(Observer* observer)
 // Notify all observers to update
 void Subject::notify()
 {
-    for (auto const &observer : observers_)
+    for (const auto &observer : observers_)
     {
         observer->update();
     }

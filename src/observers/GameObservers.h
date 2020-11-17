@@ -28,7 +28,7 @@ class Observer
         Observer(Subject* subject);
         Observer(const Observer &observer);
         const Observer &operator=(const Observer &observer);
-        virtual bool stateChanged() = 0;
+        virtual bool stateChanged() const = 0;
         virtual void saveState() = 0;
 };
 
@@ -40,10 +40,10 @@ class PhaseObserver : public Observer
         PhaseObserver(const PhaseObserver &observer);
         const PhaseObserver &operator=(const PhaseObserver &observer);
         void update();
-        void display();
+        void display() const;
 
     protected:
-        bool stateChanged();
+        bool stateChanged() const;
         void saveState();
 
     private:
@@ -59,10 +59,10 @@ class GameStatisticsObserver : public Observer
         GameStatisticsObserver(const GameStatisticsObserver &observer);
         const GameStatisticsObserver &operator=(const GameStatisticsObserver &observer);
         void update();
-        void display();
+        void display() const;
 
     protected:
-        bool stateChanged();
+        bool stateChanged() const;
         void saveState();
 
     private:
@@ -74,15 +74,15 @@ class Subject
     public:
         virtual ~Subject()
         {
-            for (auto observer : observers_)
+            for (const auto &observer : observers_)
             {
                 delete observer;
             }
             observers_.clear();
         }
-        virtual Phase getPhase() = 0;
-        virtual Player* getActivePlayer() = 0;
-        virtual vector<Player*> getCurrentPlayers() = 0;
+        virtual Phase getPhase() const = 0;
+        virtual Player* getActivePlayer() const = 0;
+        virtual vector<Player*> getCurrentPlayers() const = 0;
         void attach(Observer* observer);
         void detach(Observer* observer);
         void notify();

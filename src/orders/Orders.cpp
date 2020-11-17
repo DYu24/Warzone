@@ -6,20 +6,16 @@
 
 namespace
 {
-    /*
-     * Custom comparator to sort Orders by priority
-     */
+    // Custom comparator to sort Orders by priority
     bool compareOrders(Order* order1, Order* order2)
     {
         return order1->getPriority() < order2->getPriority();
     }
-
-    /**
-     * Helper function to check whether a territory can be attacked by a specific player.
-     * Returns `true` if the attacker already owns the target territory
-     * OR
-     * if there is no diplomacy between the attacker and the owner of the target.
-     */
+    
+    // Helper function to check whether a territory can be attacked by a specific player.
+    // Returns `true` if the attacker already owns the target territory
+    // OR
+    // if there is no diplomacy between the attacker and the owner of the target.
     bool canAttack(Player* attacker, Territory* target)
     {
         Player* ownerOfTarget = GameEngine::getOwnerOf(target);
@@ -49,12 +45,17 @@ Order::Order(Player* issuer, int priority) : issuer_(issuer), priority_(priority
 
 Order::Order(const Order &order) : issuer_(order.issuer_), priority_(order.priority_) {}
 
-// Assignment operator overloading
+// Operator overloading
 const Order &Order::operator=(const Order &order)
 {
     issuer_ = order.issuer_;
     priority_ = order.priority_;
     return *this;
+}
+
+ostream &operator<<(ostream &output, const Order &order)
+{
+    return order.print_(output);
 }
 
 // Validate and execute the Order. Invalid orders will have no effect.
@@ -70,14 +71,8 @@ void Order::execute()
     }
 }
 
-// Stream insertion operator overloading
-ostream &operator<<(ostream &output, const Order &order)
-{
-    return order.print_(output);
-}
-
 // Get order priority
-int Order::getPriority()
+int Order::getPriority() const
 {
     return priority_;
 }
@@ -89,13 +84,12 @@ int Order::getPriority()
 ===================================
  */
 
-// Constructor
+// Constructors
 OrdersList::OrdersList() {}
 
-// Copy constructor
 OrdersList::OrdersList(const OrdersList &orders)
 {
-    for (auto order : orders.orders_)
+    for (const auto &order : orders.orders_)
     {
         orders_.push_back(order->clone());
     }
@@ -104,45 +98,72 @@ OrdersList::OrdersList(const OrdersList &orders)
 // Destructor
 OrdersList::~OrdersList()
 {
-    for (auto order : orders_)
+    for (const auto &order : orders_)
     {
         delete order;
     }
     orders_.clear();
 }
 
-// Assignment operator overloading
+// Operator overloading
 const OrdersList &OrdersList::operator=(const OrdersList &orders)
 {
     setOrders(orders.orders_);
     return *this;
 }
 
-// Stream insertion operator overloading
 ostream &operator<<(ostream &output, const OrdersList &orders)
 {
-    output << "[Orders List] Size=" << orders.orders_.size();
+    output << "[Orders List] Size=" << orders.size();
     return output;
 }
 
 // Getter and setter
-vector<Order*> OrdersList::getOrders()
+vector<Order*> OrdersList::getOrders() const
 {
     return orders_;
 }
 
 void OrdersList::setOrders(vector<Order*> orders)
 {
-    for (auto order : orders_)
+    for (const auto &order : orders_)
     {
         delete order;
     }
     orders_.clear();
 
-    for (auto order : orders)
+    for (const auto &order : orders)
     {
         orders_.push_back(order->clone());
     }
+}
+
+// Pop the first order in the OrderList according to priority
+Order* OrdersList::popTopOrder()
+{
+    Order* topOrder = peek();
+    orders_.erase(orders_.begin());
+
+    return topOrder;
+}
+
+// Get the first order in the OrderList according to priority without removing it
+Order* OrdersList::peek()
+{
+    if (orders_.empty())
+    {
+        return nullptr;
+    }
+
+    sort(orders_.begin(), orders_.end(), compareOrders);
+
+    return orders_.front();
+}
+
+// Return the number of orders in the OrdersList
+int OrdersList::size() const
+{
+    return orders_.size();
 }
 
 // Add an order to the OrderList.
@@ -190,33 +211,6 @@ void OrdersList::remove(int target)
     orders_.erase(orders_.begin() + target);
 }
 
-// Pop the first order in the OrderList according to priority
-Order* OrdersList::popTopOrder()
-{
-    Order* topOrder = peek();
-    orders_.erase(orders_.begin());
-
-    return topOrder;
-}
-
-// Get the first order in the OrderList according to priority without removing it
-Order* OrdersList::peek()
-{
-    if (orders_.empty())
-    {
-        return nullptr;
-    }
-
-    sort(orders_.begin(), orders_.end(), compareOrders);
-
-    return orders_.front();
-}
-
-int OrdersList::size()
-{
-    return orders_.size();
-}
-
 
 /* 
 ===================================
@@ -224,16 +218,14 @@ int OrdersList::size()
 ===================================
  */
 
-// Default constructor
+// Constructors
 DeployOrder::DeployOrder() : Order(nullptr, 1), numberOfArmies_(0), destination_(nullptr) {}
 
-// Constructor
 DeployOrder::DeployOrder(Player* issuer, int numberOfArmies, Territory* destination) : Order(issuer, 1), numberOfArmies_(numberOfArmies), destination_(destination) {}
 
-// Copy constructor
 DeployOrder::DeployOrder(const DeployOrder &order) : Order(order), numberOfArmies_(order.numberOfArmies_), destination_(order.destination_) {}
 
-// Assignment operator overloading
+// Operator overloading
 const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
 {
     Order::operator=(order);
@@ -242,50 +234,6 @@ const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
     return *this;
 }
 
-// Getters
-int DeployOrder::getNumberOfArmies()
-{
-    return numberOfArmies_;
-}
-
-Territory DeployOrder::getDestination()
-{
-    return *destination_;
-}
-
-// Add a number of armies to deploy to the order
-void DeployOrder::addArmies(int additional)
-{
-    numberOfArmies_ += additional;
-}
-
-// Return a pointer to a new instance of DeployOrder.
-Order* DeployOrder::clone() const
-{
-    return new DeployOrder(*this);
-}
-
-// Checks that the DeployOrder is valid.
-bool DeployOrder::validate()
-{   
-    if (issuer_ == nullptr || destination_ == nullptr)
-    {
-        return false;
-    }
-
-    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
-    return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
-}
-
-// Executes the DeployOrder.
-void DeployOrder::execute_()
-{
-    destination_->addArmies(numberOfArmies_);
-    destination_->setPendingIncomingArmies(0);
-    cout << "Deployed " << numberOfArmies_ << " armies to " << destination_->getName() << "." << endl;
-}
-
-// Stream insertion operator overloading
 ostream &DeployOrder::print_(ostream &output) const
 {
     output << "[DeployOrder]";
@@ -298,11 +246,44 @@ ostream &DeployOrder::print_(ostream &output) const
     return output;
 }
 
+// Return a pointer to a new instance of DeployOrder.
+Order* DeployOrder::clone() const
+{
+    return new DeployOrder(*this);
+}
+
+// Add a number of armies to deploy to the order
+void DeployOrder::addArmies(int additional)
+{
+    numberOfArmies_ += additional;
+}
+
+// Checks that the DeployOrder is valid.
+bool DeployOrder::validate() const
+{   
+    if (issuer_ == nullptr || destination_ == nullptr)
+    {
+        return false;
+    }
+
+    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
+    return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
+}
+
 // Get the type of the Order sub-class
-OrderType DeployOrder::getType()
+OrderType DeployOrder::getType() const
 {
     return DEPLOY;
 }
+
+// Executes the DeployOrder.
+void DeployOrder::execute_()
+{
+    destination_->addArmies(numberOfArmies_);
+    destination_->setPendingIncomingArmies(0);
+    cout << "Deployed " << numberOfArmies_ << " armies to " << destination_->getName() << "." << endl;
+}
+
 
 /* 
 ===================================
@@ -310,18 +291,16 @@ OrderType DeployOrder::getType()
 ===================================
  */
 
-// Default constructor
+// Constructors
 AdvanceOrder::AdvanceOrder() : Order(), numberOfArmies_(0), source_(nullptr), destination_(nullptr) {}
 
-// Constructor
 AdvanceOrder::AdvanceOrder(Player* issuer, int numberOfArmies, Territory* source, Territory* destination)
     : Order(issuer, 4), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
-// Copy constructor
 AdvanceOrder::AdvanceOrder(const AdvanceOrder &order)
     : Order(order), numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
 
-// Assignment operator overloading
+// Operator overloading
 const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
 {
     Order::operator=(order);
@@ -331,6 +310,18 @@ const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
     return *this;
 }
 
+ostream &AdvanceOrder::print_(ostream &output) const
+{
+    output << "[AdvanceOrder]";
+
+    if (source_ != nullptr && destination_ != nullptr)
+    {
+        output << " " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    }
+
+    return output;
+}
+
 // Return a pointer to a new instace of AdvanceOrder
 Order* AdvanceOrder::clone() const
 {
@@ -338,15 +329,14 @@ Order* AdvanceOrder::clone() const
 }
 
 // Checks that the AdvanceOrder is valid.
-bool AdvanceOrder::validate()
+bool AdvanceOrder::validate() const
 {
     if (issuer_ == nullptr || source_ == nullptr || destination_ == nullptr)
     {
         return false;
     }
 
-    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
-
+    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     bool hasAnyArmiesToAdvance = source_->getNumberOfArmies() > 0;
 
@@ -359,7 +349,7 @@ void AdvanceOrder::execute_()
     Player* defender = GameEngine::getOwnerOf(destination_);
     bool offensive = issuer_ != defender;
 
-    // Recalculate how many armies could actually be moved in case the state of the territory has changed due to an attack
+    // Recalculate how many armies could actually be moved (in case the state of the territory has changed due to an attack)
     int movableArmiesFromSource = min(source_->getNumberOfArmies(), numberOfArmies_); 
 
     if (offensive)
@@ -405,21 +395,8 @@ void AdvanceOrder::execute_()
     source_->setPendingOutgoingArmies(0);
 }
 
-// Stream insertion operator overloading
-ostream &AdvanceOrder::print_(ostream &output) const
-{
-    output << "[AdvanceOrder]";
-
-    if (source_ != nullptr && destination_ != nullptr)
-    {
-        output << " " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
-    }
-
-    return output;
-}
-
 // Get the type of the Order sub-class
-OrderType AdvanceOrder::getType()
+OrderType AdvanceOrder::getType() const
 {
     return ADVANCE;
 }
@@ -431,21 +408,31 @@ OrderType AdvanceOrder::getType()
 ===================================
  */
 
-// Default constructor
+// Constructors
 BombOrder::BombOrder() : Order(), target_(nullptr) {}
 
-// Constructor
 BombOrder::BombOrder(Player* issuer, Territory* target) : Order(issuer, 4), target_(target) {}
 
-// Copy constructor
 BombOrder::BombOrder(const BombOrder &order) : Order(order), target_(order.target_) {}
 
-// Assignment operator overloading
+// Operator overloading
 const BombOrder &BombOrder::operator=(const BombOrder &order)
 {
     Order::operator=(order);
     target_ = order.target_;
     return *this;
+}
+
+ostream &BombOrder::print_(ostream &output) const
+{
+    output << "[BombOrder]";
+
+    if (target_ != nullptr)
+    {
+        output << " Target: " << target_->getName();
+    }
+
+    return output;
 }
 
 // Return a pointer to a new instance of BombOrder.
@@ -455,14 +442,14 @@ Order* BombOrder::clone() const
 }
 
 // Checks that the BombOrder is valid.
-bool BombOrder::validate()
+bool BombOrder::validate() const
 {
     if (issuer_ == nullptr || target_ == nullptr)
     {
         return false;
     }
 
-    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
+    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
     bool validTargetTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), target_) == currentPlayerTerritories.end();
     return validTargetTerritory && canAttack(issuer_, target_);
 }
@@ -476,21 +463,8 @@ void BombOrder::execute_()
     cout << target_->getNumberOfArmies() << " remaining." << endl;
 }
 
-// Stream insertion operator overloading
-ostream &BombOrder::print_(ostream &output) const
-{
-    output << "[BombOrder]";
-
-    if (target_ != nullptr)
-    {
-        output << " Target: " << target_->getName();
-    }
-
-    return output;
-}
-
 // Get the type of the Order sub-class
-OrderType BombOrder::getType()
+OrderType BombOrder::getType() const
 {
     return BOMB;
 }
@@ -502,16 +476,14 @@ OrderType BombOrder::getType()
 ===================================
  */
 
-// Default constructor
+// Constructors
 BlockadeOrder::BlockadeOrder() : Order(nullptr, 3), territory_(nullptr) {}
 
-// Constructor
 BlockadeOrder::BlockadeOrder(Player* issuer, Territory* territory) : Order(issuer, 3), territory_(territory) {}
 
-// Copy constructor
 BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order), territory_(order.territory_) {}
 
-// Assignment operator overloading
+// Operator overloading
 const BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order)
 {
     Order::operator=(order);
@@ -519,34 +491,6 @@ const BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order)
     return *this;
 }
 
-// Return a pointer to a new instance of BlockadeOrder.
-Order* BlockadeOrder::clone() const
-{
-    return new BlockadeOrder(*this);
-}
-
-// Checks that the BlockadeOrder is valid.
-bool BlockadeOrder::validate()
-{
-    if (issuer_ == nullptr || territory_ == nullptr)
-    {
-        return false;
-    }
-
-    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
-    return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), territory_) != currentPlayerTerritories.end();
-}
-
-// Executes the BlockadeOrder.
-void BlockadeOrder::execute_()
-{
-    territory_->addArmies(territory_->getNumberOfArmies());
-    GameEngine::assignToNeutralPlayer(territory_);
-    cout << "Blockade called on " << territory_->getName() << ". ";
-    cout << territory_->getNumberOfArmies() << " neutral armies now occupy this territory." << endl;
-}
-
-// Stream insertion operator overloading
 ostream &BlockadeOrder::print_(ostream &output) const
 {
     output << "[BlockadeOrder]";
@@ -559,8 +503,35 @@ ostream &BlockadeOrder::print_(ostream &output) const
     return output;
 }
 
+// Return a pointer to a new instance of BlockadeOrder.
+Order* BlockadeOrder::clone() const
+{
+    return new BlockadeOrder(*this);
+}
+
+// Checks that the BlockadeOrder is valid.
+bool BlockadeOrder::validate() const
+{
+    if (issuer_ == nullptr || territory_ == nullptr)
+    {
+        return false;
+    }
+
+    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
+    return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), territory_) != currentPlayerTerritories.end();
+}
+
+// Executes the BlockadeOrder.
+void BlockadeOrder::execute_()
+{
+    territory_->addArmies(territory_->getNumberOfArmies());
+    GameEngine::assignToNeutralPlayer(territory_);
+    cout << "Blockade called on " << territory_->getName() << ". ";
+    cout << territory_->getNumberOfArmies() << " neutral armies now occupy this territory." << endl;
+}
+
 // Get the type of the Order sub-class
-OrderType BlockadeOrder::getType()
+OrderType BlockadeOrder::getType() const
 {
     return BLOCKADE;
 }
@@ -572,17 +543,15 @@ OrderType BlockadeOrder::getType()
 ===================================
  */
 
-// Default constructor
+// Constructors
 AirliftOrder::AirliftOrder() : Order(nullptr, 2), numberOfArmies_(0), source_(nullptr), destination_(nullptr) {}
 
-// Constructor
 AirliftOrder::AirliftOrder(Player* issuer, int numberOfArmies, Territory* source, Territory* destination)
     : Order(issuer, 2), numberOfArmies_(numberOfArmies), source_(source), destination_(destination) {}
 
-// Copy constructor
 AirliftOrder::AirliftOrder(const AirliftOrder &order) : Order(order), numberOfArmies_(order.numberOfArmies_), source_(order.source_), destination_(order.destination_) {}
 
-// Assignment operator overloading
+// Operator overloading
 const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
 {
     Order::operator=(order);
@@ -592,6 +561,18 @@ const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
     return *this;
 }
 
+ostream &AirliftOrder::print_(ostream &output) const
+{
+    output << "[AirliftOrder]";
+
+    if (source_ != nullptr && destination_ != nullptr)
+    {
+        output << " " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
+    }
+
+    return output;
+}
+
 // Return a pointer to a new instance of AirliftOrder.
 Order* AirliftOrder::clone() const
 {
@@ -599,7 +580,7 @@ Order* AirliftOrder::clone() const
 }
 
 // Checks that the AirliftOrder is valid.
-bool AirliftOrder::validate()
+bool AirliftOrder::validate() const
 {
     if (issuer_ == nullptr || source_ == nullptr || destination_ == nullptr || source_ == destination_)
     {
@@ -628,21 +609,8 @@ void AirliftOrder::execute_()
     cout << "Airlifted " << movableArmiesFromSource << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;
 }
 
-// Stream insertion operator overloading
-ostream &AirliftOrder::print_(ostream &output) const
-{
-    output << "[AirliftOrder]";
-
-    if (source_ != nullptr && destination_ != nullptr)
-    {
-        output << " " << numberOfArmies_ << " armies from " << source_->getName() << " to " << destination_->getName();
-    }
-
-    return output;
-}
-
 // Get the type of the Order sub-class
-OrderType AirliftOrder::getType()
+OrderType AirliftOrder::getType() const
 {
     return AIRLIFT;
 }
@@ -654,21 +622,31 @@ OrderType AirliftOrder::getType()
 ===================================
  */
 
-// Default constructor
+// Constructors
 NegotiateOrder::NegotiateOrder() : Order(), target_(nullptr) {}
 
-// Constructor
 NegotiateOrder::NegotiateOrder(Player* issuer, Player* target) : Order(issuer, 4), target_(target) {}
 
-// Copy constructor
 NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order), target_(order.target_) {}
 
-// Assignment operator overloading
+// Operator overloading
 const NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order)
 {
     Order::operator=(order);
     target_ = order.target_;
     return *this;
+}
+
+ostream &NegotiateOrder::print_(ostream &output) const
+{
+    output << "[NegotiateOrder]";
+
+    if (issuer_ != nullptr && target_ != nullptr)
+    {
+        output << " Initiator: " << issuer_->getName() << ", Target: " << target_->getName();
+    }
+
+    return output;
 }
 
 // Return a pointer to a new instance of NegotiateOrder.
@@ -678,7 +656,7 @@ Order* NegotiateOrder::clone() const
 }
 
 // Checks that the NegotiateOrder is valid.
-bool NegotiateOrder::validate()
+bool NegotiateOrder::validate() const
 {
     if (issuer_ == nullptr || target_ == nullptr)
     {
@@ -696,21 +674,8 @@ void NegotiateOrder::execute_()
     cout << "Negotiated diplomacy between " << issuer_->getName() << " and " << target_->getName() << "." << endl;
 }
 
-// Stream insertion operator overloading
-ostream &NegotiateOrder::print_(ostream &output) const
-{
-    output << "[NegotiateOrder]";
-
-    if (issuer_ != nullptr && target_ != nullptr)
-    {
-        output << " Initiator: " << issuer_->getName() << ", Target: " << target_->getName();
-    }
-
-    return output;
-}
-
 // Get the type of the Order sub-class
-OrderType NegotiateOrder::getType()
+OrderType NegotiateOrder::getType() const
 {
     return NEGOTIATE;
 }
