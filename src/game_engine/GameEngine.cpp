@@ -10,7 +10,7 @@
 #include <time.h>
 #include <unordered_set>
 
-#ifdef WINDOWS
+#ifdef WIN32
 #include <windows.h>
 #else
 #include <sys/types.h>
@@ -22,8 +22,8 @@ namespace
     // Helper method for debugging/demo. Pauses game execution until the user presses ENTER on the console.
     void pause()
     {
-        // cout << "Press [Enter] to Continue..." << endl;
-        // cin.ignore(numeric_limits<streamsize>::max(),'\n');
+        cout << "Press [Enter] to Continue..." << endl;
+        cin.ignore(numeric_limits<streamsize>::max(),'\n');
     }
 
     // Reads the specified directory and returns a vector of filenames for all the `.map` files.
@@ -31,7 +31,7 @@ namespace
     {
         vector<string> fileNames;
 
-        #ifdef WINDOWS
+        #ifdef WIN32
             string pattern(directory);
             pattern.append("\\*");
             WIN32_FIND_DATA data;
@@ -68,41 +68,40 @@ namespace
     // Select and create a game map based on the user's selection.
     Map* selectMap()
     {
-        // cout << "Select a map to play on: " << endl;
-        // vector<string> maps = getMapFileNames("resources");
-        // int i = 1;
-        // for (const auto &map : maps)
-        // {
-        //     cout << "[" << i++ << "] " << map << endl;
-        // }
+        cout << "Select a map to play on: " << endl;
+        vector<string> maps = getMapFileNames("resources");
+        int i = 1;
+        for (const auto &map : maps)
+        {
+            cout << "[" << i++ << "] " << map << endl;
+        }
 
-        // while (true)
-        // {
-        //     int selection;
-        //     cin >> selection;
+        while (true)
+        {
+            int selection;
+            cin >> selection;
 
-        //     if (cin.fail() || selection - 1 < 0 || selection - 1 >= maps.size())
-        //     {
-        //         cout << "That was not a valid option. Please try again:" << endl;
-        //         cin.clear();
-        //         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        //         continue;
-        //     }
+            if (cin.fail() || selection - 1 < 0 || selection - 1 >= maps.size())
+            {
+                cout << "That was not a valid option. Please try again:" << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
 
-        //     try
-        //     {
-        //         return MapLoader::loadMap("resources/" + maps.at(selection - 1));
-        //     }
-        //     catch (char const *errorMessage)
-        //     {
-        //         cout << "The selected map was invalid. Please try another option:" << endl;
-        //     }
-        //     catch (string const errorMessage)
-        //     {
-        //         cout << "The selected map was invalid. Please try another option:" << endl;
-        //     }
-        // }
-        return MapLoader::loadMap("../resources/canada.map");
+            try
+            {
+                return MapLoader::loadMap("resources/" + maps.at(selection - 1));
+            }
+            catch (char const *errorMessage)
+            {
+                cout << "The selected map was invalid. Please try another option:" << endl;
+            }
+            catch (string const errorMessage)
+            {
+                cout << "The selected map was invalid. Please try another option:" << endl;
+            }
+        }
     }
 
     // Create players based on user's input.

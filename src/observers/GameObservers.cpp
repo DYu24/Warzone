@@ -1,33 +1,84 @@
 #include "GameObservers.h"
 #include <algorithm>
 #include <iomanip>
+
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 using namespace std;
 
 
 namespace
 {
     // Color codes to make console output more distinct
-    const unordered_map<int, string> PLAYER_COLOR_CODES{
-        {0, "\e[0;31m"},
-        {1, "\e[0;32m"},
-        {2, "\e[0;33m"},
-        {3, "\e[0;34m"},
-        {4, "\e[0;36m"}
-    };
-    const string WHITE_COLOR_CODE = "\e[0;37m";
-    const string WHITE_BOLD_COLOR_CODE = "\e[1;37m";
-    const string RESET_COLOR_CODE = "\e[0m";
+    #ifndef WIN32
+        const unordered_map<int, string> PLAYER_COLOR_CODES{
+            {0, "\e[0;31m"},
+            {1, "\e[0;32m"},
+            {2, "\e[0;33m"},
+            {3, "\e[0;34m"},
+            {4, "\e[0;36m"}
+        };
+        const string WHITE_COLOR_CODE = "\e[0;37m";
+        const string WHITE_BOLD_COLOR_CODE = "\e[1;37m";
+        const string RESET_COLOR_CODE = "\e[0m";
+    #else
+        const unordered_map<int, int> WINDOWS_PLAYER_COLOR_CODES{
+            {0, 1},
+            {1, 2},
+            {2, 3},
+            {3, 4},
+            {4, 5}
+        };
+        const int WINDOWS_WHITE_COLOR_CODE = 7;
+        const int WINDOWS_WHITE_BOLD_COLOR_CODE = 15;
+        const HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    #endif
 
-    // Helper function to determine which player gets which color code based on its index
-    string getPlayerColorCode(Player* player, vector<Player*> allPlayers)
+    // Helper function to change the output text color based on the current active player
+    void setPlayerColorCode(Player* player, vector<Player*> allPlayers)
     {
-        if (player->isNeutral())
-        {
-            return WHITE_COLOR_CODE;
-        }
-
         auto iterator = find(allPlayers.begin(), allPlayers.end(), player);
-        return PLAYER_COLOR_CODES.at(iterator - allPlayers.begin());
+        int playerIndex = iterator - allPlayers.begin();
+        #ifdef WIN32
+            int colorCode = 0;
+            if (player->isNeutral())
+            {
+                colorCode = WINDOWS_WHITE_COLOR_CODE;
+            }
+            else
+            {
+                colorCode = WINDOWS_PLAYER_COLOR_CODES.at(playerIndex);
+            }
+            SetConsoleTextAttribute(hConsole, colorCode);
+        #else
+            if (player->isNeutral())
+            {
+                cout << WHITE_COLOR_CODE;
+            }
+            cout << PLAYER_COLOR_CODES.at(playerIndex);
+        #endif
+    }
+
+    // Helper function to set white output text to bold
+    void setBold()
+    {
+        #ifdef WIN32
+            SetConsoleTextAttribute(hConsole, WINDOWS_WHITE_BOLD_COLOR_CODE);
+        #else
+            cout << WHITE_BOLD_COLOR_CODE;
+        #endif
+    }
+
+    // Reset any output text attributes
+    void resetColorCode()
+    {
+        #ifdef WIN32
+            SetConsoleTextAttribute(hConsole, WINDOWS_WHITE_COLOR_CODE);
+        #else
+            cout << RESET_COLOR_CODE;
+        #endif
     }
 }
 
@@ -92,7 +143,7 @@ void PhaseObserver::display() const
 
     if (currentPhase == STARTUP)
     {
-        cout << WHITE_BOLD_COLOR_CODE;
+        setBold();
         cout << "\n===========================================" << endl;
         cout << "              STARTUP PHASE" << endl;
         cout << "===========================================" << endl;
@@ -106,8 +157,7 @@ void PhaseObserver::display() const
         Player* currentActivePlayer = subject_->getActivePlayer();
         if (currentActivePlayer != nullptr && !currentActivePlayer->isNeutral())
         {
-            cout << getPlayerColorCode(currentActivePlayer, subject_->getCurrentPlayers());
-
+            setPlayerColorCode(currentActivePlayer, subject_->getCurrentPlayers());
             switch (subject_->getPhase())
             {
                 case REINFORCEMENT:
@@ -140,7 +190,7 @@ void PhaseObserver::display() const
             }
         }
     }
-    cout << RESET_COLOR_CODE;
+    resetColorCode();
 }
 
 // Check if the state of the subject has changed
@@ -206,7 +256,8 @@ void GameStatisticsObserver::display() const
         totalNumberOfTerritories += player->getOwnedTerritories().size();
     }
 
-    cout << WHITE_BOLD_COLOR_CODE;
+    setBold();
+
     cout << "\n===========================================" << endl;
     cout << "              GAME STATISTICS" << endl;
     cout << "===========================================" << endl;
@@ -231,7 +282,7 @@ void GameStatisticsObserver::display() const
         cout << winner->getName() << " wins. Congratulations!" << endl;
     }
 
-    cout << RESET_COLOR_CODE;
+    resetColorCode();
 }
 
 // Check if the state of the subject has changed
