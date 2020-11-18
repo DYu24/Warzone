@@ -372,7 +372,7 @@ bool Player::playCard()
         Card* card = hand_->removeCard(randomCardIndex);
         Order* order = card->play();
 
-        cout << "Played :" << *card << endl;
+        cout << "Played: " << *card << endl;
 
         // Return the played card back to the deck
         card->setOwner(nullptr);
@@ -386,8 +386,8 @@ bool Player::playCard()
         {
             // Reinforcement card played: deploy the additional reinforcements
             issueDeployOrder(toDefend());
-            return false;
         }
+        return false;
     }
 
     return true;

@@ -68,8 +68,9 @@ namespace
     // Select and create a game map based on the user's selection.
     Map* selectMap()
     {
+        const string RESOURCES_DIRECTORY = "resources";
         cout << "Select a map to play on: " << endl;
-        vector<string> maps = getMapFileNames("resources");
+        vector<string> maps = getMapFileNames(RESOURCES_DIRECTORY);
         int i = 1;
         for (const auto &map : maps)
         {
@@ -91,7 +92,7 @@ namespace
 
             try
             {
-                return MapLoader::loadMap("resources/" + maps.at(selection - 1));
+                return MapLoader::loadMap(RESOURCES_DIRECTORY + "/" + maps.at(selection - 1));
             }
             catch (char const *errorMessage)
             {
@@ -364,6 +365,11 @@ void GameEngine::reinforcementPhase()
 {
     for (auto &player : players_)
     {
+        if (player->isNeutral())
+        {
+            continue;
+        }
+
         activePlayer_ = player;
 
         vector<Territory*> playerTerritories = player->getOwnedTerritories();
@@ -493,11 +499,12 @@ void GameEngine::executeOrdersPhase()
 // Core game loop
 void GameEngine::mainGameLoop()
 {
+    int round = 0;
     bool shouldContinueGame = true;
     while (shouldContinueGame)
     {
         pause();
-        cout << "\n=====================================================================================================================" << endl;
+        cout << "\n================================================= ROUND " << ++round << " =====================================================" << endl;
         currentPhase_ = REINFORCEMENT;
         reinforcementPhase();
 
@@ -519,7 +526,6 @@ void GameEngine::mainGameLoop()
             if (player->getOwnedTerritories().size() == map_->getAdjacencyList().size())
             {
                 shouldContinueGame = false;
-                break;
             }
                         
             if (player->getOwnedTerritories().size() == 0)
@@ -534,6 +540,8 @@ void GameEngine::mainGameLoop()
 
         notify();
     }
+
+    cout << "Total rounds played: " << round << endl;
 }
 
 // Deallocate static members of GameEngine class

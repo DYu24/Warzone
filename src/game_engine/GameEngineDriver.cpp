@@ -42,10 +42,14 @@ int main()
 
     for (const auto &player : GameEngine::getPlayers())
     {
-        // Print out the player to show that they now have reinforcements assigned to them
         cout << *player << endl;
         vector<Territory*> playerTerritories = player->getOwnedTerritories();
+        for (int i = 0; i < playerTerritories.size(); i++)
+        {
+            cout << (i+1) << ". " << playerTerritories.at(i)->getName() << endl;
+        }
         ownedTerritories.insert(ownedTerritories.end(), playerTerritories.begin(), playerTerritories.end());
+        cout << endl;
     }
 
     cout << endl;
