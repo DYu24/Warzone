@@ -25,3 +25,6 @@ target_link_libraries(CardsDriver WarzoneLib)
 
 add_executable(GameEngineDriver ${PROJECT_SOURCE_DIR}/src/game_engine/GameEngineDriver.cpp)
 target_link_libraries(GameEngineDriver WarzoneLib)
+
+add_executable(AdapterDriver ${PROJECT_SOURCE_DIR}/src/map_loader/AdapterDriver.cpp)
+target_link_libraries(AdapterDriver WarzoneLib)

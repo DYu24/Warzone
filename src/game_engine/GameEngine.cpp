@@ -68,7 +68,10 @@ namespace
     // Select and create a game map based on the user's selection.
     Map* selectMap()
     {
+        MapLoader* loader = nullptr;
+        Map* map = nullptr;
         const string RESOURCES_DIRECTORY = "resources";
+
         cout << "Select a map to play on: " << endl;
         vector<string> maps = getMapFileNames(RESOURCES_DIRECTORY);
         int i = 1;
@@ -77,7 +80,7 @@ namespace
             cout << "[" << i++ << "] " << map << endl;
         }
 
-        while (true)
+        while (map == nullptr)
         {
             int selection;
             cin >> selection;
@@ -92,7 +95,9 @@ namespace
 
             try
             {
-                return MapLoader::loadMap(RESOURCES_DIRECTORY + "/" + maps.at(selection - 1));
+                cout << "Loading map..." << endl;
+                loader = new MapLoader();
+                map = loader->loadMap(RESOURCES_DIRECTORY + "/" + maps.at(selection - 1));
             }
             catch (char const *errorMessage)
             {
@@ -100,9 +105,27 @@ namespace
             }
             catch (string const errorMessage)
             {
-                cout << "The selected map was invalid. Please try another option:" << endl;
+                try
+                {
+                    delete loader;
+                    loader = new ConquestFileReaderAdapter();
+                    map = loader->loadMap(RESOURCES_DIRECTORY + "/" + maps.at(selection - 1));
+                }
+                catch(char const *errorMessage)
+                {
+                    cout << "The selected map was invalid. Please try another option:" << endl;
+                }
+                catch (string const errorMessage)
+                {
+                    cout << "The selected map was invalid. Please try another option:" << endl;
+                }
+                
             }
+
+            delete loader;
         }
+
+        return map;
     }
 
     // Create players based on user's input.

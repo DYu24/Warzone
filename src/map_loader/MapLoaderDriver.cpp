@@ -22,12 +22,13 @@ int main()
     maps.push_back(make_pair("disconnected_continent", "INVALID MAP: CONTINENT IS NOT A CONNECTED SUBGRAPH"));
     maps.push_back(make_pair("empty", "INVALID MAP: EMPTY FILE"));
 
+    MapLoader mapLoader;
     for (const auto &mapPair : maps)
     {
         try
         {
             cout << "-----" << mapPair.second << "-----" << endl;
-            Map* map = MapLoader::loadMap("resources/" + mapPair.first + ".map");
+            Map* map = mapLoader.loadMap("resources/" + mapPair.first + ".map");
             cout << *map << "\n" << endl;
             delete map;
         }
