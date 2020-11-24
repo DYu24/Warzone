@@ -10,6 +10,9 @@
 ===================================
  */
 
+// Destructor
+Card::~Card() {};
+
 // Stream insertion operator overloading
 ostream &operator<<(ostream &output, const Card &card)
 {

@@ -13,7 +13,7 @@ class Player;
 class Card
 {
 public:
-    virtual ~Card(){};
+    virtual ~Card();
     friend ostream &operator<<(ostream &output, const Card &card);
     virtual Card* clone() const = 0;
     virtual Order* play() = 0;

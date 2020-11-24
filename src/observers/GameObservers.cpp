@@ -96,6 +96,9 @@ Observer::Observer(Subject* subject) : subject_(subject) {}
 
 Observer::Observer(const Observer &observer) : subject_(observer.subject_) {}
 
+// Destructor
+Observer::~Observer() {}
+
 // Assignment operator overloading
 const Observer &Observer::operator=(const Observer &observer)
 {
@@ -320,6 +323,15 @@ void GameStatisticsObserver::saveState()
  Implementation for Subject class
 =========================================
  */
+
+Subject::~Subject()
+{
+    for (const auto &observer : observers_)
+    {
+        delete observer;
+    }
+    observers_.clear();
+}
 
 // Add an observer to the list of observers
 void Subject::attach(Observer* observer)

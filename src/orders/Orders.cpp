@@ -45,6 +45,9 @@ Order::Order(Player* issuer, int priority) : issuer_(issuer), priority_(priority
 
 Order::Order(const Order &order) : issuer_(order.issuer_), priority_(order.priority_) {}
 
+// Destructor
+Order::~Order() {}
+
 // Operator overloading
 const Order &Order::operator=(const Order &order)
 {

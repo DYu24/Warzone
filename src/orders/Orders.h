@@ -22,7 +22,7 @@ enum OrderType : short
 class Order
 {
 public:
-    virtual ~Order(){};
+    virtual ~Order();
     friend ostream &operator<<(ostream &output, const Order &order);
     virtual Order* clone() const = 0;
     void execute();

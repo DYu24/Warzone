@@ -19,7 +19,7 @@ enum Phase : short
 class Observer
 {
     public:
-        virtual ~Observer(){};
+        virtual ~Observer();
         virtual void update() = 0;
 
     protected:
@@ -72,14 +72,7 @@ class GameStatisticsObserver : public Observer
 class Subject
 {
     public:
-        virtual ~Subject()
-        {
-            for (const auto &observer : observers_)
-            {
-                delete observer;
-            }
-            observers_.clear();
-        }
+        virtual ~Subject();
         virtual Phase getPhase() const = 0;
         virtual Player* getActivePlayer() const = 0;
         virtual vector<Player*> getCurrentPlayers() const = 0;
