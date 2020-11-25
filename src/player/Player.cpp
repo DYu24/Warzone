@@ -154,6 +154,12 @@ void Player::endTurn()
     committed_ = false;
 }
 
+// Add an order to the player's list of orders
+void Player::addOrder(Order* order)
+{
+    orders_->add(order);
+}
+
 // Remove and return the next order to be executed from the Player's list of orders
 Order* Player::getNextOrder()
 {

@@ -3,11 +3,14 @@
 #include "../cards/Cards.h"
 #include "../map/Map.h"
 #include "../orders/Orders.h"
+#include "../strategies/PlayerStrategies.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
 using namespace std;
 
+class AggressivePlayerStrategy;
+class BenevolentPlayerStrategy;
 class Card;
 class Deck;
 class Hand;
@@ -19,6 +22,9 @@ class OrdersList;
 
 class Player
 {
+    friend class AggressivePlayerStrategy;
+    friend class BenevolentPlayerStrategy;
+
     public:
         Player();
         Player(string name);
@@ -37,6 +43,7 @@ class Player
         void removeOwnedTerritory(Territory* territory);
         void addDiplomaticRelation(Player* player);
         void endTurn();
+        void addOrder(Order* order);
         Order* getNextOrder();
         Order* peekNextOrder();
         void drawCardFromDeck();
