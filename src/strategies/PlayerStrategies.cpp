@@ -46,20 +46,7 @@ namespace
 ===================================
  */
 
-// Constructors
-PlayerStrategy::PlayerStrategy() : player_(nullptr) {}
-
-PlayerStrategy::PlayerStrategy(Player* player) : player_(player) {}
-
-PlayerStrategy::PlayerStrategy(const PlayerStrategy &strategy) : player_(strategy.player_) {}
-
 // Operator overloading
-const PlayerStrategy &PlayerStrategy::operator=(const PlayerStrategy &strategy)
-{
-    player_ = strategy.player_;
-    return *this;
-}
-
 ostream &operator<<(ostream &output, const PlayerStrategy &strategy)
 {
     return strategy.print_(output);
@@ -72,39 +59,32 @@ ostream &operator<<(ostream &output, const PlayerStrategy &strategy)
 ===================================
  */
 
-// Constructors
-AggressivePlayerStrategy::AggressivePlayerStrategy() : PlayerStrategy() {};
-
-AggressivePlayerStrategy::AggressivePlayerStrategy(Player* player) : PlayerStrategy(player) {}
-
-AggressivePlayerStrategy::AggressivePlayerStrategy(const AggressivePlayerStrategy &strategy) : PlayerStrategy(strategy) {}
-
 // Operator overloading
-const AggressivePlayerStrategy &AggressivePlayerStrategy::operator=(const AggressivePlayerStrategy &strategy)
-{
-    PlayerStrategy::operator=(strategy);
-    return *this;
-}
-
 ostream &AggressivePlayerStrategy::print_(ostream &output) const
 {
     output << "[AggressivePlayerStrategy]";
     return output;
 }
 
-// Return a list of territories to defend
-vector<Territory*> AggressivePlayerStrategy::toDefend() const
+// Return a pointer to a new instance of AggressivePlayerStrategy.
+PlayerStrategy* AggressivePlayerStrategy::clone() const
 {
-    vector<Territory*> territoriesToDefend = player_->ownedTerritories_;
+    return new AggressivePlayerStrategy();
+}
+
+// Return a list of territories to defend
+vector<Territory*> AggressivePlayerStrategy::toDefend(const Player* player) const
+{
+    vector<Territory*> territoriesToDefend = player->ownedTerritories_;
     auto sortLambda = [](auto t1, auto t2){ return t1->getNumberOfArmies() > t2->getNumberOfArmies(); };
     sort(territoriesToDefend.begin(), territoriesToDefend.end(), sortLambda);
     return territoriesToDefend;
 }
 
 // Return a list of territories to attack
-vector<Territory*> AggressivePlayerStrategy::toAttack() const
+vector<Territory*> AggressivePlayerStrategy::toAttack(const Player* player) const
 {
-    vector<Territory*> sources = toDefend();
+    vector<Territory*> sources = toDefend(player);
     vector<Territory*> territoriesToAttack;
     unordered_set<Territory*> territoriesSeen;
     Map* map = GameEngine::getMap();
@@ -112,7 +92,7 @@ vector<Territory*> AggressivePlayerStrategy::toAttack() const
     for (const auto &territory : sources)
     {
         vector<Territory*> adjacentTerritories = map->getAdjacentTerritories(territory);
-        auto sortLambda = [this](auto t1, auto t2){ return compareTerritoriesByEnemiesAndArmies(t1, t2, this->player_); };
+        auto sortLambda = [&player](auto t1, auto t2){ return compareTerritoriesByEnemiesAndArmies(t1, t2, player); };
         sort(adjacentTerritories.begin(), adjacentTerritories.end(), sortLambda);
 
         for (const auto &neighbor : adjacentTerritories)
@@ -132,57 +112,67 @@ vector<Territory*> AggressivePlayerStrategy::toAttack() const
 }
 
 // 
-void AggressivePlayerStrategy::issueOrder()
+void AggressivePlayerStrategy::issueOrder(Player* player)
 {
-    vector<Territory*> territoriesToAttack = toAttack();
-    vector<Territory*> territoriesToDefend = toDefend();
+    int oldNumberOfOrders = player->orders_->size();
+    vector<Territory*> territoriesToAttack = toAttack(player);
+    vector<Territory*> territoriesToDefend = toDefend(player);
 
-    bool finishedDeploying = deployToTopTerritory(territoriesToDefend);
+    bool finishedDeploying = deployToTopTerritory(player, territoriesToDefend);
     if (finishedDeploying)
     {
-        bool finishedAttacking = attackFromTopTerritory(territoriesToDefend.front(), territoriesToAttack);
+        bool finishedAttacking = attackFromTopTerritory(player, territoriesToDefend.front(), territoriesToAttack);
         if (finishedAttacking)
         {
-            bool finishedFortifying = fortifyTopTerritory(territoriesToDefend);
+            bool finishedFortifying = fortifyTopTerritory(player, territoriesToDefend);
+            player->committed_ = finishedFortifying;
         }
+    }
+
+    if (oldNumberOfOrders == player->orders_->size())
+    {
+        cout << "No new order issued." << endl;
     }
 }
 
 // Deploy all reinfocements to the strongest territory (the one with the most armies already present)
-bool AggressivePlayerStrategy::deployToTopTerritory(vector<Territory*> territoriesToDefend)
+bool AggressivePlayerStrategy::deployToTopTerritory(Player* player, vector<Territory*> territoriesToDefend)
 {
-    if (player_->reinforcements_ == 0)
+    if (player->reinforcements_ == 0)
     {
         return true;
     }
 
     Territory* territory = territoriesToDefend.front();
-    territory->addArmies(player_->reinforcements_);
-    player_->reinforcements_ = 0;
+    DeployOrder* order = new DeployOrder(player, player->reinforcements_, territory);
+    player->addOrder(order);
+    territory->addPendingIncomingArmies(player->reinforcements_);
+    player->reinforcements_ = 0;
 
+    cout << "Issued: " << *order << endl;
     return false;
 }
 
 // Advance armies from strongest territory to enemy territories
-bool AggressivePlayerStrategy::attackFromTopTerritory(Territory* attackFrom, vector<Territory*> territoriesToAttack)
+bool AggressivePlayerStrategy::attackFromTopTerritory(Player* player, Territory* attackFrom, vector<Territory*> territoriesToAttack)
 {
     Map* map = GameEngine::getMap();
 
     for (auto &territory : map->getAdjacentTerritories(attackFrom))
     {
         bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), territory) != territoriesToAttack.end();
-        if (isEnemyTerritory && !player_->advancePairingExists(attackFrom, territory))
+        if (isEnemyTerritory && !player->advancePairingExists(attackFrom, territory))
         {
             // Only advance to this enemy territory if the player has any chance of conquering it
             int movableArmies = attackFrom->getNumberOfArmies() + attackFrom->getPendingIncomingArmies() - attackFrom->getPendingOutgoingArmies();
-            int minimumArmiesRequiredToWin = (int)ceil(territory->getNumberOfArmies() / 0.6);
+            int minimumArmiesRequiredToWin = max((int)ceil(territory->getNumberOfArmies() / 0.6), 1);
             if (movableArmies > 0)
             {
                 int armiesToMove = min(movableArmies, minimumArmiesRequiredToWin);
-                AdvanceOrder* order = new AdvanceOrder(player_, armiesToMove, attackFrom, territory);
-                player_->addOrder(order);
+                AdvanceOrder* order = new AdvanceOrder(player, armiesToMove, attackFrom, territory);
+                player->addOrder(order);
                 attackFrom->addPendingOutgoingArmies(armiesToMove);
-                player_->issuedDeploymentsAndAdvancements_[attackFrom].push_back(territory);
+                player->issuedDeploymentsAndAdvancements_[attackFrom].push_back(territory);
                 
                 cout << "Issued: " << *order << endl;
                 return false;
@@ -194,7 +184,7 @@ bool AggressivePlayerStrategy::attackFromTopTerritory(Territory* attackFrom, vec
 }
 
 // Advance armies from other adjacent territories to the strongest territory
-bool AggressivePlayerStrategy::fortifyTopTerritory(vector<Territory*> territoriesToDefend)
+bool AggressivePlayerStrategy::fortifyTopTerritory(Player* player, vector<Territory*> territoriesToDefend)
 {
     Map* map = GameEngine::getMap();
     Territory* territoryToFortify = territoriesToDefend.front();
@@ -202,15 +192,15 @@ bool AggressivePlayerStrategy::fortifyTopTerritory(vector<Territory*> territorie
     for (auto &territory : map->getAdjacentTerritories(territoryToFortify))
     {
         bool isFriendlyTerritory = find(territoriesToDefend.begin(), territoriesToDefend.end(), territory) != territoriesToDefend.end();
-        if (isFriendlyTerritory && !player_->advancePairingExists(territory, territoryToFortify))
+        if (isFriendlyTerritory && !player->advancePairingExists(territory, territoryToFortify))
         {
             int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
             if (movableArmies > 0)
             {
-                AdvanceOrder* order = new AdvanceOrder(player_, movableArmies, territory, territoryToFortify);
-                player_->addOrder(order);
+                AdvanceOrder* order = new AdvanceOrder(player, movableArmies, territory, territoryToFortify);
+                player->addOrder(order);
                 territory->addPendingOutgoingArmies(movableArmies);
-                player_->issuedDeploymentsAndAdvancements_[territory].push_back(territoryToFortify);
+                player->issuedDeploymentsAndAdvancements_[territory].push_back(territoryToFortify);
                 
                 cout << "Issued: " << *order << endl;
                 return false;
@@ -228,62 +218,63 @@ bool AggressivePlayerStrategy::fortifyTopTerritory(vector<Territory*> territorie
 ===================================
  */
 
-// Constructors
-BenevolentPlayerStrategy::BenevolentPlayerStrategy() : PlayerStrategy() {};
-
-BenevolentPlayerStrategy::BenevolentPlayerStrategy(Player* player) : PlayerStrategy(player) {}
-
-BenevolentPlayerStrategy::BenevolentPlayerStrategy(const BenevolentPlayerStrategy &strategy) : PlayerStrategy(strategy) {}
-
 // Operator overloading
-const BenevolentPlayerStrategy &BenevolentPlayerStrategy::operator=(const BenevolentPlayerStrategy &strategy)
-{
-    PlayerStrategy::operator=(strategy);
-    return *this;
-}
-
 ostream &BenevolentPlayerStrategy::print_(ostream &output) const
 {
     output << "[BenevolentPlayerStrategy]";
     return output;
 }
 
-// Return a list of territories to defend
-vector<Territory*> BenevolentPlayerStrategy::toDefend() const
+// Return a pointer to a new instance of BenevolentPlayerStrategy.
+PlayerStrategy* BenevolentPlayerStrategy::clone() const
 {
-    vector<Territory*> territoriesToDefend = player_->ownedTerritories_;
+    return new BenevolentPlayerStrategy();
+}
+
+// Return a list of territories to defend
+vector<Territory*> BenevolentPlayerStrategy::toDefend(const Player* player) const
+{
+    vector<Territory*> territoriesToDefend = player->ownedTerritories_;
     auto sortLambda = [](auto t1, auto t2){ return t1->getNumberOfArmies() < t2->getNumberOfArmies(); };
     sort(territoriesToDefend.begin(), territoriesToDefend.end(), sortLambda);
     return territoriesToDefend;
 }
 
 // Return an empty list of territories to attack (since this strategy never attacks)
-vector<Territory*> BenevolentPlayerStrategy::toAttack() const
+vector<Territory*> BenevolentPlayerStrategy::toAttack(const Player* player) const
 {
     return {};
 }
 
 // 
-void BenevolentPlayerStrategy::issueOrder()
+void BenevolentPlayerStrategy::issueOrder(Player* player)
 {
-    vector<Territory*> territoriesToDefend = toDefend();
-    bool finishedDeploying = deployToWeakTerritories(territoriesToDefend);
+    int oldNumberOfOrders = player->orders_->size();
+    vector<Territory*> territoriesToDefend = toDefend(player);
+    
+    bool finishedDeploying = deployToWeakTerritories(player, territoriesToDefend);
     if (finishedDeploying)
     {
-        bool finishedFortifying = fortifyWeakTerritories(territoriesToDefend);
+        bool finishedFortifying = fortifyWeakTerritories(player, territoriesToDefend);
+        player->committed_ = finishedFortifying;
+    }
+
+    if (oldNumberOfOrders == player->orders_->size())
+    {
+        cout << "No new order issued." << endl;
     }
 }
 
 // Deploy reinforcements to the weakest territories (i.e. those that have fewest armies)
-bool BenevolentPlayerStrategy::deployToWeakTerritories(vector<Territory*> territoriesToDefend)
+bool BenevolentPlayerStrategy::deployToWeakTerritories(Player* player, vector<Territory*> territoriesToDefend)
 {
-    if (player_->reinforcements_ == 0)
+    if (player->reinforcements_ == 0)
     {
         return true;
     }
 
     const int DEFAULT_ARMIES_TO_DEPLOY = 5;
-    int armiesToDeploy = min(DEFAULT_ARMIES_TO_DEPLOY, player_->reinforcements_);
+    int armiesToDeploy = min(DEFAULT_ARMIES_TO_DEPLOY, player->reinforcements_);
 
 
     // In order of highest priority, try to find a territory that hasn't already been deployed to
@@ -291,10 +282,10 @@ bool BenevolentPlayerStrategy::deployToWeakTerritories(vector<Territory*> territ
     auto iterator = territoriesToDefend.begin();
     for (; iterator != territoriesToDefend.end(); iterator++)
     {
-        if (player_->issuedDeploymentsAndAdvancements_.find(*iterator) == player_->issuedDeploymentsAndAdvancements_.end())
+        if (player->issuedDeploymentsAndAdvancements_.find(*iterator) == player->issuedDeploymentsAndAdvancements_.end())
         {
             // Initialize the vector at the key specified by this territory
-            player_->issuedDeploymentsAndAdvancements_[*iterator];
+            player->issuedDeploymentsAndAdvancements_[*iterator];
             destination = *iterator;
             break;
         }
@@ -306,17 +297,17 @@ bool BenevolentPlayerStrategy::deployToWeakTerritories(vector<Territory*> territ
         destination = territoriesToDefend.front();
     }
 
-    DeployOrder* order = new DeployOrder(player_, armiesToDeploy, destination);
-    player_->addOrder(order);
+    DeployOrder* order = new DeployOrder(player, armiesToDeploy, destination);
+    player->addOrder(order);
     destination->addPendingIncomingArmies(armiesToDeploy);
-    player_->reinforcements_ -= armiesToDeploy;
+    player->reinforcements_ -= armiesToDeploy;
     
     cout << "Issued: " << *order << endl;
     return false;
 }
 
 // Advance armies from other adjacent territories to the weaker territories
-bool BenevolentPlayerStrategy::fortifyWeakTerritories(vector<Territory*> territoriesToDefend)
+bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Territory*> territoriesToDefend)
 {
     Map* map = GameEngine::getMap();
     for (const auto &territory : territoriesToDefend)
@@ -331,13 +322,13 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(vector<Territory*> territo
             for (const auto &neighbor : adjacentTerritories)
             {
                 bool isFriendlyTerritory = find(territoriesToDefend.begin(), territoriesToDefend.end(), neighbor) != territoriesToDefend.end();
-                if (isFriendlyTerritory && !player_->advancePairingExists(territory, neighbor))
+                if (isFriendlyTerritory && !player->advancePairingExists(territory, neighbor))
                 {
                     int armiesToMove = movableArmies / 2;
-                    AdvanceOrder* order = new AdvanceOrder(player_, armiesToMove, territory, neighbor);
-                    player_->addOrder(order);
+                    AdvanceOrder* order = new AdvanceOrder(player, armiesToMove, territory, neighbor);
+                    player->addOrder(order);
                     territory->addPendingOutgoingArmies(armiesToMove);
-                    player_->issuedDeploymentsAndAdvancements_[territory].push_back(neighbor);
+                    player->issuedDeploymentsAndAdvancements_[territory].push_back(neighbor);
                     
                     cout << "Issued: " << *order << endl;
                     return false;
@@ -356,40 +347,33 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(vector<Territory*> territo
 ===================================
  */
 
-// Constructors
-NeutralPlayerStrategy::NeutralPlayerStrategy() : PlayerStrategy() {};
-
-NeutralPlayerStrategy::NeutralPlayerStrategy(Player* player) : PlayerStrategy(player) {}
-
-NeutralPlayerStrategy::NeutralPlayerStrategy(const NeutralPlayerStrategy &strategy) : PlayerStrategy(strategy) {}
-
 // Operator overloading
-const NeutralPlayerStrategy &NeutralPlayerStrategy::operator=(const NeutralPlayerStrategy &strategy)
-{
-    PlayerStrategy::operator=(strategy);
-    return *this;
-}
-
 ostream &NeutralPlayerStrategy::print_(ostream &output) const
 {
     output << "[NeutralPlayerStrategy]";
     return output;
 }
 
+// Return a pointer to a new instance of NeutralPlayerStrategy.
+PlayerStrategy* NeutralPlayerStrategy::clone() const
+{
+    return new NeutralPlayerStrategy();
+}
+
 // Return an empty list of territories to defend
-vector<Territory*> NeutralPlayerStrategy::toDefend() const
+vector<Territory*> NeutralPlayerStrategy::toDefend(const Player* player) const
 {
     return {};
 }
 
 // Return an empty list of territories to attack
-vector<Territory*> NeutralPlayerStrategy::toAttack() const
+vector<Territory*> NeutralPlayerStrategy::toAttack(const Player* player) const
 {
     return {};
 }
 
 // Do nothing when called to issue order
-void NeutralPlayerStrategy::issueOrder()
+void NeutralPlayerStrategy::issueOrder(Player* player)
 {
     return;
 }

@@ -10,69 +10,56 @@ class Player;
 class PlayerStrategy
 {
     public:
-        virtual vector<Territory*> toDefend() const = 0;
-        virtual vector<Territory*> toAttack() const = 0;
-        virtual void issueOrder() = 0;
+        virtual vector<Territory*> toDefend(const Player* player) const = 0;
+        virtual vector<Territory*> toAttack(const Player* player) const = 0;
+        virtual void issueOrder(Player* player) = 0;
+        virtual PlayerStrategy* clone() const = 0;
         friend ostream &operator<<(ostream &output, const PlayerStrategy &strategy);
 
     protected:
-        Player* player_;
-        PlayerStrategy();
-        PlayerStrategy(Player* player);
-        PlayerStrategy(const PlayerStrategy &strategy);
-        const PlayerStrategy &operator=(const PlayerStrategy &strategy);
         virtual ostream &print_(ostream &output) const = 0;
 };
 
 class AggressivePlayerStrategy : public PlayerStrategy
 {
     public:
-        AggressivePlayerStrategy();
-        AggressivePlayerStrategy(Player* player);
-        AggressivePlayerStrategy(const AggressivePlayerStrategy &strategy);
-        const AggressivePlayerStrategy &operator=(const AggressivePlayerStrategy &strategy);
-        vector<Territory*> toDefend() const;
-        vector<Territory*> toAttack() const;
-        void issueOrder();
+        PlayerStrategy* clone() const;
+        vector<Territory*> toDefend(const Player* player) const;
+        vector<Territory*> toAttack(const Player* player) const;
+        void issueOrder(Player* player);
 
     protected:
         ostream &print_(ostream &output) const;
 
     private:
-        bool deployToTopTerritory(vector<Territory*> territoriesToDefend);
-        bool attackFromTopTerritory(Territory* attackFrom, vector<Territory*> territoriesToAttack);
-        bool fortifyTopTerritory(vector<Territory*> territoriesToDefend);
+        bool deployToTopTerritory(Player* player, vector<Territory*> territoriesToDefend);
+        bool attackFromTopTerritory(Player* player, Territory* attackFrom, vector<Territory*> territoriesToAttack);
+        bool fortifyTopTerritory(Player* player, vector<Territory*> territoriesToDefend);
 };
 
 class BenevolentPlayerStrategy : public PlayerStrategy
 {
     public:
-        BenevolentPlayerStrategy();
-        BenevolentPlayerStrategy(Player* player);
-        BenevolentPlayerStrategy(const BenevolentPlayerStrategy &strategy);
-        const BenevolentPlayerStrategy &operator=(const BenevolentPlayerStrategy &strategy);
-        vector<Territory*> toDefend() const;
-        vector<Territory*> toAttack() const;
-        void issueOrder();
+        PlayerStrategy* clone() const;
+        vector<Territory*> toDefend(const Player* player) const;
+        vector<Territory*> toAttack(const Player* player) const;
+        void issueOrder(Player* player);
 
     protected:
         ostream &print_(ostream &output) const;
 
     private:
-        bool deployToWeakTerritories(vector<Territory*> territoriesToDefend);
-        bool fortifyWeakTerritories(vector<Territory*> territoriesToDefend);
+        bool deployToWeakTerritories(Player* player, vector<Territory*> territoriesToDefend);
+        bool fortifyWeakTerritories(Player* player, vector<Territory*> territoriesToDefend);
 };
 
 class NeutralPlayerStrategy : public PlayerStrategy
 {
     public:
-        NeutralPlayerStrategy();
-        NeutralPlayerStrategy(Player* player);
-        NeutralPlayerStrategy(const NeutralPlayerStrategy &strategy);
-        const NeutralPlayerStrategy &operator=(const NeutralPlayerStrategy &strategy);
-        vector<Territory*> toDefend() const;
-        vector<Territory*> toAttack() const;
-        void issueOrder();
+        PlayerStrategy* clone() const;
+        vector<Territory*> toDefend(const Player* player) const;
+        vector<Territory*> toAttack(const Player* player) const;
+        void issueOrder(Player* player);
 
     protected:
         ostream &print_(ostream &output) const;

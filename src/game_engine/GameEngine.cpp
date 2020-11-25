@@ -157,7 +157,7 @@ namespace
             string name;
             cin >> name;
 
-            players.push_back(new Player(name));
+            players.push_back(new Player(name, new AggressivePlayerStrategy()));
         }
 
         return players;

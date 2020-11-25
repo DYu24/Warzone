@@ -11,6 +11,7 @@ using namespace std;
 
 class AggressivePlayerStrategy;
 class BenevolentPlayerStrategy;
+class PlayerStrategy;
 class Card;
 class Deck;
 class Hand;
@@ -28,6 +29,7 @@ class Player
     public:
         Player();
         Player(string name);
+        Player(string name, PlayerStrategy* strategy);
         Player(const Player &player);
         ~Player();
         const Player &operator=(const Player &player);
@@ -38,6 +40,7 @@ class Player
         Hand getHand() const;
         vector<Player*> getDiplomaticRelations() const;
         int getReinforcements() const;
+        void setStrategy(PlayerStrategy* strategy);
         void addReinforcements(int reinforcements);
         void addOwnedTerritory(Territory* territory);
         void removeOwnedTerritory(Territory* territory);
@@ -54,13 +57,13 @@ class Player
         void issueOrder();
 
     private:
+        PlayerStrategy* strategy_;
         int reinforcements_;
         string name_;
         OrdersList* orders_;
         Hand* hand_;
         vector<Territory*> ownedTerritories_;
         vector<Player*> diplomaticRelations_;
-        bool isNeutral_;
         bool committed_;
         unordered_map<Territory*, vector<Territory*>> issuedDeploymentsAndAdvancements_;
 
