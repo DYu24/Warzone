@@ -53,6 +53,23 @@ class BenevolentPlayerStrategy : public PlayerStrategy
         bool fortifyWeakTerritories(Player* player, vector<Territory*> territoriesToDefend);
 };
 
+class HumanPlayerStrategy : public PlayerStrategy
+{
+    public:
+        PlayerStrategy* clone() const;
+        vector<Territory*> toDefend(const Player* player) const;
+        vector<Territory*> toAttack(const Player* player) const;
+        void issueOrder(Player* player);
+
+    protected:
+        ostream &print_(ostream &output) const;
+
+    private:
+        void deployReinforcements(Player* player, vector<Territory*> territoriesToDefend);
+        void issueAdvances(Player* player, vector<Territory*> territoriesToDefend);
+        vector<Territory*> getPossibleSourceTerritoriesForAdvance(Player* player);
+};
+
 class NeutralPlayerStrategy : public PlayerStrategy
 {
     public:

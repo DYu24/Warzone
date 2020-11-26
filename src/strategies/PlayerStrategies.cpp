@@ -40,6 +40,7 @@ namespace
 }
 
 
+
 /* 
 ===================================
  Implementation for PlayerStrategy class
@@ -51,6 +52,7 @@ ostream &operator<<(ostream &output, const PlayerStrategy &strategy)
 {
     return strategy.print_(output);
 }
+
 
 
 /* 
@@ -114,7 +116,6 @@ vector<Territory*> AggressivePlayerStrategy::toAttack(const Player* player) cons
 // 
 void AggressivePlayerStrategy::issueOrder(Player* player)
 {
-    int oldNumberOfOrders = player->orders_->size();
     vector<Territory*> territoriesToAttack = toAttack(player);
     vector<Territory*> territoriesToDefend = toDefend(player);
 
@@ -127,11 +128,6 @@ void AggressivePlayerStrategy::issueOrder(Player* player)
             bool finishedFortifying = fortifyTopTerritory(player, territoriesToDefend);
             player->committed_ = finishedFortifying;
         }
-    }
-
-    if (oldNumberOfOrders == player->orders_->size())
-    {
-        cout << "No new order issued." << endl;
     }
 }
 
@@ -158,13 +154,13 @@ bool AggressivePlayerStrategy::attackFromTopTerritory(Player* player, Territory*
 {
     Map* map = GameEngine::getMap();
 
-    for (auto &territory : map->getAdjacentTerritories(attackFrom))
+    for (const auto &territory : map->getAdjacentTerritories(attackFrom))
     {
         bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), territory) != territoriesToAttack.end();
         if (isEnemyTerritory && !player->advancePairingExists(attackFrom, territory))
         {
             // Only advance to this enemy territory if the player has any chance of conquering it
-            int movableArmies = attackFrom->getNumberOfArmies() + attackFrom->getPendingIncomingArmies() - attackFrom->getPendingOutgoingArmies();
+            int movableArmies = attackFrom->getNumberOfMovableArmies();
             int minimumArmiesRequiredToWin = max((int)ceil(territory->getNumberOfArmies() / 0.6), 1);
             if (movableArmies > 0)
             {
@@ -189,12 +185,12 @@ bool AggressivePlayerStrategy::fortifyTopTerritory(Player* player, vector<Territ
     Map* map = GameEngine::getMap();
     Territory* territoryToFortify = territoriesToDefend.front();
 
-    for (auto &territory : map->getAdjacentTerritories(territoryToFortify))
+    for (const auto &territory : map->getAdjacentTerritories(territoryToFortify))
     {
         bool isFriendlyTerritory = find(territoriesToDefend.begin(), territoriesToDefend.end(), territory) != territoriesToDefend.end();
         if (isFriendlyTerritory && !player->advancePairingExists(territory, territoryToFortify))
         {
-            int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
+            int movableArmies = territory->getNumberOfMovableArmies();
             if (movableArmies > 0)
             {
                 AdvanceOrder* order = new AdvanceOrder(player, movableArmies, territory, territoryToFortify);
@@ -210,6 +206,7 @@ bool AggressivePlayerStrategy::fortifyTopTerritory(Player* player, vector<Territ
 
     return true;
 }
+
 
 
 /* 
@@ -249,7 +246,6 @@ vector<Territory*> BenevolentPlayerStrategy::toAttack(const Player* player) cons
 // 
 void BenevolentPlayerStrategy::issueOrder(Player* player)
 {
-    int oldNumberOfOrders = player->orders_->size();
     vector<Territory*> territoriesToDefend = toDefend(player);
     
     bool finishedDeploying = deployToWeakTerritories(player, territoriesToDefend);
@@ -257,11 +253,6 @@ void BenevolentPlayerStrategy::issueOrder(Player* player)
     {
         bool finishedFortifying = fortifyWeakTerritories(player, territoriesToDefend);
         player->committed_ = finishedFortifying;
-    }
-
-    if (oldNumberOfOrders == player->orders_->size())
-    {
-        cout << "No new order issued." << endl;
     }
 }
 
@@ -312,7 +303,7 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Ter
     Map* map = GameEngine::getMap();
     for (const auto &territory : territoriesToDefend)
     {
-        int movableArmies = territory->getNumberOfArmies() + territory->getPendingIncomingArmies() - territory->getPendingOutgoingArmies();
+        int movableArmies = territory->getNumberOfMovableArmies();
         if (movableArmies > 1)
         {
             vector<Territory*> adjacentTerritories = map->getAdjacentTerritories(territory);
@@ -339,6 +330,286 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Ter
 
     return true;
 }
+
+
+
+/* 
+===================================
+ Implementation for HumanPlayerStrategy class
+===================================
+ */
+
+// Operator overloading
+ostream &HumanPlayerStrategy::print_(ostream &output) const
+{
+    output << "[HumanPlayerStrategy]";
+    return output;
+}
+
+// Return a pointer to a new instance of HumanPlayerStrategy.
+PlayerStrategy* HumanPlayerStrategy::clone() const
+{
+    return new HumanPlayerStrategy();
+}
+
+// Return a list of territories to defend
+vector<Territory*> HumanPlayerStrategy::toDefend(const Player* player) const
+{
+    return player->ownedTerritories_;
+}
+
+// Return a list of territories to attack
+vector<Territory*> HumanPlayerStrategy::toAttack(const Player* player) const
+{
+    vector<Territory*> ownedTerritories = player->ownedTerritories_;
+    vector<Territory*> territoriesToAttack;
+    unordered_set<Territory*> territoriesSeen;
+    Map* map = GameEngine::getMap();
+
+    for (const auto &territory : ownedTerritories)
+    {
+        for (const auto &neighbor : map->getAdjacentTerritories(territory))
+        {
+            bool isEnemyOwned = find(ownedTerritories.begin(), ownedTerritories.end(), neighbor) == ownedTerritories.end();
+            bool alreadySeen = territoriesSeen.find(neighbor) != territoriesSeen.end();
+
+            if (isEnemyOwned && !alreadySeen)
+            {
+                territoriesToAttack.push_back(neighbor);
+                territoriesSeen.insert(neighbor);
+            }
+        }
+    }
+
+    return territoriesToAttack;
+}
+
+// 
+void HumanPlayerStrategy::issueOrder(Player* player)
+{
+    vector<Territory*> territoriesToAttack = toAttack(player);
+    vector<Territory*> territoriesToDefend = toDefend(player);
+
+    if (player->reinforcements_ > 0)
+    {
+        deployReinforcements(player, territoriesToDefend);
+    }
+    else
+    {
+        cout << "What would you like to do?" << endl;
+        if (getPossibleSourceTerritoriesForAdvance(player).size() > 0)
+        {
+            cout << "[A] Advance" << endl;
+        }
+        cout << "[X] Commit" << endl;
+
+        while (true)
+        {
+            string selection;
+            cin >> selection;
+
+            if (selection == "A")
+            {
+                issueAdvances(player, territoriesToDefend);
+                break;
+            }
+            else if (selection == "X")
+            {
+                player->committed_ = true;
+                break;
+            }
+        }
+    }
+}
+
+// Deploy player's reinforcements to specified territory
+void HumanPlayerStrategy::deployReinforcements(Player* player, vector<Territory*> territoriesToDefend)
+{
+    cout << "You have " << player->reinforcements_ << " reinforcements left." << endl;
+    cout << "Where would you like to deploy to?" << endl;
+    for (int i = 0; i < territoriesToDefend.size(); i++)
+    {
+        Territory* territory = territoriesToDefend.at(i);
+        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " present, " << territory->getPendingIncomingArmies() << " pending)" << endl;
+    }
+
+    Territory* deployTarget = nullptr;
+    cout << "\nEnter the territory to deploy to: ";
+    while (deployTarget == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= territoriesToDefend.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        deployTarget = territoriesToDefend.at(selection - 1);
+    }
+
+    int armiesToDeploy = 0;
+    cout << "How many reinforcements do you want to deploy?" << endl;
+    while (armiesToDeploy == 0)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection < 1 || selection > player->reinforcements_)
+        {
+            cout << "Please enter a number between 1 and " << player->reinforcements_ << ": " << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        armiesToDeploy = selection;
+    }
+
+    DeployOrder* order = new DeployOrder(player, armiesToDeploy, deployTarget);
+    player->addOrder(order);
+    deployTarget->addPendingIncomingArmies(armiesToDeploy);
+    player->reinforcements_ -= armiesToDeploy;
+    
+    cout << "Issued: " << *order << endl;
+}
+
+// Issue an advance order to either fortify or attack a territory
+void HumanPlayerStrategy::issueAdvances(Player* player, vector<Territory*> territoriesToDefend)
+{
+    vector<Territory*> possibleSources = getPossibleSourceTerritoriesForAdvance(player);
+
+    cout << "Which territory would you like to advance from?" << endl;
+    for (int i = 0; i < possibleSources.size(); i++)
+    {
+        Territory* territory = possibleSources.at(i);
+        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfMovableArmies() << " armies available)" << endl;
+    }
+
+    Territory* source = nullptr;
+    cout << "\nEnter the territory to advance from: ";
+    while (source == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= possibleSources.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        source = possibleSources.at(selection - 1);
+    }
+
+    Map* map = GameEngine::getMap();
+    vector<Territory*> attackable;
+    vector<Territory*> defendable;
+    for (const auto &neighbor : map->getAdjacentTerritories(source))
+    {
+        if (find(territoriesToDefend.begin(), territoriesToDefend.end(), neighbor) != territoriesToDefend.end())
+        {
+            defendable.push_back(neighbor);
+        }
+        else
+        {
+            attackable.push_back(neighbor);
+        }
+    }
+
+    int i = 0;
+    cout << "Which territory would you like to advance to?" << endl;
+    if (!defendable.empty())
+    {
+        cout << "~~~ To Defend ~~~" << endl;
+        for (; i < defendable.size(); i++)
+        {
+            Territory* territory = defendable.at(i);
+            cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
+        }
+    }
+    if (!attackable.empty())
+    {
+        cout << "\n~~~ To Attack ~~~" << endl;
+        for (; i < defendable.size() + attackable.size(); i++)
+        {
+            int idx = i - defendable.size();
+            Territory* territory = attackable.at(idx);
+            cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
+        }
+    }
+
+    Territory* destination = nullptr;
+    cout << "\nEnter the territory to advance to: ";
+    while (destination == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= defendable.size() + attackable.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        if (selection <= defendable.size())
+        {
+            destination = defendable.at(selection - 1);
+        }
+        else
+        {
+            destination = attackable.at(selection - 1 - defendable.size());
+        }
+    }
+
+    int armiesToMove = 0;
+    int movableArmies = source->getNumberOfMovableArmies();
+    cout << "How many armies do you want to move?" << endl;
+    while (armiesToMove == 0)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection < 1 || selection > movableArmies)
+        {
+            cout << "Please enter a number between 1 and " << movableArmies << ": " << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        armiesToMove = selection;
+    }
+
+    AdvanceOrder* order = new AdvanceOrder(player, armiesToMove, source, destination);
+    player->addOrder(order);
+    source->addPendingOutgoingArmies(armiesToMove);
+    
+    cout << "Issued: " << *order << endl;
+}
+
+// Check if the player still has any territories they can advance from
+vector<Territory*> HumanPlayerStrategy::getPossibleSourceTerritoriesForAdvance(Player* player)
+{
+    vector<Territory*> possibleSources;
+    for (const auto &territory : player->ownedTerritories_)
+    {
+       if (territory->getNumberOfMovableArmies() > 0)
+       {
+           possibleSources.push_back(territory);
+       }
+    }
+
+    return possibleSources;
+}
+
 
 
 /* 

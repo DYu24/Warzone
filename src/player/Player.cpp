@@ -192,7 +192,14 @@ vector<Territory*> Player::toAttack() const
 // Create an order and place it in the Player's list of orders
 void Player::issueOrder()
 {
+    int oldNumberOfOrders = orders_->size();
+
     strategy_->issueOrder(this);
+
+    if (oldNumberOfOrders == orders_->size())
+    {
+        cout << "No new order issued." << endl;
+    }
 }
 
 // Helper method to play a random Card from the Player's hand, if any.

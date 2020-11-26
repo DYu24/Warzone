@@ -25,6 +25,7 @@ public:
     void addArmies(int armies);
     void addPendingIncomingArmies(int armies);
     void addPendingOutgoingArmies(int armies);
+    int getNumberOfMovableArmies();
 
 private:
     string name_;

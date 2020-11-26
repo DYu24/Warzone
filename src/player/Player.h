@@ -11,6 +11,7 @@ using namespace std;
 
 class AggressivePlayerStrategy;
 class BenevolentPlayerStrategy;
+class HumanPlayerStrategy;
 class PlayerStrategy;
 class Card;
 class Deck;
@@ -25,6 +26,7 @@ class Player
 {
     friend class AggressivePlayerStrategy;
     friend class BenevolentPlayerStrategy;
+    friend class HumanPlayerStrategy;
 
     public:
         Player();

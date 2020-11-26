@@ -109,6 +109,10 @@ void Territory::addPendingOutgoingArmies(int armies)
     pendingOutgoingArmies_ += armies;
 }
 
+int Territory::getNumberOfMovableArmies()
+{
+    return numberOfArmies_ + pendingIncomingArmies_ - pendingOutgoingArmies_;
+}
 
 /* 
 ===================================
