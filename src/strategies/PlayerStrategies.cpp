@@ -557,7 +557,7 @@ void HumanPlayerStrategy::deployReinforcements(Player* player, vector<Territory*
     }
 
     int armiesToDeploy = 0;
-    cout << "\nHow many reinforcements do you want to deploy?" << endl;
+    cout << "How many reinforcements do you want to deploy? ";
     while (armiesToDeploy == 0)
     {
         int selection;
@@ -637,10 +637,11 @@ void HumanPlayerStrategy::issueAdvance(Player* player, vector<Territory*> territ
             Territory* territory = defendable.at(i);
             cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
         }
+        cout << endl;
     }
     if (!attackable.empty())
     {
-        cout << "\n~~~ To Attack ~~~" << endl;
+        cout << "~~~ To Attack ~~~" << endl;
         for (; i < defendable.size() + attackable.size(); i++)
         {
             int idx = i - defendable.size();
@@ -676,7 +677,7 @@ void HumanPlayerStrategy::issueAdvance(Player* player, vector<Territory*> territ
 
     int armiesToMove = 0;
     int movableArmies = source->getNumberOfMovableArmies();
-    cout << "\nHow many armies do you want to move?" << endl;
+    cout << "How many armies do you want to move? ";
     while (armiesToMove == 0)
     {
         int selection;
