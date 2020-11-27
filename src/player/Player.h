@@ -52,8 +52,10 @@ class Player
         Order* getNextOrder();
         Order* peekNextOrder();
         void drawCardFromDeck();
+        bool isHuman() const;
         bool isNeutral() const;
         bool isDoneIssuingOrders() const;
+        vector<Territory*> getOwnTerritoriesWithMovableArmies() const;
         vector<Territory*> toDefend() const;
         vector<Territory*> toAttack() const;
         void issueOrder();

@@ -32,9 +32,10 @@ class AggressivePlayerStrategy : public PlayerStrategy
         ostream &print_(ostream &output) const;
 
     private:
-        bool deployToTopTerritory(Player* player, vector<Territory*> territoriesToDefend);
+        bool deployToTopTerritory(Player* player, Territory* territory);
         bool attackFromTopTerritory(Player* player, Territory* attackFrom, vector<Territory*> territoriesToAttack);
-        bool fortifyTopTerritory(Player* player, vector<Territory*> territoriesToDefend);
+        bool advanceToRandomTerritory(Player* player, vector<Territory*> territoriesToDefend);
+        bool playCard(Player* player, Territory* topTerritory);
 };
 
 class BenevolentPlayerStrategy : public PlayerStrategy
@@ -51,6 +52,7 @@ class BenevolentPlayerStrategy : public PlayerStrategy
     private:
         bool deployToWeakTerritories(Player* player, vector<Territory*> territoriesToDefend);
         bool fortifyWeakTerritories(Player* player, vector<Territory*> territoriesToDefend);
+        bool playCard(Player* player, vector<Territory*> territoriesToDefend);
 };
 
 class HumanPlayerStrategy : public PlayerStrategy
@@ -66,8 +68,8 @@ class HumanPlayerStrategy : public PlayerStrategy
 
     private:
         void deployReinforcements(Player* player, vector<Territory*> territoriesToDefend);
-        void issueAdvances(Player* player, vector<Territory*> territoriesToDefend);
-        vector<Territory*> getPossibleSourceTerritoriesForAdvance(Player* player);
+        void issueAdvance(Player* player, vector<Territory*> territoriesToDefend);
+        void playCard(Player* player, vector<Territory*> territoriesToDefend);
 };
 
 class NeutralPlayerStrategy : public PlayerStrategy

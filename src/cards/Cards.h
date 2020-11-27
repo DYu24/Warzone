@@ -21,8 +21,9 @@ public:
     void setOwner(Player* owner);
 
 protected:
-    virtual ostream &print_(ostream &output) const = 0;
     Player* owner_;
+    virtual ostream &print_(ostream &output) const = 0;
+    virtual Order* buildOrder() = 0;
 };
 
 class Deck
@@ -57,6 +58,7 @@ public:
     void setCards(vector<Card*> cards);
     int size() const;
     void addCard(Card* card);
+    Card* at(int position);
     Card* removeCard(int position);
     Order* playCardAt(int position);
 
@@ -72,6 +74,7 @@ public:
 
 protected:
     ostream &print_(ostream &output) const;
+    Order* buildOrder();
 };
 
 class ReinforcementCard : public Card
@@ -82,6 +85,7 @@ public:
 
 protected:
     ostream &print_(ostream &output) const;
+    Order* buildOrder();
 };
 
 class BlockadeCard : public Card
@@ -92,6 +96,7 @@ public:
 
 protected:
     ostream &print_(ostream &output) const;
+    Order* buildOrder();
 };
 
 class AirliftCard : public Card
@@ -102,6 +107,7 @@ public:
 
 protected:
     ostream &print_(ostream &output) const;
+    Order* buildOrder();
 };
 
 class DiplomacyCard : public Card
@@ -112,4 +118,5 @@ public:
 
 protected:
     ostream &print_(ostream &output) const;
+    Order* buildOrder();
 };

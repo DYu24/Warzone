@@ -31,13 +31,14 @@ public:
     virtual OrderType getType() const = 0;
 
 protected:
+    Player* issuer_;
     Order();
     Order(Player* issuer, int priority);
     Order(const Order &order);
     const Order &operator=(const Order &order);
     virtual void execute_() = 0;
+    virtual void undo_();
     virtual ostream &print_(ostream &output) const = 0;
-    Player* issuer_;
 
 private:
     int priority_;
@@ -78,6 +79,7 @@ public:
 
 protected:
     void execute_();
+    void undo_();
     ostream &print_(ostream &output) const;
 
 private:
@@ -98,6 +100,7 @@ public:
 
 protected:
     void execute_();
+    void undo_();
     ostream &print_(ostream &output) const;
 
 private:
@@ -157,6 +160,7 @@ public:
 
 protected:
     void execute_();
+    void undo_();
     ostream &print_(ostream &output) const;
 
 private:

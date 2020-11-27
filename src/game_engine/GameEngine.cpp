@@ -347,7 +347,7 @@ void GameEngine::startGame()
 
     setupObservers(this);
 
-    deck_->generateCards(20);
+    deck_->generateCards(50);
 }
 
 // Goes through the startup phase of the game where:
@@ -553,6 +553,11 @@ void GameEngine::mainGameLoop()
                         
             if (player->getOwnedTerritories().size() == 0)
             {
+                if (player == activePlayer_)
+                {
+                    activePlayer_ = nullptr;
+                }
+
                 delete player;
                 player = nullptr;
             }

@@ -164,6 +164,13 @@ void Player::drawCardFromDeck()
     }
 }
 
+// Check whether player is human or not
+bool Player::isHuman() const
+{
+    HumanPlayerStrategy* human = dynamic_cast<HumanPlayerStrategy*>(strategy_);
+    return human != nullptr;
+}
+
 // Check whether player is neutral or not
 bool Player::isNeutral() const
 {
@@ -176,6 +183,22 @@ bool Player::isDoneIssuingOrders() const
 {
     return committed_ || isNeutral();
 }
+
+// Get a list of territories with available armies for moving
+vector<Territory*> Player::getOwnTerritoriesWithMovableArmies() const
+{
+    vector<Territory*> territories;
+    for (const auto &territory : ownedTerritories_)
+    {
+       if (territory->getNumberOfMovableArmies() > 0)
+       {
+           territories.push_back(territory);
+       }
+    }
+
+    return territories;
+}
+
 
 // Return a list of territories to defend
 vector<Territory*> Player::toDefend() const
@@ -201,39 +224,6 @@ void Player::issueOrder()
         cout << "No new order issued." << endl;
     }
 }
-
-// Helper method to play a random Card from the Player's hand, if any.
-// Returns `true` if the played Card requires no further action from the Player.
-// Returns `false` if further action needs to be taken (i.e. Deploy additional units from Reinforcement card).
-// bool Player::playCard()
-// {
-//     if (hand_->size() != 0)
-//     {
-//         // Play a random card from hand
-//         int randomCardIndex = rand() % hand_->size();
-//         Card* card = hand_->removeCard(randomCardIndex);
-//         Order* order = card->play();
-
-//         cout << "Played: " << *card << endl;
-
-//         // Return the played card back to the deck
-//         card->setOwner(nullptr);
-//         GameEngine::getDeck()->addCard(card);
-
-//         if (order != nullptr)
-//         {
-//             orders_->add(order);
-//         }
-//         else if (reinforcements_ > 0)
-//         {
-//             // Reinforcement card played: deploy the additional reinforcements
-//             issueDeployOrder(toDefend());
-//         }
-//         return false;
-//     }
-
-//     return true;
-// }
 
 // Check if player has already issued an advance order from `source` to `destination`
 bool Player::advancePairingExists(Territory* source, Territory* destination)

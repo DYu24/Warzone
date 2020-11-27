@@ -4,6 +4,24 @@
 #include <time.h>
 
 
+namespace
+{
+    // Helper method to get the adversaries of the specified player.
+    vector<Player*> getEnemiesOf(Player* player)
+    {
+        vector<Player*> enemies;
+        for (const auto &p : GameEngine::getPlayers())
+        {
+            if (p != player)
+            {
+                enemies.push_back(p);
+            }
+        }
+        return enemies;
+    }
+}
+
+
 /* 
 ===================================
  Implementation for Card class
@@ -219,6 +237,17 @@ void Hand::addCard(Card* card)
     cards_.push_back(card);
 }
 
+// Get the card at the specified position
+Card* Hand::at(int position)
+{
+    if (position < 0 || position > cards_.size() - 1)
+    {
+        return nullptr;
+    }
+
+    return cards_.at(position);
+}
+
 // Remove and return a card from the player's hand indicated by `position`.
 Card* Hand::removeCard(int position)
 {
@@ -263,8 +292,49 @@ Order* BombCard::play()
         return new BombOrder();
     }
 
-    // Bomb enemy territory with the most armies (last one in the `toAttack()` list)
-    Territory* target = owner_->toAttack().back();
+    if (owner_->isHuman())
+    {
+        return buildOrder();
+    }
+
+    return new BombOrder(owner_, owner_->toAttack().front());
+}
+
+// Build the BombOrder through user input.
+Order* BombCard::buildOrder()
+{
+    vector<Territory*> bombableTerritories;
+    for (const auto &player : getEnemiesOf(owner_))
+    {
+        vector<Territory*> enemyTerritories = player->getOwnedTerritories();
+        bombableTerritories.insert(bombableTerritories.end(), enemyTerritories.begin(), enemyTerritories.end());
+    }
+
+    cout << "\nWhich territory would you like to bomb?" << endl;
+    for (int i = 0; i < bombableTerritories.size(); i++)
+    {
+        Territory* territory = bombableTerritories.at(i);
+        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " present)" << endl;
+    }
+
+    Territory* target = nullptr;
+    cout << "\nEnter the territory to bomb: ";
+    while (target == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= bombableTerritories.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        target = bombableTerritories.at(selection - 1);
+    }
+
     return new BombOrder(owner_, target);
 }
 
@@ -299,6 +369,11 @@ Order* ReinforcementCard::play()
     return nullptr;
 }
 
+// Do nothing since ReinforcementCard returns no order
+Order* ReinforcementCard::buildOrder()
+{
+    return nullptr;
+}
 
 /* 
 ===================================
@@ -327,18 +402,46 @@ Order* BlockadeCard::play()
         return new BlockadeOrder();
     }
 
-    // Setup a blockade on the highest priority territory to defend that has any armies
-    vector<Territory*> territoriesToDefend = owner_->toDefend();
-    for (const auto &potentialTerritory : territoriesToDefend)
+    if (owner_->isHuman())
     {
-        if (potentialTerritory->getNumberOfArmies() > 0)
-        {
-            return new BlockadeOrder(owner_, potentialTerritory);
-        }
+        return buildOrder();
     }
 
-    // If unable to find suitable territory, then just pick the first one from the `toDefend()` list
-    return new BlockadeOrder(owner_, territoriesToDefend.front());
+    // Setup a blockade on the territory with lowest defend priority
+    return new BlockadeOrder(owner_, owner_->toDefend().back());
+}
+
+// Build the BlockadeOrder through user input.
+Order* BlockadeCard::buildOrder()
+{
+    vector<Territory*> blockadableTerritories = owner_->getOwnedTerritories();
+
+    cout << "\nWhich territory would you like to blockade?" << endl;
+    for (int i = 0; i < blockadableTerritories.size(); i++)
+    {
+        Territory* territory = blockadableTerritories.at(i);
+        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " present, " << territory->getPendingIncomingArmies() << " pending)" << endl;
+    }
+
+    Territory* target = nullptr;
+    cout << "\nEnter the territory to blockade: ";
+    while (target == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= blockadableTerritories.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        target = blockadableTerritories.at(selection - 1);
+    }
+
+    return new BlockadeOrder(owner_, target);
 }
 
 
@@ -364,13 +467,15 @@ Card* AirliftCard::clone() const
 // Generate an AirliftOrder when the card is played.
 Order* AirliftCard::play()
 {
-    if (owner_ == nullptr)
+    if (owner_ == nullptr || owner_->getOwnedTerritories().size() == 1)
     {
         return new AirliftOrder();
     }
 
-    // Pick the highest priority territory to defend
-    Territory* destination = owner_->toDefend().front();
+    if (owner_->isHuman())
+    {
+        return buildOrder();
+    }
 
     // Choose the player's territory with the most movable armies as the source
     int movableArmies = 0;
@@ -386,11 +491,106 @@ Order* AirliftCard::play()
         }
     }
 
-    // Move half the number of armies from the source territory to the destination
-    int armiesToMove = max(movableArmies / 2, 1);
-    source->addPendingOutgoingArmies(armiesToMove);
+    // Pick the highest priority territory to defend (that isn't the source)
+    Territory* destination = nullptr;
+    for (const auto &territory : owner_->toDefend())
+    {
+        if (territory != source)
+        {
+            destination = territory;
+            break;
+        }
+    }
 
-    return new AirliftOrder(owner_, armiesToMove, source, destination);
+    source->addPendingOutgoingArmies(movableArmies);
+    return new AirliftOrder(owner_, movableArmies, source, destination);
+}
+
+// Build the AirliftOrder through user input.
+Order* AirliftCard::buildOrder()
+{
+    vector<Territory*> possibleSources = owner_->getOwnTerritoriesWithMovableArmies();
+
+    cout << "\nWhich territory would you like to airlift from?" << endl;
+    for (int i = 0; i < possibleSources.size(); i++)
+    {
+        Territory* territory = possibleSources.at(i);
+        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfMovableArmies() << " armies available)" << endl;
+    }
+
+    Territory* source = nullptr;
+    cout << "\nEnter the territory to airlift from: ";
+    while (source == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= possibleSources.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        source = possibleSources.at(selection - 1);
+    }
+
+    vector<Territory*> possibleDestinations;
+    for (const auto &destination : owner_->toDefend())
+    {
+        if (destination != source)
+        {
+            possibleDestinations.push_back(destination);
+        }
+    }
+
+    cout << "\nWhich territory would you like to airlift to?" << endl;
+    for (int i = 0; i < possibleDestinations.size(); i++)
+    {
+        Territory* territory = possibleDestinations.at(i);
+        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
+    }
+
+    Territory* destination = nullptr;
+    cout << "\nEnter the territory to airlift to: ";
+    while (destination == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= possibleDestinations.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        destination = possibleDestinations.at(selection - 1);
+    }
+
+    int armiesToMove = 0;
+    int movableArmies = source->getNumberOfMovableArmies();
+    cout << "\nHow many armies do you want to move?" << endl;
+    while (armiesToMove == 0)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection < 1 || selection > movableArmies)
+        {
+            cout << "Please enter a number between 1 and " << movableArmies << ": " << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        armiesToMove = selection;
+    }
+
+    source->addPendingOutgoingArmies(armiesToMove);
+    return new AdvanceOrder(owner_, armiesToMove, source, destination);
 }
 
 
@@ -419,6 +619,11 @@ Order* DiplomacyCard::play()
     if (owner_ == nullptr || GameEngine::getPlayers().size() < 2)
     {
         return new NegotiateOrder();
+    }
+
+    if (owner_->isHuman())
+    {
+        return buildOrder();
     }
 
     Map* map = GameEngine::getMap();
@@ -461,5 +666,38 @@ Order* DiplomacyCard::play()
         }
     }
     Player* targetPlayer = enemyPlayers.at(rand() % enemyPlayers.size());
+    return new NegotiateOrder(owner_, targetPlayer);
+}
+
+// Build the NegotiateOrder through user input.
+Order* DiplomacyCard::buildOrder()
+{
+    vector<Player*> enemyPlayers = getEnemiesOf(owner_);
+
+    cout << "\nWho would you like to negotiate with?" << endl;
+    for (int i = 0; i < enemyPlayers.size(); i++)
+    {
+        Player* enemy = enemyPlayers.at(i);
+        cout << "[" << i+1 << "] " << enemy->getName() << endl;
+    }
+
+    Player* targetPlayer = nullptr;
+    cout << "\nEnter the player to negotiate with: ";
+    while (targetPlayer == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= enemyPlayers.size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        targetPlayer = enemyPlayers.at(selection - 1);
+    }
+
     return new NegotiateOrder(owner_, targetPlayer);
 }

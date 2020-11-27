@@ -3,6 +3,7 @@
 #include "../orders/Orders.h"
 #include <algorithm>
 #include <math.h>
+#include <time.h>
 #include <unordered_set>
 
 
@@ -119,27 +120,32 @@ void AggressivePlayerStrategy::issueOrder(Player* player)
     vector<Territory*> territoriesToAttack = toAttack(player);
     vector<Territory*> territoriesToDefend = toDefend(player);
 
-    bool finishedDeploying = deployToTopTerritory(player, territoriesToDefend);
+    bool finishedDeploying = deployToTopTerritory(player, territoriesToDefend.front());
     if (finishedDeploying)
     {
-        bool finishedAttacking = attackFromTopTerritory(player, territoriesToDefend.front(), territoriesToAttack);
-        if (finishedAttacking)
+        bool finishedPlayingCards = playCard(player, territoriesToDefend.front());
+
+        if (finishedPlayingCards)
         {
-            bool finishedFortifying = fortifyTopTerritory(player, territoriesToDefend);
-            player->committed_ = finishedFortifying;
+            bool finishedAttacking = attackFromTopTerritory(player, territoriesToDefend.front(), territoriesToAttack);
+            if (finishedAttacking)
+            {
+                bool finishedIssuingOrders = advanceToRandomTerritory(player, territoriesToDefend);
+                player->committed_ = finishedIssuingOrders;
+            }
         }
+
     }
 }
 
 // Deploy all reinfocements to the strongest territory (the one with the most armies already present)
-bool AggressivePlayerStrategy::deployToTopTerritory(Player* player, vector<Territory*> territoriesToDefend)
+bool AggressivePlayerStrategy::deployToTopTerritory(Player* player, Territory* territory)
 {
     if (player->reinforcements_ == 0)
     {
         return true;
     }
 
-    Territory* territory = territoriesToDefend.front();
     DeployOrder* order = new DeployOrder(player, player->reinforcements_, territory);
     player->addOrder(order);
     territory->addPendingIncomingArmies(player->reinforcements_);
@@ -159,15 +165,12 @@ bool AggressivePlayerStrategy::attackFromTopTerritory(Player* player, Territory*
         bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), territory) != territoriesToAttack.end();
         if (isEnemyTerritory && !player->advancePairingExists(attackFrom, territory))
         {
-            // Only advance to this enemy territory if the player has any chance of conquering it
             int movableArmies = attackFrom->getNumberOfMovableArmies();
-            int minimumArmiesRequiredToWin = max((int)ceil(territory->getNumberOfArmies() / 0.6), 1);
             if (movableArmies > 0)
             {
-                int armiesToMove = min(movableArmies, minimumArmiesRequiredToWin);
-                AdvanceOrder* order = new AdvanceOrder(player, armiesToMove, attackFrom, territory);
+                AdvanceOrder* order = new AdvanceOrder(player, movableArmies, attackFrom, territory);
                 player->addOrder(order);
-                attackFrom->addPendingOutgoingArmies(armiesToMove);
+                attackFrom->addPendingOutgoingArmies(movableArmies);
                 player->issuedDeploymentsAndAdvancements_[attackFrom].push_back(territory);
                 
                 cout << "Issued: " << *order << endl;
@@ -179,32 +182,69 @@ bool AggressivePlayerStrategy::attackFromTopTerritory(Player* player, Territory*
     return true;
 }
 
-// Advance armies from other adjacent territories to the strongest territory
-bool AggressivePlayerStrategy::fortifyTopTerritory(Player* player, vector<Territory*> territoriesToDefend)
+// Advance armies from the top/strongest territory to another adjacent friendly territory.
+// This will ensure that the player doesn't get stuck deploying to the top territory indefinitely
+// when the territory doesn't have any surrounding enemy territories to attack.
+bool AggressivePlayerStrategy::advanceToRandomTerritory(Player* player, vector<Territory*> territoriesToDefend)
 {
-    Map* map = GameEngine::getMap();
-    Territory* territoryToFortify = territoriesToDefend.front();
+    Territory* topTerritory = territoriesToDefend.front();
+    int movableArmies = topTerritory->getNumberOfMovableArmies();
 
-    for (const auto &territory : map->getAdjacentTerritories(territoryToFortify))
+    // If the player hasn't already moved all the armies to attack an enemy, move to another friendly territory
+    if (movableArmies > 0)
     {
-        bool isFriendlyTerritory = find(territoriesToDefend.begin(), territoriesToDefend.end(), territory) != territoriesToDefend.end();
-        if (isFriendlyTerritory && !player->advancePairingExists(territory, territoryToFortify))
-        {
-            int movableArmies = territory->getNumberOfMovableArmies();
-            if (movableArmies > 0)
-            {
-                AdvanceOrder* order = new AdvanceOrder(player, movableArmies, territory, territoryToFortify);
-                player->addOrder(order);
-                territory->addPendingOutgoingArmies(movableArmies);
-                player->issuedDeploymentsAndAdvancements_[territory].push_back(territoryToFortify);
-                
-                cout << "Issued: " << *order << endl;
-                return false;
-            }
-        }
+        vector<Territory*> adjacentTerritories = GameEngine::getMap()->getAdjacentTerritories(topTerritory);
+        
+        // Pick random destination
+        srand(time(nullptr));
+        int randomIndex = rand() % adjacentTerritories.size();
+        Territory* destination = adjacentTerritories.at(randomIndex);
+        
+        AdvanceOrder* order = new AdvanceOrder(player, movableArmies, topTerritory, destination);
+        player->addOrder(order);
+        topTerritory->addPendingOutgoingArmies(movableArmies);
+        player->issuedDeploymentsAndAdvancements_[topTerritory].push_back(destination);
+        
+        cout << "Issued: " << *order << endl;
+        return false;
     }
 
     return true;
+}
+
+// Helper method to play a random Card from the Player's hand, if any.
+// Returns `true` if the Player has no more cards to play.
+// Returns `false` if the Player (may) still have more cards to play.
+bool AggressivePlayerStrategy::playCard(Player* player, Territory* topTerritory)
+{
+    Hand* playerHand = player->hand_;
+    if (playerHand->size() == 0)
+    {
+        return true;
+    }
+
+    // Play a random card from hand
+    int randomCardIndex = rand() % playerHand->size();
+    Card* card = playerHand->removeCard(randomCardIndex);
+    Order* order = card->play();
+    cout << "Played: " << *card << endl;
+
+    // Return the played card back to the deck
+    card->setOwner(nullptr);
+    GameEngine::getDeck()->addCard(card);
+
+    if (order != nullptr)
+    {
+        player->addOrder(order);
+        cout << "Issued: " << *order << endl;
+    }
+    else if (player->reinforcements_ > 0)
+    {
+        // Reinforcement card played: deploy the additional reinforcements
+        deployToTopTerritory(player, topTerritory);
+    }
+
+    return false;
 }
 
 
@@ -251,8 +291,13 @@ void BenevolentPlayerStrategy::issueOrder(Player* player)
     bool finishedDeploying = deployToWeakTerritories(player, territoriesToDefend);
     if (finishedDeploying)
     {
-        bool finishedFortifying = fortifyWeakTerritories(player, territoriesToDefend);
-        player->committed_ = finishedFortifying;
+        bool finishedPlayingCards = playCard(player, territoriesToDefend);
+
+        if (finishedPlayingCards)
+        {
+            bool finishedFortifying = fortifyWeakTerritories(player, territoriesToDefend);
+            player->committed_ = finishedFortifying;
+        }
     }
 }
 
@@ -331,6 +376,56 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Ter
     return true;
 }
 
+// Helper method to play a non-aggressive Card from the Player's hand, if any.
+// Returns `true` if the Player has no more non-aggressive cards to play.
+// Returns `false` if the Player (may) still have more cards to play.
+bool BenevolentPlayerStrategy::playCard(Player* player, vector<Territory*> territoriesToDefend)
+{
+    Hand* playerHand = player->hand_;
+
+    if (playerHand->size() != 0)
+    {
+        // Play a card from hand (except for BombCards)
+        Card* card = nullptr;
+        for (int i = 0; i < playerHand->size(); i++)
+        {
+            // Put the card back in the hand if it's a BombCard
+            if (dynamic_cast<BombCard*>(playerHand->at(i)))
+            {
+                continue;
+            }
+            
+            card = playerHand->removeCard(i);
+            break;
+        }
+
+        if (card != nullptr)
+        {
+            Order* order = card->play();
+            cout << "Played: " << *card << endl;
+
+            // Return the played card back to the deck
+            card->setOwner(nullptr);
+            GameEngine::getDeck()->addCard(card);
+
+            if (order != nullptr)
+            {
+                player->addOrder(order);
+                cout << "Issued: " << *order << endl << endl;
+            }
+            else if (player->reinforcements_ > 0)
+            {
+                // Reinforcement card played: deploy the additional reinforcements
+                deployToWeakTerritories(player, territoriesToDefend);
+            }
+
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 
 /* 
@@ -397,9 +492,13 @@ void HumanPlayerStrategy::issueOrder(Player* player)
     else
     {
         cout << "What would you like to do?" << endl;
-        if (getPossibleSourceTerritoriesForAdvance(player).size() > 0)
+        if (player->getOwnTerritoriesWithMovableArmies().size() > 0)
         {
             cout << "[A] Advance" << endl;
+        }
+        if (player->hand_->size() > 0)
+        {
+            cout << "[P] Play a card" << endl;
         }
         cout << "[X] Commit" << endl;
 
@@ -407,10 +506,16 @@ void HumanPlayerStrategy::issueOrder(Player* player)
         {
             string selection;
             cin >> selection;
+            transform(selection.begin(), selection.end(), selection.begin(), ::toupper);
 
             if (selection == "A")
             {
-                issueAdvances(player, territoriesToDefend);
+                issueAdvance(player, territoriesToDefend);
+                break;
+            }
+            else if (selection == "P")
+            {
+                playCard(player, territoriesToDefend);
                 break;
             }
             else if (selection == "X")
@@ -426,7 +531,7 @@ void HumanPlayerStrategy::issueOrder(Player* player)
 void HumanPlayerStrategy::deployReinforcements(Player* player, vector<Territory*> territoriesToDefend)
 {
     cout << "You have " << player->reinforcements_ << " reinforcements left." << endl;
-    cout << "Where would you like to deploy to?" << endl;
+    cout << "\nWhere would you like to deploy to?" << endl;
     for (int i = 0; i < territoriesToDefend.size(); i++)
     {
         Territory* territory = territoriesToDefend.at(i);
@@ -452,7 +557,7 @@ void HumanPlayerStrategy::deployReinforcements(Player* player, vector<Territory*
     }
 
     int armiesToDeploy = 0;
-    cout << "How many reinforcements do you want to deploy?" << endl;
+    cout << "\nHow many reinforcements do you want to deploy?" << endl;
     while (armiesToDeploy == 0)
     {
         int selection;
@@ -474,15 +579,15 @@ void HumanPlayerStrategy::deployReinforcements(Player* player, vector<Territory*
     deployTarget->addPendingIncomingArmies(armiesToDeploy);
     player->reinforcements_ -= armiesToDeploy;
     
-    cout << "Issued: " << *order << endl;
+    cout << "Issued: " << *order << endl << endl;
 }
 
 // Issue an advance order to either fortify or attack a territory
-void HumanPlayerStrategy::issueAdvances(Player* player, vector<Territory*> territoriesToDefend)
+void HumanPlayerStrategy::issueAdvance(Player* player, vector<Territory*> territoriesToDefend)
 {
-    vector<Territory*> possibleSources = getPossibleSourceTerritoriesForAdvance(player);
+    vector<Territory*> possibleSources = player->getOwnTerritoriesWithMovableArmies();
 
-    cout << "Which territory would you like to advance from?" << endl;
+    cout << "\nWhich territory would you like to advance from?" << endl;
     for (int i = 0; i < possibleSources.size(); i++)
     {
         Territory* territory = possibleSources.at(i);
@@ -523,7 +628,7 @@ void HumanPlayerStrategy::issueAdvances(Player* player, vector<Territory*> terri
     }
 
     int i = 0;
-    cout << "Which territory would you like to advance to?" << endl;
+    cout << "\nWhich territory would you like to advance to?" << endl;
     if (!defendable.empty())
     {
         cout << "~~~ To Defend ~~~" << endl;
@@ -571,7 +676,7 @@ void HumanPlayerStrategy::issueAdvances(Player* player, vector<Territory*> terri
 
     int armiesToMove = 0;
     int movableArmies = source->getNumberOfMovableArmies();
-    cout << "How many armies do you want to move?" << endl;
+    cout << "\nHow many armies do you want to move?" << endl;
     while (armiesToMove == 0)
     {
         int selection;
@@ -592,22 +697,54 @@ void HumanPlayerStrategy::issueAdvances(Player* player, vector<Territory*> terri
     player->addOrder(order);
     source->addPendingOutgoingArmies(armiesToMove);
     
-    cout << "Issued: " << *order << endl;
+    cout << "Issued: " << *order << endl << endl;
 }
 
-// Check if the player still has any territories they can advance from
-vector<Territory*> HumanPlayerStrategy::getPossibleSourceTerritoriesForAdvance(Player* player)
+// Play a card from the player's hand
+void HumanPlayerStrategy::playCard(Player* player, vector<Territory*> territoriesToDefend)
 {
-    vector<Territory*> possibleSources;
-    for (const auto &territory : player->ownedTerritories_)
+    Hand* playerHand = player->hand_;
+
+    cout << "\nWhich card would you like to play?" << endl;
+    for (int i = 0; i < playerHand->size(); i++)
     {
-       if (territory->getNumberOfMovableArmies() > 0)
-       {
-           possibleSources.push_back(territory);
-       }
+        Card* card = playerHand->getCards().at(i);
+        cout << "[" << i+1 << "] " << *card << endl;
     }
 
-    return possibleSources;
+    Card* card = nullptr;
+    cout << "\nEnter the card to play: ";
+    while (card == nullptr)
+    {
+        int selection;
+        cin >> selection;
+
+        if (cin.fail() || selection - 1 < 0 || selection - 1 >= playerHand->size())
+        {
+            cout << "That was not a valid option. Please try again:" << endl;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        card = playerHand->removeCard(selection - 1);
+    }
+
+    Order* order = card->play();
+
+    // Return the played card back to the deck
+    card->setOwner(nullptr);
+    GameEngine::getDeck()->addCard(card);
+
+    if (order != nullptr)
+    {
+        player->addOrder(order);
+        cout << "Issued: " << *order << endl << endl;
+    }
+    else if (player->reinforcements_ > 0)
+    {
+        deployReinforcements(player, territoriesToDefend);
+    }
 }
 
 

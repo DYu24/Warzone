@@ -71,6 +71,7 @@ void Order::execute()
     else
     {
         cout << "Order invalidated. Skipping..." << endl;
+        undo_();
     }
 }
 
@@ -79,6 +80,11 @@ int Order::getPriority() const
 {
     return priority_;
 }
+
+// Reverse the pre-orders-execution game state back to before the order was created.
+// The default behavior is to do nothing if there is no meta-state to reset
+// (e.g. resetting pending incoming/outgoing armies from territories)
+void Order::undo_() {}
 
 
 /* 
@@ -275,18 +281,26 @@ bool DeployOrder::validate() const
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
 }
 
-// Get the type of the Order sub-class
-OrderType DeployOrder::getType() const
-{
-    return DEPLOY;
-}
-
 // Executes the DeployOrder.
 void DeployOrder::execute_()
 {
     destination_->addArmies(numberOfArmies_);
     destination_->setPendingIncomingArmies(0);
     cout << "Deployed " << numberOfArmies_ << " armies to " << destination_->getName() << "." << endl;
+}
+
+// Reverse the pre-orders-execution game state back to before the order was created.
+// Resets the contribution of this order to the number of pending incoming armies on the destination territory.
+void DeployOrder::undo_()
+{
+    int newPendingIncomingArmies = destination_->getPendingIncomingArmies() - numberOfArmies_;
+    destination_->setPendingIncomingArmies(newPendingIncomingArmies);
+}
+
+// Get the type of the Order sub-class
+OrderType DeployOrder::getType() const
+{
+    return DEPLOY;
 }
 
 
@@ -398,6 +412,14 @@ void AdvanceOrder::execute_()
     }
 
     source_->setPendingOutgoingArmies(0);
+}
+
+// Reverse the pre-orders-execution game state back to before the order was created.
+// Resets the contribution of this order to the number of pending outgoing armies from the source territory.
+void AdvanceOrder::undo_()
+{
+    int newPendingOutgoingArmies = source_->getPendingOutgoingArmies() - numberOfArmies_;
+    source_->setPendingOutgoingArmies(newPendingOutgoingArmies);
 }
 
 // Get the type of the Order sub-class
@@ -612,6 +634,14 @@ void AirliftOrder::execute_()
     source_->setPendingOutgoingArmies(0);
 
     cout << "Airlifted " << movableArmiesFromSource << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;
+}
+
+// Reverse the pre-orders-execution game state back to before the order was created.
+// Resets the contribution of this order to the number of pending outgoing armies from the source territory.
+void AirliftOrder::undo_()
+{
+    int newPendingOutgoingArmies = source_->getPendingOutgoingArmies() - numberOfArmies_;
+    source_->setPendingOutgoingArmies(newPendingOutgoingArmies);
 }
 
 // Get the type of the Order sub-class
