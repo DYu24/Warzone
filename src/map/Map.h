@@ -75,9 +75,9 @@ public:
 private:
     vector<Continent*> continents_;
     unordered_map<Territory*, vector<Territory*>> adjacencyList_;
-    bool checkGraphValidity();
-    bool checkContinentsValidity();
-    bool checkTerritoriesValidity();
-    void copyMapContents(const Map &map);
-    void destroyMapContents();
+    bool checkGraphValidity_();
+    bool checkContinentsValidity_();
+    bool checkTerritoriesValidity_();
+    void copyMapContents_(const Map &map);
+    void destroyMapContents_();
 };

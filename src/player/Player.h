@@ -61,18 +61,14 @@ class Player
         void issueOrder();
 
     private:
-        PlayerStrategy* strategy_;
-        int reinforcements_;
         string name_;
+        int reinforcements_;
+        bool committed_;
+        PlayerStrategy* strategy_;
         OrdersList* orders_;
         Hand* hand_;
         vector<Territory*> ownedTerritories_;
         vector<Player*> diplomaticRelations_;
-        bool committed_;
         unordered_map<Territory*, vector<Territory*>> issuedDeploymentsAndAdvancements_;
-
-        bool issueDeployOrder(vector<Territory*> territoriesToDefend);
-        bool issueAdvanceOrder(vector<Territory*> territoriesToAttack, vector<Territory*> territoriesToDefend);
-        bool playCard();
-        bool advancePairingExists(Territory* source, Territory* destination);
+        bool advancePairingExists_(Territory* source, Territory* destination);
 };

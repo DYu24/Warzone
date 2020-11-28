@@ -45,7 +45,7 @@ namespace
 ===================================
  */
 
-// Reads the input `.map` file and populates the Map object with continents.
+// Reads the input `.map` file and returns a list continents.
 vector<Continent*> MapLoader::getContinents(ifstream &stream)
 {
     vector<Continent*> continents;
@@ -76,7 +76,7 @@ vector<Continent*> MapLoader::getContinents(ifstream &stream)
     return continents;
 }
 
-// Reads the input `.map` file and populates the Map object with territories.
+// Reads the input `.map` file and returns a list of territories.
 vector<Territory*> MapLoader::getTerritories(ifstream &stream, vector<Continent*> &continents)
 {
     vector<Territory*> territories;
@@ -179,7 +179,7 @@ Map* MapLoader::loadMap(string filename)
 ===================================
  */
 
-// Reads the input `.map` file and populates the Map object with continents.
+// Reads the input `.map` file and returns a list continents.
 unordered_map<string, Continent*> ConquestFileReader::getContinents(ifstream &stream)
 {
     unordered_map<string, Continent*> continents;
@@ -215,7 +215,7 @@ unordered_map<string, Continent*> ConquestFileReader::getContinents(ifstream &st
     return continents;
 }
 
-// Reads the input `.map` file and connects the territories to each other.
+// Reads the input `.map` file and returns an adjacency list of all the territories.
 unordered_map<Territory*, vector<Territory*>> ConquestFileReader::buildAdjacencyList(ifstream &stream, unordered_map<string, Continent*> &continents)
 {
     unordered_map<Territory*, vector<Territory*>> adjacencyList;
@@ -230,13 +230,13 @@ unordered_map<Territory*, vector<Territory*>> ConquestFileReader::buildAdjacency
         ss.clear();
         ss.str(line);
 
-        int idx = 0;
+        int column = 0;
         string token;
         Territory* currentTerritory;
         while (getline(ss, token, ','))
         {
             token = trim(token);
-            switch (idx)
+            switch (column)
             {
                 // First column of data is the territory name
                 case 0:
@@ -247,7 +247,7 @@ unordered_map<Territory*, vector<Territory*>> ConquestFileReader::buildAdjacency
                 case 1:
                 case 2:
                     break;
-                // Fourth column of data is the continent to which this territory belongs to
+                // Fourth column of data is the continent to which this territory belongs
                 case 3:
                     continents[capitalize(token)]->addTerritory(currentTerritory);
                     break;
@@ -256,12 +256,12 @@ unordered_map<Territory*, vector<Territory*>> ConquestFileReader::buildAdjacency
                     adjacentTerritories[currentTerritory].push_back(capitalize(token));
             }
 
-            idx++;
+            column++;
         }
     }
 
     // build the actual adjacency list with real Territory objects
-    for (auto &entry : adjacentTerritories)
+    for (const auto &entry : adjacentTerritories)
     {
         for (const auto &territoryName : entry.second)
         {

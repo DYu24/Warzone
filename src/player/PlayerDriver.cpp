@@ -10,7 +10,7 @@ int main()
     Territory* t3 = new Territory("Territory3");
     Territory* t4 = new Territory("Territory4");
     Territory* t5 = new Territory("Territory5");
-    t1->addArmies(2);
+    t1->addArmies(10);
     t2->addArmies(2);
     t3->addArmies(5);
     t4->addArmies(1);
@@ -29,7 +29,7 @@ int main()
     GameEngine::setMap(map);
 
     GameEngine::getDeck()->generateCards(5);
-    Player p1 = Player("Player 1");
+    Player p1 = Player("Player 1", new AggressivePlayerStrategy());
 
     p1.addOwnedTerritory(t1);
     p1.addOwnedTerritory(t2);

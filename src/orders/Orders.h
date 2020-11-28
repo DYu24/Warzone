@@ -19,15 +19,16 @@ enum OrderType : short
     NEGOTIATE,
 };
 
+
 class Order
 {
 public:
     virtual ~Order();
     friend ostream &operator<<(ostream &output, const Order &order);
-    virtual Order* clone() const = 0;
     void execute();
-    virtual bool validate() const = 0;
     int getPriority() const;
+    virtual Order* clone() const = 0;
+    virtual bool validate() const = 0;
     virtual OrderType getType() const = 0;
 
 protected:
@@ -36,13 +37,14 @@ protected:
     Order(Player* issuer, int priority);
     Order(const Order &order);
     const Order &operator=(const Order &order);
+    virtual ostream &print_(ostream &output) const = 0;
     virtual void execute_() = 0;
     virtual void undo_();
-    virtual ostream &print_(ostream &output) const = 0;
 
 private:
     int priority_;
 };
+
 
 class OrdersList
 {
@@ -64,6 +66,7 @@ public:
 private:
     vector<Order*> orders_;
 };
+
 
 class DeployOrder : public Order
 {
@@ -87,6 +90,7 @@ private:
     Territory* destination_;
 };
 
+
 class AdvanceOrder : public Order
 {
 public:
@@ -109,6 +113,7 @@ private:
     Territory* destination_;
 };
 
+
 class BombOrder : public Order
 {
 public:
@@ -128,6 +133,7 @@ private:
     Territory* target_;
 };
 
+
 class BlockadeOrder : public Order
 {
 public:
@@ -146,6 +152,7 @@ protected:
 private:
     Territory* territory_;
 };
+
 
 class AirliftOrder : public Order
 {
@@ -168,6 +175,7 @@ private:
     Territory* source_;
     Territory* destination_;
 };
+
 
 class NegotiateOrder : public Order
 {

@@ -4,20 +4,6 @@
 #include <iostream>
 using namespace std;
 
-namespace
-{
-    // Helper function to display the list of players
-    void displayPlayers(GameEngine &gameEngine)
-    {
-        cout << endl;
-        for (const auto &player : gameEngine.getCurrentPlayers())
-        {
-            cout << *player << endl;
-        }
-        cout << endl;
-    }
-}
-
 int main()
 {
     // Setup
@@ -40,6 +26,7 @@ int main()
 
     gameEngine.startupPhase();
 
+    // Display the players at the start of the game
     cout << endl;
     for (const auto &player : gameEngine.getCurrentPlayers())
     {
@@ -59,6 +46,8 @@ int main()
     cout << "\n~~~ Execute orders phase ~~~\n" << endl;
     gameEngine.executeOrdersPhase();
 
+
+
     // ======================================================================================================
 
     // Change the strategy for one of the players
@@ -75,6 +64,8 @@ int main()
     cout << "\n~~~ Execute orders phase ~~~\n" << endl;
     gameEngine.executeOrdersPhase();
 
+
+    // Clean up dynamically allocated memory
     GameEngine::resetGameEngine();
 
     return 0;

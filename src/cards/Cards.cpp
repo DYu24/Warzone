@@ -31,7 +31,7 @@ namespace
 // Destructor
 Card::~Card() {};
 
-// Stream insertion operator overloading
+// Operator overloading
 ostream &operator<<(ostream &output, const Card &card)
 {
     return card.print_(output);
@@ -225,6 +225,17 @@ void Hand::setCards(vector<Card*> cards)
     }
 }
 
+// Get the card at the specified position
+Card* Hand::at(int position)
+{
+    if (position < 0 || position > cards_.size() - 1)
+    {
+        return nullptr;
+    }
+
+    return cards_.at(position);
+}
+
 // Get the number of cards in the hand.
 int Hand::size() const
 {
@@ -237,17 +248,6 @@ void Hand::addCard(Card* card)
     cards_.push_back(card);
 }
 
-// Get the card at the specified position
-Card* Hand::at(int position)
-{
-    if (position < 0 || position > cards_.size() - 1)
-    {
-        return nullptr;
-    }
-
-    return cards_.at(position);
-}
-
 // Remove and return a card from the player's hand indicated by `position`.
 Card* Hand::removeCard(int position)
 {
@@ -256,12 +256,6 @@ Card* Hand::removeCard(int position)
     cards_.erase(cardPosition);
 
     return card;
-}
-
-// Play the card at the specified position.
-Order* Hand::playCardAt(int position)
-{
-    return cards_.at(position)->play();
 }
 
 
@@ -285,7 +279,7 @@ Card* BombCard::clone() const
 }
 
 // Generate a BombOrder when the card is played.
-Order* BombCard::play()
+Order* BombCard::play() const
 {
     if (owner_ == nullptr)
     {
@@ -294,15 +288,17 @@ Order* BombCard::play()
 
     if (owner_->isHuman())
     {
-        return buildOrder();
+        return buildOrder_();
     }
 
+    // Bomb the highest priority territory in the `toAttack` list
     return new BombOrder(owner_, owner_->toAttack().front());
 }
 
 // Build the BombOrder through user input.
-Order* BombCard::buildOrder()
+Order* BombCard::buildOrder_() const
 {
+    // Determine which territories are bombable
     vector<Territory*> bombableTerritories;
     for (const auto &player : getEnemiesOf(owner_))
     {
@@ -359,7 +355,7 @@ Card* ReinforcementCard::clone() const
 }
 
 // Add 5 reinforcements to the player's pool when the card is played.
-Order* ReinforcementCard::play()
+Order* ReinforcementCard::play() const
 {
     if (owner_ != nullptr)
     {
@@ -370,7 +366,7 @@ Order* ReinforcementCard::play()
 }
 
 // Do nothing since ReinforcementCard returns no order
-Order* ReinforcementCard::buildOrder()
+Order* ReinforcementCard::buildOrder_() const
 {
     return nullptr;
 }
@@ -395,7 +391,7 @@ Card* BlockadeCard::clone() const
 }
 
 // Generate a BlockadeOrder when the card is played.
-Order* BlockadeCard::play()
+Order* BlockadeCard::play() const
 {
     if (owner_ == nullptr)
     {
@@ -404,7 +400,7 @@ Order* BlockadeCard::play()
 
     if (owner_->isHuman())
     {
-        return buildOrder();
+        return buildOrder_();
     }
 
     // Setup a blockade on the territory with lowest defend priority
@@ -412,7 +408,7 @@ Order* BlockadeCard::play()
 }
 
 // Build the BlockadeOrder through user input.
-Order* BlockadeCard::buildOrder()
+Order* BlockadeCard::buildOrder_() const
 {
     vector<Territory*> blockadableTerritories = owner_->getOwnedTerritories();
 
@@ -465,7 +461,7 @@ Card* AirliftCard::clone() const
 }
 
 // Generate an AirliftOrder when the card is played.
-Order* AirliftCard::play()
+Order* AirliftCard::play() const
 {
     if (owner_ == nullptr || owner_->getOwnedTerritories().size() == 1)
     {
@@ -474,12 +470,12 @@ Order* AirliftCard::play()
 
     if (owner_->isHuman())
     {
-        return buildOrder();
+        return buildOrder_();
     }
 
     // Choose the player's territory with the most movable armies as the source
-    int movableArmies = 0;
     int maxArmies = 0;
+    int movableArmies = 0;
     Territory* source = owner_->getOwnedTerritories().front();
     for (const auto &territory : owner_->getOwnedTerritories())
     {
@@ -507,7 +503,7 @@ Order* AirliftCard::play()
 }
 
 // Build the AirliftOrder through user input.
-Order* AirliftCard::buildOrder()
+Order* AirliftCard::buildOrder_() const
 {
     vector<Territory*> possibleSources = owner_->getOwnTerritoriesWithMovableArmies();
 
@@ -536,6 +532,7 @@ Order* AirliftCard::buildOrder()
         source = possibleSources.at(selection - 1);
     }
 
+    // Destinations can only be territories that are not the source
     vector<Territory*> possibleDestinations;
     for (const auto &destination : owner_->toDefend())
     {
@@ -614,7 +611,7 @@ Card* DiplomacyCard::clone() const
 }
 
 // Generate a NegotiateOrder when the card is played.
-Order* DiplomacyCard::play()
+Order* DiplomacyCard::play() const
 {
     if (owner_ == nullptr || GameEngine::getPlayers().size() < 2)
     {
@@ -623,7 +620,7 @@ Order* DiplomacyCard::play()
 
     if (owner_->isHuman())
     {
-        return buildOrder();
+        return buildOrder_();
     }
 
     Map* map = GameEngine::getMap();
@@ -632,20 +629,18 @@ Order* DiplomacyCard::play()
 
     // Try to pick an enemy player who has the most armies on an adjacent territory to the highest priority territory in
     // the player's `toDefend()` list
-    auto iterator = territoriesToDefend.begin();
-    for (; iterator != territoriesToDefend.end(); iterator++)
+    for (const auto &territory : territoriesToDefend)
     {
-        Territory* highestPriorityTerritory = *iterator;
-        Territory* mostReinforcedEnemyTerritory = nullptr;
         int maxArmies = 0;
+        Territory* mostReinforcedEnemyTerritory = nullptr;
 
-        for (const auto &territory : map->getAdjacentTerritories(highestPriorityTerritory))
+        for (const auto &neighbor : map->getAdjacentTerritories(territory))
         {
-            bool isEnemyTerritory = find(ownerTerritories.begin(), ownerTerritories.end(), territory) == ownerTerritories.end();
-            if (isEnemyTerritory && territory->getNumberOfArmies() > maxArmies)
+            bool isEnemyTerritory = find(ownerTerritories.begin(), ownerTerritories.end(), neighbor) == ownerTerritories.end();
+            if (isEnemyTerritory && neighbor->getNumberOfArmies() > maxArmies)
             {
-                mostReinforcedEnemyTerritory = territory;
-                maxArmies = territory->getNumberOfArmies();
+                mostReinforcedEnemyTerritory = neighbor;
+                maxArmies = neighbor->getNumberOfArmies();
             }
         }
 
@@ -657,20 +652,14 @@ Order* DiplomacyCard::play()
     }
 
     // If no suitable target player is found, pick a random enemy
-    vector<Player*> enemyPlayers;
-    for (const auto &player : GameEngine::getPlayers())
-    {
-        if (player != owner_)
-        {
-            enemyPlayers.push_back(player);
-        }
-    }
+    srand(time(nullptr));
+    vector<Player*> enemyPlayers = getEnemiesOf(owner_);
     Player* targetPlayer = enemyPlayers.at(rand() % enemyPlayers.size());
     return new NegotiateOrder(owner_, targetPlayer);
 }
 
 // Build the NegotiateOrder through user input.
-Order* DiplomacyCard::buildOrder()
+Order* DiplomacyCard::buildOrder_() const
 {
     vector<Player*> enemyPlayers = getEnemiesOf(owner_);
 

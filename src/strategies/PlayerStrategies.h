@@ -7,6 +7,7 @@ using namespace std;
 
 class Player;
 
+
 class PlayerStrategy
 {
     public:
@@ -20,6 +21,7 @@ class PlayerStrategy
         virtual ostream &print_(ostream &output) const = 0;
 };
 
+
 class AggressivePlayerStrategy : public PlayerStrategy
 {
     public:
@@ -32,11 +34,12 @@ class AggressivePlayerStrategy : public PlayerStrategy
         ostream &print_(ostream &output) const;
 
     private:
-        bool deployToTopTerritory(Player* player, Territory* territory);
-        bool attackFromTopTerritory(Player* player, Territory* attackFrom, vector<Territory*> territoriesToAttack);
-        bool advanceToRandomTerritory(Player* player, vector<Territory*> territoriesToDefend);
-        bool playCard(Player* player, Territory* topTerritory);
+        bool deployToTopTerritory_(Player* player, vector<Territory*> territoriesToDefend);
+        bool attackFromTopTerritory_(Player* player, Territory* attackFrom, vector<Territory*> territoriesToAttack);
+        bool advanceToRandomTerritory_(Player* player, vector<Territory*> territoriesToDefend);
+        bool playCard_(Player* player, vector<Territory*> territoriesToDefend);
 };
+
 
 class BenevolentPlayerStrategy : public PlayerStrategy
 {
@@ -50,10 +53,11 @@ class BenevolentPlayerStrategy : public PlayerStrategy
         ostream &print_(ostream &output) const;
 
     private:
-        bool deployToWeakTerritories(Player* player, vector<Territory*> territoriesToDefend);
-        bool fortifyWeakTerritories(Player* player, vector<Territory*> territoriesToDefend);
-        bool playCard(Player* player, vector<Territory*> territoriesToDefend);
+        bool deployToWeakTerritories_(Player* player, vector<Territory*> territoriesToDefend);
+        bool fortifyWeakTerritories_(Player* player, vector<Territory*> territoriesToDefend);
+        bool playCard_(Player* player, vector<Territory*> territoriesToDefend);
 };
+
 
 class HumanPlayerStrategy : public PlayerStrategy
 {
@@ -67,10 +71,11 @@ class HumanPlayerStrategy : public PlayerStrategy
         ostream &print_(ostream &output) const;
 
     private:
-        void deployReinforcements(Player* player, vector<Territory*> territoriesToDefend);
-        void issueAdvance(Player* player, vector<Territory*> territoriesToDefend);
-        void playCard(Player* player, vector<Territory*> territoriesToDefend);
+        void deployReinforcements_(Player* player, vector<Territory*> territoriesToDefend);
+        void issueAdvance_(Player* player, vector<Territory*> territoriesToDefend);
+        void playCard_(Player* player, vector<Territory*> territoriesToDefend);
 };
+
 
 class NeutralPlayerStrategy : public PlayerStrategy
 {

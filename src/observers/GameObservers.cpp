@@ -132,10 +132,10 @@ const PhaseObserver &PhaseObserver::operator=(const PhaseObserver &observer)
 // Update observer
 void PhaseObserver::update()
 {
-    if (stateChanged())
+    if (stateChanged_())
     {
         display();
-        saveState();
+        saveState_();
     }
 }
 
@@ -197,13 +197,13 @@ void PhaseObserver::display() const
 }
 
 // Check if the state of the subject has changed
-bool PhaseObserver::stateChanged() const
+bool PhaseObserver::stateChanged_() const
 {
     return lastPhase_ != subject_->getPhase() || lastActivePlayer_ != subject_->getActivePlayer();
 }
 
 // Take a snapshot of the subject's state
-void PhaseObserver::saveState()
+void PhaseObserver::saveState_()
 {
     lastPhase_ = subject_->getPhase();
     lastActivePlayer_ = subject_->getActivePlayer();
@@ -241,10 +241,10 @@ const GameStatisticsObserver &GameStatisticsObserver::operator=(const GameStatis
 // Update observer
 void GameStatisticsObserver::update()
 {
-    if (stateChanged())
+    if (stateChanged_())
     {
         display();
-        saveState();
+        saveState_();
     }
 }
 
@@ -289,7 +289,7 @@ void GameStatisticsObserver::display() const
 }
 
 // Check if the state of the subject has changed
-bool GameStatisticsObserver::stateChanged() const
+bool GameStatisticsObserver::stateChanged_() const
 {
     vector<Player*> allPlayers = subject_->getCurrentPlayers();
     if (lastSetOfPlayers_.size() == allPlayers.size())
@@ -309,7 +309,7 @@ bool GameStatisticsObserver::stateChanged() const
 }
 
 // Take a snapshot of the subject's state
-void GameStatisticsObserver::saveState()
+void GameStatisticsObserver::saveState_()
 {
     lastSetOfPlayers_.clear();
     for (auto const &player : subject_->getCurrentPlayers())

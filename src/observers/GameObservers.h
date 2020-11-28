@@ -28,8 +28,8 @@ class Observer
         Observer(Subject* subject);
         Observer(const Observer &observer);
         const Observer &operator=(const Observer &observer);
-        virtual bool stateChanged() const = 0;
-        virtual void saveState() = 0;
+        virtual bool stateChanged_() const = 0;
+        virtual void saveState_() = 0;
 };
 
 class PhaseObserver : public Observer
@@ -43,8 +43,8 @@ class PhaseObserver : public Observer
         void display() const;
 
     protected:
-        bool stateChanged() const;
-        void saveState();
+        bool stateChanged_() const;
+        void saveState_();
 
     private:
         Phase lastPhase_;
@@ -62,8 +62,8 @@ class GameStatisticsObserver : public Observer
         void display() const;
 
     protected:
-        bool stateChanged() const;
-        void saveState();
+        bool stateChanged_() const;
+        void saveState_();
 
     private:
         vector<Player> lastSetOfPlayers_;

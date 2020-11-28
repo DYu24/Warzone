@@ -133,9 +133,9 @@ namespace
     {
         cout << "Enter the number of players for this game: ";
         
-        int numberOfPlayers;
+        int numberOfPlayers = 0;
 
-        while (true)
+        while (numberOfPlayers == 0)
         {
             cin >> numberOfPlayers;
 
@@ -144,6 +144,7 @@ namespace
                 cout << "Please enter a valid number of players (2-5): ";
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                numberOfPlayers = 0;
                 continue;
             }
 
@@ -317,7 +318,7 @@ void GameEngine::assignToNeutralPlayer(Territory* territory)
     Player* owner = getOwnerOf(territory);
     owner->removeOwnedTerritory(territory);
 
-    auto isNeutralPlayer = [](auto const &player) { return player->isNeutral(); };
+    auto isNeutralPlayer = [](const auto &player) { return player->isNeutral(); };
     auto iterator = find_if(players_.begin(), players_.end(), isNeutralPlayer);
     if (iterator == players_.end())
     {
@@ -330,6 +331,21 @@ void GameEngine::assignToNeutralPlayer(Territory* territory)
         Player* neutralPlayer = *iterator;
         neutralPlayer->addOwnedTerritory(territory);
     }
+}
+
+// Deallocate static members of GameEngine class
+void GameEngine::resetGameEngine()
+{
+    delete deck_;
+    delete map_;
+    deck_ = nullptr;
+    map_ = nullptr;
+
+    for (const auto &player : players_)
+    {
+        delete player;
+    }
+    players_.clear();
 }
 
 // Setup the map and players to be included in the game based on the user's input
@@ -398,7 +414,7 @@ void GameEngine::reinforcementPhase()
         vector<Territory*> playerTerritories = player->getOwnedTerritories();
         int reinforcements = floor(playerTerritories.size() / 3);
     
-        // Check if the player owns all members of any territories
+        // Check if the player owns all members of any continents
         for (const auto &continent : map_->getContinents())
         {
             int numberOfContinentMembersOwned = 0;
@@ -455,8 +471,8 @@ void GameEngine::issueOrdersPhase()
 void GameEngine::executeOrdersPhase()
 {
     vector<Player*> playersInTurn = players_;
-    unordered_set<Player*> playersFinishedExecutingOrders;
     unordered_set<Player*> playersFinishedDeploying;
+    unordered_set<Player*> playersFinishedExecutingOrders;
 
     // ====== PRE-EXECUTION ======
     // Take a snapshot of the players' owned territories before proceeding with the order executions
@@ -570,19 +586,4 @@ void GameEngine::mainGameLoop()
     }
 
     cout << "Total rounds played: " << round << endl;
-}
-
-// Deallocate static members of GameEngine class
-void GameEngine::resetGameEngine()
-{
-    delete deck_;
-    delete map_;
-    deck_ = nullptr;
-    map_ = nullptr;
-
-    for (const auto &player : players_)
-    {
-        delete player;
-    }
-    players_.clear();
 }

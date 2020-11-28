@@ -373,6 +373,7 @@ void AdvanceOrder::execute_()
 
     if (offensive)
     {
+        // Simulate battle
         source_->removeArmies(movableArmiesFromSource);
 
         int defendersKilled = round(movableArmiesFromSource * 0.6);
@@ -382,6 +383,7 @@ void AdvanceOrder::execute_()
         int survivingDefenders = max(destination_->getNumberOfArmies() - defendersKilled, 0);
         destination_->removeArmies(defendersKilled);
 
+        // Failed attack
         if (survivingDefenders > 0 || survivingAttackers <= 0)
         {
             source_->addArmies(survivingAttackers);
@@ -396,6 +398,7 @@ void AdvanceOrder::execute_()
                 cout << endl;
             }
         }
+        // Successful attack
         else
         {
             issuer_->addOwnedTerritory(destination_);
@@ -614,11 +617,12 @@ bool AirliftOrder::validate() const
         return false;
     }
 
-    auto currentPlayerTerritories = issuer_->getOwnedTerritories();
+    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
 
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     bool validDestinationTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
-    bool hasAnyArmiesToAirlift = source_->getNumberOfArmies() > 0;
+    bool hasAnyArmiesToAirlift = source_->getNumberOfMovableArmies() > 0;
+
     return validSourceTerritory && validDestinationTerritory && hasAnyArmiesToAirlift;
 }
 
@@ -628,9 +632,8 @@ void AirliftOrder::execute_()
     // Recalculate how many armies could actually be moved in case the state of the territory has changed due to an attack
     int movableArmiesFromSource = min(source_->getNumberOfArmies(), numberOfArmies_); 
 
-    source_->removeArmies(movableArmiesFromSource);
     destination_->addArmies(movableArmiesFromSource);
-
+    source_->removeArmies(movableArmiesFromSource);
     source_->setPendingOutgoingArmies(0);
 
     cout << "Airlifted " << movableArmiesFromSource << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;

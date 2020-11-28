@@ -109,6 +109,8 @@ void Territory::addPendingOutgoingArmies(int armies)
     pendingOutgoingArmies_ += armies;
 }
 
+// Get the number of armies on the territory that are available for moving (advance/airlift).
+// This number represents the armies already present + the incoming armies from deployment - the armies that will be used for an advance/airlift.
 int Territory::getNumberOfMovableArmies()
 {
     return numberOfArmies_ + pendingIncomingArmies_ - pendingOutgoingArmies_;
@@ -210,20 +212,20 @@ Map::Map(vector<Continent*> continents, unordered_map<Territory*, vector<Territo
 
 Map::Map(const Map &map)
 {
-    copyMapContents(map);
+    copyMapContents_(map);
 }
 
 // Destructor
 Map::~Map()
 {
-    destroyMapContents();
+    destroyMapContents_();
 }
 
 // Operator overloading
 const Map &Map::operator=(const Map &map)
 {
-    destroyMapContents();
-    copyMapContents(map);
+    destroyMapContents_();
+    copyMapContents_(map);
     return *this;
 }
 
@@ -268,7 +270,7 @@ vector<Territory*> Map::getAdjacentTerritories(Territory* territory)
  // 3. Each territory belongs to only one continent
 bool Map::validate()
 {
-    return checkGraphValidity() && checkContinentsValidity() && checkTerritoriesValidity();
+    return checkGraphValidity_() && checkContinentsValidity_() && checkTerritoriesValidity_();
 }
 
  // Helper method to validate that the map is a connected graph.
@@ -276,7 +278,7 @@ bool Map::validate()
  // to the size of all territories.
  // 
  // Graph traversal implemented using Breadth-First Search.
-bool Map::checkGraphValidity()
+bool Map::checkGraphValidity_()
 {
     unordered_set<Territory*> visitedTerritories;
     queue<Territory*> territoryQueue;
@@ -303,7 +305,7 @@ bool Map::checkGraphValidity()
 }
 
 // Helper method to validate that the map's continents are connected subgraphs.
-bool Map::checkContinentsValidity()
+bool Map::checkContinentsValidity_()
 {
     for (const auto &continent : getContinents())
     {
@@ -347,7 +349,7 @@ bool Map::checkContinentsValidity()
 }
 
 // Helper method to validate that the map's territories all belong to only one continent.
-bool Map::checkTerritoriesValidity()
+bool Map::checkTerritoriesValidity_()
 {
     unordered_set<string> visitedTerritories;
     for (const auto &continent : getContinents())
@@ -371,7 +373,7 @@ bool Map::checkTerritoriesValidity()
 }
 
 // Helper method to copy the contents of another Map object. 
-void Map::copyMapContents(const Map &map)
+void Map::copyMapContents_(const Map &map)
 {
     // Copy the continents
     for (const auto &continent : map.continents_)
@@ -405,7 +407,7 @@ void Map::copyMapContents(const Map &map)
 }
 
 // Helper method to dealloacte dynamic memory in Map class. 
-void Map::destroyMapContents()
+void Map::destroyMapContents_()
 {
     for (const auto &continent : continents_)
     {

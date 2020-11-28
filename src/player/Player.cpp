@@ -11,12 +11,28 @@
 
 // Constructors
 Player::Player()
-    : reinforcements_(0), name_("Neutral Player"), orders_(new OrdersList()), hand_(new Hand()), committed_(false), strategy_(new NeutralPlayerStrategy()) {}
+    : reinforcements_(0),
+      name_("Neutral Player"),
+      orders_(new OrdersList()),
+      hand_(new Hand()),
+      committed_(false),
+      strategy_(new NeutralPlayerStrategy()) {}
 
-Player::Player(string name) : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), committed_(false), strategy_(new NeutralPlayerStrategy()) {}
+Player::Player(string name)
+    : reinforcements_(0),
+      name_(name),
+      orders_(new OrdersList()),
+      hand_(new Hand()),
+      committed_(false),
+      strategy_(new NeutralPlayerStrategy()) {}
 
 Player::Player(string name, PlayerStrategy* strategy)
-    : reinforcements_(0), name_(name), orders_(new OrdersList()), hand_(new Hand()), committed_(false), strategy_(strategy) {}
+    : reinforcements_(0),
+      name_(name),
+      orders_(new OrdersList()),
+      hand_(new Hand()),
+      committed_(false),
+      strategy_(strategy) {}
 
 Player::Player(const Player &player)
     : reinforcements_(player.reinforcements_),
@@ -118,7 +134,7 @@ void Player::removeOwnedTerritory(Territory* territory)
     ownedTerritories_.erase(removeIterator, ownedTerritories_.end());
 }
 
-// Add an enemy player to the list of diplomatic relations for this current player
+// Add an enemy player to the list of diplomatic relations for this player
 void Player::addDiplomaticRelation(Player* player)
 {
     diplomaticRelations_.push_back(player);
@@ -164,14 +180,14 @@ void Player::drawCardFromDeck()
     }
 }
 
-// Check whether player is human or not
+// Check whether the player is human or not
 bool Player::isHuman() const
 {
     HumanPlayerStrategy* human = dynamic_cast<HumanPlayerStrategy*>(strategy_);
     return human != nullptr;
 }
 
-// Check whether player is neutral or not
+// Check whether the player is neutral or not
 bool Player::isNeutral() const
 {
     NeutralPlayerStrategy* neutral = dynamic_cast<NeutralPlayerStrategy*>(strategy_);
@@ -225,17 +241,14 @@ void Player::issueOrder()
     }
 }
 
-// Check if player has already issued an advance order from `source` to `destination`
-bool Player::advancePairingExists(Territory* source, Territory* destination)
+// Check if the player has already issued an advance order from `source` to `destination`
+bool Player::advancePairingExists_(Territory* source, Territory* destination)
 {
     auto issuedIterator = issuedDeploymentsAndAdvancements_.find(source);
     if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
     {
         vector<Territory*> pastAdvancements = issuedIterator->second;
-        if (find(pastAdvancements.begin(), pastAdvancements.end(), destination) != pastAdvancements.end())
-        {
-            return true;
-        }
+        return find(pastAdvancements.begin(), pastAdvancements.end(), destination) != pastAdvancements.end();
     }
 
     return false;

@@ -114,23 +114,26 @@ vector<Territory*> AggressivePlayerStrategy::toAttack(const Player* player) cons
     return territoriesToAttack;
 }
 
-// 
+// Issue an order to either:
+// - Deploy to strongest territory
+// - Play a card from the hand
+// - Attack an enemy territory with the strongest territory
+// - Advance all armies from the strongest territory to another territory (if surrounded by friendly territories)
 void AggressivePlayerStrategy::issueOrder(Player* player)
 {
     vector<Territory*> territoriesToAttack = toAttack(player);
     vector<Territory*> territoriesToDefend = toDefend(player);
 
-    bool finishedDeploying = deployToTopTerritory(player, territoriesToDefend.front());
+    bool finishedDeploying = deployToTopTerritory_(player, territoriesToDefend);
     if (finishedDeploying)
     {
-        bool finishedPlayingCards = playCard(player, territoriesToDefend.front());
-
+        bool finishedPlayingCards = playCard_(player, territoriesToDefend);
         if (finishedPlayingCards)
         {
-            bool finishedAttacking = attackFromTopTerritory(player, territoriesToDefend.front(), territoriesToAttack);
+            bool finishedAttacking = attackFromTopTerritory_(player, territoriesToDefend.front(), territoriesToAttack);
             if (finishedAttacking)
             {
-                bool finishedIssuingOrders = advanceToRandomTerritory(player, territoriesToDefend);
+                bool finishedIssuingOrders = advanceToRandomTerritory_(player, territoriesToDefend);
                 player->committed_ = finishedIssuingOrders;
             }
         }
@@ -138,35 +141,42 @@ void AggressivePlayerStrategy::issueOrder(Player* player)
     }
 }
 
-// Deploy all reinfocements to the strongest territory (the one with the most armies already present)
-bool AggressivePlayerStrategy::deployToTopTerritory(Player* player, Territory* territory)
+// Deploy all reinforcements to the strongest territory (the one with the most armies already present).
+// Returns `true` if finished deploying/no new order was issued.
+// Returns `false` if there was an order issued.
+bool AggressivePlayerStrategy::deployToTopTerritory_(Player* player, vector<Territory*> territoriesToDefend)
 {
     if (player->reinforcements_ == 0)
     {
         return true;
     }
-
-    DeployOrder* order = new DeployOrder(player, player->reinforcements_, territory);
+    
+    Territory* topTerritory = territoriesToDefend.front();
+    DeployOrder* order = new DeployOrder(player, player->reinforcements_, topTerritory);
     player->addOrder(order);
-    territory->addPendingIncomingArmies(player->reinforcements_);
+    topTerritory->addPendingIncomingArmies(player->reinforcements_);
     player->reinforcements_ = 0;
 
     cout << "Issued: " << *order << endl;
     return false;
 }
 
-// Advance armies from strongest territory to enemy territories
-bool AggressivePlayerStrategy::attackFromTopTerritory(Player* player, Territory* attackFrom, vector<Territory*> territoriesToAttack)
+// Advance all armies from strongest territory to an enemy territory.
+// Returns `true` if finished attacking or has no one to attack/no new order was issued.
+// Returns `false` if there was an order issued.
+bool AggressivePlayerStrategy::attackFromTopTerritory_(Player* player, Territory* attackFrom, vector<Territory*> territoriesToAttack)
 {
     Map* map = GameEngine::getMap();
+    int movableArmies = attackFrom->getNumberOfMovableArmies();
 
-    for (const auto &territory : map->getAdjacentTerritories(attackFrom))
+    if (movableArmies > 0)
     {
-        bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), territory) != territoriesToAttack.end();
-        if (isEnemyTerritory && !player->advancePairingExists(attackFrom, territory))
+        for (const auto &territory : map->getAdjacentTerritories(attackFrom))
         {
-            int movableArmies = attackFrom->getNumberOfMovableArmies();
-            if (movableArmies > 0)
+            bool isEnemyTerritory = find(territoriesToAttack.begin(), territoriesToAttack.end(), territory) != territoriesToAttack.end();
+            bool alreadyAdvancedToTerritory = player->advancePairingExists_(attackFrom, territory);
+
+            if (isEnemyTerritory && !alreadyAdvancedToTerritory)
             {
                 AdvanceOrder* order = new AdvanceOrder(player, movableArmies, attackFrom, territory);
                 player->addOrder(order);
@@ -185,7 +195,9 @@ bool AggressivePlayerStrategy::attackFromTopTerritory(Player* player, Territory*
 // Advance armies from the top/strongest territory to another adjacent friendly territory.
 // This will ensure that the player doesn't get stuck deploying to the top territory indefinitely
 // when the territory doesn't have any surrounding enemy territories to attack.
-bool AggressivePlayerStrategy::advanceToRandomTerritory(Player* player, vector<Territory*> territoriesToDefend)
+// Returns `true` if finished advancing/no new order was issued.
+// Returns `false` if there was an order issued.
+bool AggressivePlayerStrategy::advanceToRandomTerritory_(Player* player, vector<Territory*> territoriesToDefend)
 {
     Territory* topTerritory = territoriesToDefend.front();
     int movableArmies = topTerritory->getNumberOfMovableArmies();
@@ -195,7 +207,7 @@ bool AggressivePlayerStrategy::advanceToRandomTerritory(Player* player, vector<T
     {
         vector<Territory*> adjacentTerritories = GameEngine::getMap()->getAdjacentTerritories(topTerritory);
         
-        // Pick random destination
+        // Pick a random destination
         srand(time(nullptr));
         int randomIndex = rand() % adjacentTerritories.size();
         Territory* destination = adjacentTerritories.at(randomIndex);
@@ -213,9 +225,9 @@ bool AggressivePlayerStrategy::advanceToRandomTerritory(Player* player, vector<T
 }
 
 // Helper method to play a random Card from the Player's hand, if any.
-// Returns `true` if the Player has no more cards to play.
-// Returns `false` if the Player (may) still have more cards to play.
-bool AggressivePlayerStrategy::playCard(Player* player, Territory* topTerritory)
+// Returns `true` if the Player has no more cards to play/no new order was issued.
+// Returns `false` if there was an order issued.
+bool AggressivePlayerStrategy::playCard_(Player* player, vector<Territory*> territoriesToDefend)
 {
     Hand* playerHand = player->hand_;
     if (playerHand->size() == 0)
@@ -241,7 +253,7 @@ bool AggressivePlayerStrategy::playCard(Player* player, Territory* topTerritory)
     else if (player->reinforcements_ > 0)
     {
         // Reinforcement card played: deploy the additional reinforcements
-        deployToTopTerritory(player, topTerritory);
+        deployToTopTerritory_(player, territoriesToDefend);
     }
 
     return false;
@@ -283,26 +295,30 @@ vector<Territory*> BenevolentPlayerStrategy::toAttack(const Player* player) cons
     return {};
 }
 
-// 
+// Issue an order to either:
+// - Deploy to weakest territories
+// - Play a card from the hand
+// - Advance armies to weaker territories to spread the occupation of forces
 void BenevolentPlayerStrategy::issueOrder(Player* player)
 {
     vector<Territory*> territoriesToDefend = toDefend(player);
     
-    bool finishedDeploying = deployToWeakTerritories(player, territoriesToDefend);
+    bool finishedDeploying = deployToWeakTerritories_(player, territoriesToDefend);
     if (finishedDeploying)
     {
-        bool finishedPlayingCards = playCard(player, territoriesToDefend);
-
+        bool finishedPlayingCards = playCard_(player, territoriesToDefend);
         if (finishedPlayingCards)
         {
-            bool finishedFortifying = fortifyWeakTerritories(player, territoriesToDefend);
+            bool finishedFortifying = fortifyWeakTerritories_(player, territoriesToDefend);
             player->committed_ = finishedFortifying;
         }
     }
 }
 
 // Deploy reinforcements to the weakest territories (i.e. those that have fewest armies)
-bool BenevolentPlayerStrategy::deployToWeakTerritories(Player* player, vector<Territory*> territoriesToDefend)
+// Returns `true` if finished deploying/no new order was issued.
+// Returns `false` if there was an order issued.
+bool BenevolentPlayerStrategy::deployToWeakTerritories_(Player* player, vector<Territory*> territoriesToDefend)
 {
     if (player->reinforcements_ == 0)
     {
@@ -314,23 +330,17 @@ bool BenevolentPlayerStrategy::deployToWeakTerritories(Player* player, vector<Te
 
 
     // In order of highest priority, try to find a territory that hasn't already been deployed to
-    Territory* destination = nullptr;
-    auto iterator = territoriesToDefend.begin();
-    for (; iterator != territoriesToDefend.end(); iterator++)
+    // If all territories in `territoriesToDefend` have already been deployed to, then the first one (highest priority) will be used
+    Territory* destination = territoriesToDefend.front();
+    for (const auto &territory : territoriesToDefend)
     {
-        if (player->issuedDeploymentsAndAdvancements_.find(*iterator) == player->issuedDeploymentsAndAdvancements_.end())
+        if (player->issuedDeploymentsAndAdvancements_.find(territory) == player->issuedDeploymentsAndAdvancements_.end())
         {
             // Initialize the vector at the key specified by this territory
-            player->issuedDeploymentsAndAdvancements_[*iterator];
-            destination = *iterator;
+            player->issuedDeploymentsAndAdvancements_[territory];
+            destination = territory;
             break;
         }
-    }
-
-    // If all territories in `territoriesToDefend` have already been deployed to, then just pick the first one (highest priority)
-    if (destination == nullptr)
-    {
-        destination = territoriesToDefend.front();
     }
 
     DeployOrder* order = new DeployOrder(player, armiesToDeploy, destination);
@@ -343,7 +353,9 @@ bool BenevolentPlayerStrategy::deployToWeakTerritories(Player* player, vector<Te
 }
 
 // Advance armies from other adjacent territories to the weaker territories
-bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Territory*> territoriesToDefend)
+// Returns `true` if finished advancing/no new order was issued.
+// Returns `false` if there was an order issued.
+bool BenevolentPlayerStrategy::fortifyWeakTerritories_(Player* player, vector<Territory*> territoriesToDefend)
 {
     Map* map = GameEngine::getMap();
     for (const auto &territory : territoriesToDefend)
@@ -351,6 +363,7 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Ter
         int movableArmies = territory->getNumberOfMovableArmies();
         if (movableArmies > 1)
         {
+            // Sort the adjacent territories by number of occupying armies
             vector<Territory*> adjacentTerritories = map->getAdjacentTerritories(territory);
             auto sortLambda = [](auto t1, auto t2){ return t1->getNumberOfArmies() < t2->getNumberOfArmies(); };
             sort(adjacentTerritories.begin(), adjacentTerritories.end(), sortLambda);
@@ -358,7 +371,9 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Ter
             for (const auto &neighbor : adjacentTerritories)
             {
                 bool isFriendlyTerritory = find(territoriesToDefend.begin(), territoriesToDefend.end(), neighbor) != territoriesToDefend.end();
-                if (isFriendlyTerritory && !player->advancePairingExists(territory, neighbor))
+                bool alreadyAdvancedToTerritory = player->advancePairingExists_(territory, neighbor);
+
+                if (isFriendlyTerritory && !alreadyAdvancedToTerritory)
                 {
                     int armiesToMove = movableArmies / 2;
                     AdvanceOrder* order = new AdvanceOrder(player, armiesToMove, territory, neighbor);
@@ -377,26 +392,23 @@ bool BenevolentPlayerStrategy::fortifyWeakTerritories(Player* player, vector<Ter
 }
 
 // Helper method to play a non-aggressive Card from the Player's hand, if any.
-// Returns `true` if the Player has no more non-aggressive cards to play.
-// Returns `false` if the Player (may) still have more cards to play.
-bool BenevolentPlayerStrategy::playCard(Player* player, vector<Territory*> territoriesToDefend)
+// Returns `true` if the Player has no more non-aggressive cards to play/no new order was issued.
+// Returns `false` if there was an order issued.
+bool BenevolentPlayerStrategy::playCard_(Player* player, vector<Territory*> territoriesToDefend)
 {
     Hand* playerHand = player->hand_;
 
     if (playerHand->size() != 0)
     {
-        // Play a card from hand (except for BombCards)
+        // Select a card from hand that isn't a BombCard
         Card* card = nullptr;
         for (int i = 0; i < playerHand->size(); i++)
         {
-            // Put the card back in the hand if it's a BombCard
-            if (dynamic_cast<BombCard*>(playerHand->at(i)))
+            if (dynamic_cast<BombCard*>(playerHand->at(i)) == nullptr)
             {
-                continue;
+                card = playerHand->removeCard(i);
+                break;
             }
-            
-            card = playerHand->removeCard(i);
-            break;
         }
 
         if (card != nullptr)
@@ -416,7 +428,7 @@ bool BenevolentPlayerStrategy::playCard(Player* player, vector<Territory*> terri
             else if (player->reinforcements_ > 0)
             {
                 // Reinforcement card played: deploy the additional reinforcements
-                deployToWeakTerritories(player, territoriesToDefend);
+                deployToWeakTerritories_(player, territoriesToDefend);
             }
 
             return false;
@@ -479,15 +491,16 @@ vector<Territory*> HumanPlayerStrategy::toAttack(const Player* player) const
     return territoriesToAttack;
 }
 
-// 
+// Issue an order based on user input
 void HumanPlayerStrategy::issueOrder(Player* player)
 {
     vector<Territory*> territoriesToAttack = toAttack(player);
     vector<Territory*> territoriesToDefend = toDefend(player);
 
+    // Only allow deploy if the player still has reinforcements
     if (player->reinforcements_ > 0)
     {
-        deployReinforcements(player, territoriesToDefend);
+        deployReinforcements_(player, territoriesToDefend);
     }
     else
     {
@@ -510,12 +523,12 @@ void HumanPlayerStrategy::issueOrder(Player* player)
 
             if (selection == "A")
             {
-                issueAdvance(player, territoriesToDefend);
+                issueAdvance_(player, territoriesToDefend);
                 break;
             }
             else if (selection == "P")
             {
-                playCard(player, territoriesToDefend);
+                playCard_(player, territoriesToDefend);
                 break;
             }
             else if (selection == "X")
@@ -528,7 +541,7 @@ void HumanPlayerStrategy::issueOrder(Player* player)
 }
 
 // Deploy player's reinforcements to specified territory
-void HumanPlayerStrategy::deployReinforcements(Player* player, vector<Territory*> territoriesToDefend)
+void HumanPlayerStrategy::deployReinforcements_(Player* player, vector<Territory*> territoriesToDefend)
 {
     cout << "You have " << player->reinforcements_ << " reinforcements left." << endl;
     cout << "\nWhere would you like to deploy to?" << endl;
@@ -583,7 +596,7 @@ void HumanPlayerStrategy::deployReinforcements(Player* player, vector<Territory*
 }
 
 // Issue an advance order to either fortify or attack a territory
-void HumanPlayerStrategy::issueAdvance(Player* player, vector<Territory*> territoriesToDefend)
+void HumanPlayerStrategy::issueAdvance_(Player* player, vector<Territory*> territoriesToDefend)
 {
     vector<Territory*> possibleSources = player->getOwnTerritoriesWithMovableArmies();
 
@@ -612,6 +625,7 @@ void HumanPlayerStrategy::issueAdvance(Player* player, vector<Territory*> territ
         source = possibleSources.at(selection - 1);
     }
 
+    // Display adjacent territories as either attackable or defendable
     Map* map = GameEngine::getMap();
     vector<Territory*> attackable;
     vector<Territory*> defendable;
@@ -702,7 +716,7 @@ void HumanPlayerStrategy::issueAdvance(Player* player, vector<Territory*> territ
 }
 
 // Play a card from the player's hand
-void HumanPlayerStrategy::playCard(Player* player, vector<Territory*> territoriesToDefend)
+void HumanPlayerStrategy::playCard_(Player* player, vector<Territory*> territoriesToDefend)
 {
     Hand* playerHand = player->hand_;
 
@@ -744,7 +758,7 @@ void HumanPlayerStrategy::playCard(Player* player, vector<Territory*> territorie
     }
     else if (player->reinforcements_ > 0)
     {
-        deployReinforcements(player, territoriesToDefend);
+        deployReinforcements_(player, territoriesToDefend);
     }
 }
 
