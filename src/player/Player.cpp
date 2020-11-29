@@ -2,13 +2,8 @@
 #include "../orders/Orders.h"
 #include "Player.h"
 #include <algorithm>
-#include <iostream>
 #include <math.h>
-#include <set>
 #include <sstream>
-#include <unordered_set>
-using std::cout;
-using std::endl;
 
 
 // Constructors
@@ -20,7 +15,7 @@ Player::Player()
       committed_(false),
       strategy_(new NeutralPlayerStrategy()) {}
 
-Player::Player(string name)
+Player::Player(std::string name)
     : reinforcements_(0),
       name_(name),
       orders_(new OrdersList()),
@@ -28,7 +23,7 @@ Player::Player(string name)
       committed_(false),
       strategy_(new NeutralPlayerStrategy()) {}
 
-Player::Player(string name, PlayerStrategy* strategy)
+Player::Player(std::string name, PlayerStrategy* strategy)
     : reinforcements_(0),
       name_(name),
       orders_(new OrdersList()),
@@ -72,7 +67,7 @@ const Player &Player::operator=(const Player &player)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const Player &player)
+std::ostream &operator<<(std::ostream &output, const Player &player)
 {
     output << "[Player] " << player.name_ << " has " << player.reinforcements_ << " reinforcements, " << player.ownedTerritories_.size() << " Territories, ";
     output << player.orders_->size() << " Orders, " << player.hand_->size() << " cards in Hand";
@@ -80,12 +75,12 @@ ostream &operator<<(ostream &output, const Player &player)
 }
 
 // Getters
-vector<Territory*> Player::getOwnedTerritories() const
+std::vector<Territory*> Player::getOwnedTerritories() const
 {
     return ownedTerritories_;
 }
 
-string Player::getName() const
+std::string Player::getName() const
 {
     return name_;
 }
@@ -100,7 +95,7 @@ Hand Player::getHand() const
     return *hand_;
 }
 
-vector<Player*> Player::getDiplomaticRelations() const
+std::vector<Player*> Player::getDiplomaticRelations() const
 {
     return diplomaticRelations_;
 }
@@ -203,9 +198,9 @@ bool Player::isDoneIssuingOrders() const
 }
 
 // Get a list of territories with available armies for moving
-vector<Territory*> Player::getOwnTerritoriesWithMovableArmies() const
+std::vector<Territory*> Player::getOwnTerritoriesWithMovableArmies() const
 {
-    vector<Territory*> territories;
+    std::vector<Territory*> territories;
     for (const auto &territory : ownedTerritories_)
     {
        if (territory->getNumberOfMovableArmies() > 0)
@@ -219,13 +214,13 @@ vector<Territory*> Player::getOwnTerritoriesWithMovableArmies() const
 
 
 // Return a list of territories to defend
-vector<Territory*> Player::toDefend() const
+std::vector<Territory*> Player::toDefend() const
 {
     return strategy_->toDefend(this);
 }
 
 // Return a list of territories to attack
-vector<Territory*> Player::toAttack() const
+std::vector<Territory*> Player::toAttack() const
 {
     return strategy_->toAttack(this);
 }
@@ -239,7 +234,7 @@ void Player::issueOrder()
 
     if (oldNumberOfOrders == orders_->size())
     {
-        cout << "No new order issued." << endl;
+        std::cout << "No new order issued." << std::endl;
     }
 }
 
@@ -249,7 +244,7 @@ bool Player::advancePairingExists_(Territory* source, Territory* destination)
     auto issuedIterator = issuedDeploymentsAndAdvancements_.find(source);
     if (issuedIterator != issuedDeploymentsAndAdvancements_.end())
     {
-        vector<Territory*> pastAdvancements = issuedIterator->second;
+        std::vector<Territory*> pastAdvancements = issuedIterator->second;
         return find(pastAdvancements.begin(), pastAdvancements.end(), destination) != pastAdvancements.end();
     }
 

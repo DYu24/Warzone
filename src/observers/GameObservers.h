@@ -3,7 +3,6 @@
 #include "../player/Player.h"
 #include <iostream>
 #include <vector>
-using std::vector;
 
 class Subject;
 
@@ -66,7 +65,7 @@ class GameStatisticsObserver : public Observer
         void saveState_();
 
     private:
-        vector<Player> lastSetOfPlayers_;
+        std::vector<Player> lastSetOfPlayers_;
 };
 
 class Subject
@@ -75,11 +74,11 @@ class Subject
         virtual ~Subject();
         virtual Phase getPhase() const = 0;
         virtual Player* getActivePlayer() const = 0;
-        virtual vector<Player*> getCurrentPlayers() const = 0;
+        virtual std::vector<Player*> getCurrentPlayers() const = 0;
         void attach(Observer* observer);
         void detach(Observer* observer);
         void notify();
     
     private:
-        vector<Observer*> observers_;
+        std::vector<Observer*> observers_;
 };

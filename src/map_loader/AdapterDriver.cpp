@@ -1,21 +1,19 @@
 #include "../game_engine/GameEngine.h"
 #include "MapLoader.h"
-using std::cout;
-using std::endl;
 
 int main()
 {
     // Load a Domination map
-    cout << "----- LOADING DOMINATION MAP: CANADA -----" << endl;
+    std::cout << "----- LOADING DOMINATION MAP: CANADA -----" << std::endl;
     MapLoader* dominationMapLoader = new MapLoader();
     Map* domination = dominationMapLoader->loadMap("resources/canada.map");
-    cout << *domination << "\n" << endl;
+    std::cout << *domination << "\n" << std::endl;
 
     // Load a Conquest map
-    cout << "----- LOADING CONQUEST MAP: ASIA -----" << endl;
+    std::cout << "----- LOADING CONQUEST MAP: ASIA -----" << std::endl;
     MapLoader* conquestMapLoader = new ConquestFileReaderAdapter();
     Map* conquest = conquestMapLoader->loadMap("resources/Asia.map");
-    cout << *conquest << "\n" << endl;
+    std::cout << *conquest << "\n" << std::endl;
 
     // Selecting from game menu
     GameEngine* gameEngine = new GameEngine();

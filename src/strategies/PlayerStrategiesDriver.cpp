@@ -1,9 +1,6 @@
 #include "PlayerStrategies.h"
 #include "../game_engine/GameEngine.h"
 #include "../map_loader/MapLoader.h"
-#include <iostream>
-using std::cout;
-using std::endl;
 
 int main()
 {
@@ -28,23 +25,23 @@ int main()
     gameEngine.startupPhase();
 
     // Display the players at the start of the game
-    cout << endl;
+    std::cout << std::endl;
     for (const auto &player : gameEngine.getCurrentPlayers())
     {
-        cout << *player << endl;
+        std::cout << *player << std::endl;
     }
 
     // ======================================================================================================
 
     // Round 1
-    cout << "\n============================ Simulated game: Round 1 ============================" << endl;
-    cout << "\n~~~ Reinforcement phase ~~~\n" << endl;
+    std::cout << "\n============================ Simulated game: Round 1 ============================" << std::endl;
+    std::cout << "\n~~~ Reinforcement phase ~~~\n" << std::endl;
     gameEngine.reinforcementPhase();
 
-    cout << "\n~~~ Issue orders phase ~~~\n" << endl;
+    std::cout << "\n~~~ Issue orders phase ~~~\n" << std::endl;
     gameEngine.issueOrdersPhase();
 
-    cout << "\n~~~ Execute orders phase ~~~\n" << endl;
+    std::cout << "\n~~~ Execute orders phase ~~~\n" << std::endl;
     gameEngine.executeOrdersPhase();
 
 
@@ -55,14 +52,14 @@ int main()
     player4->setStrategy(new HumanPlayerStrategy());
 
     // Round 2
-    cout << "\n============================ Simulated game: Round 2 ============================" << endl;
-    cout << "\n~~~ Reinforcement phase ~~~\n" << endl;
+    std::cout << "\n============================ Simulated game: Round 2 ============================" << std::endl;
+    std::cout << "\n~~~ Reinforcement phase ~~~\n" << std::endl;
     gameEngine.reinforcementPhase();
 
-    cout << "\n~~~ Issue orders phase ~~~\n" << endl;
+    std::cout << "\n~~~ Issue orders phase ~~~\n" << std::endl;
     gameEngine.issueOrdersPhase();
 
-    cout << "\n~~~ Execute orders phase ~~~\n" << endl;
+    std::cout << "\n~~~ Execute orders phase ~~~\n" << std::endl;
     gameEngine.executeOrdersPhase();
 
 

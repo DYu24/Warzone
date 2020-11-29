@@ -6,20 +6,11 @@
 #include <windows.h>
 #endif
 
-using std::cout;
-using std::endl;
-using std::fixed;
-using std::left;
-using std::setfill;
-using std::setprecision;
-using std::setw;
-
-
 namespace
 {
     // Color codes to make console output more distinct
     #ifndef WIN32
-        const unordered_map<int, string> PLAYER_COLOR_CODES{
+        const std::unordered_map<int, string> PLAYER_COLOR_CODES{
             {0, "\e[0;31m"},
             {1, "\e[0;32m"},
             {2, "\e[0;33m"},
@@ -30,7 +21,7 @@ namespace
         const string WHITE_BOLD_COLOR_CODE = "\e[1;37m";
         const string RESET_COLOR_CODE = "\e[0m";
     #else
-        const unordered_map<int, int> WINDOWS_PLAYER_COLOR_CODES{
+        const std::unordered_map<int, int> WINDOWS_PLAYER_COLOR_CODES{
             {0, 1},
             {1, 2},
             {2, 3},
@@ -43,7 +34,7 @@ namespace
     #endif
 
     // Helper function to change the output text color based on the current active player
-    void setPlayerColorCode(Player* player, vector<Player*> allPlayers)
+    void setPlayerColorCode(Player* player, std::vector<Player*> allPlayers)
     {
         auto iterator = find(allPlayers.begin(), allPlayers.end(), player);
         int playerIndex = iterator - allPlayers.begin();
@@ -61,9 +52,9 @@ namespace
         #else
             if (player->isNeutral())
             {
-                cout << WHITE_COLOR_CODE;
+                std::cout << WHITE_COLOR_CODE;
             }
-            cout << PLAYER_COLOR_CODES.at(playerIndex);
+            std::cout << PLAYER_COLOR_CODES.at(playerIndex);
         #endif
     }
 
@@ -73,7 +64,7 @@ namespace
         #ifdef WIN32
             SetConsoleTextAttribute(hConsole, WINDOWS_WHITE_BOLD_COLOR_CODE);
         #else
-            cout << WHITE_BOLD_COLOR_CODE;
+            std::cout << WHITE_BOLD_COLOR_CODE;
         #endif
     }
 
@@ -83,7 +74,7 @@ namespace
         #ifdef WIN32
             SetConsoleTextAttribute(hConsole, WINDOWS_WHITE_COLOR_CODE);
         #else
-            cout << RESET_COLOR_CODE;
+            std::cout << RESET_COLOR_CODE;
         #endif
     }
 }
@@ -153,15 +144,15 @@ void PhaseObserver::display() const
     if (currentPhase == STARTUP)
     {
         setBold();
-        cout << "\n===========================================" << endl;
-        cout << "              STARTUP PHASE" << endl;
-        cout << "===========================================" << endl;
-        cout << "Setting up turns and assigning initial territories to each player..." << endl;
+        std::cout << "\n===========================================" << std::endl;
+        std::cout << "              STARTUP PHASE" << std::endl;
+        std::cout << "===========================================" << std::endl;
+        std::cout << "Setting up turns and assigning initial territories to each player..." << std::endl;
     }
     else
     {
-        string phaseTitle;
-        string phaseBody;
+        std::string phaseTitle;
+        std::string phaseBody;
 
         Player* currentActivePlayer = subject_->getActivePlayer();
         if (currentActivePlayer != nullptr && !currentActivePlayer->isNeutral())
@@ -170,28 +161,28 @@ void PhaseObserver::display() const
             switch (subject_->getPhase())
             {
                 case REINFORCEMENT:
-                    cout << "\n===========================================" << endl;
-                    cout << "       " << currentActivePlayer->getName() << " : REINFORCEMENT PHASE" << endl;
-                    cout << "===========================================" << endl;
-                    cout << "Number of territories controlled: " << currentActivePlayer->getOwnedTerritories().size() << endl;
-                    cout << "Reinforcements: " << currentActivePlayer->getReinforcements() << endl;
+                    std::cout << "\n===========================================" << std::endl;
+                    std::cout << "       " << currentActivePlayer->getName() << " : REINFORCEMENT PHASE" << std::endl;
+                    std::cout << "===========================================" << std::endl;
+                    std::cout << "Number of territories controlled: " << currentActivePlayer->getOwnedTerritories().size() << std::endl;
+                    std::cout << "Reinforcements: " << currentActivePlayer->getReinforcements() << std::endl;
                     break;
                     
                 case ISSUE_ORDERS:
-                    cout << "\n===========================================" << endl;
-                    cout << "       " << currentActivePlayer->getName() << " : ISSUE ORDERS PHASE" << endl;
-                    cout << "===========================================" << endl;
-                    cout << "Orders placed: " << currentActivePlayer->getOrdersList().size() << endl;
-                    cout << "Cards in hand: " << currentActivePlayer->getHand().size() << endl;
-                    cout << "Reinforcements left: " << currentActivePlayer->getReinforcements() << endl;
+                    std::cout << "\n===========================================" << std::endl;
+                    std::cout << "       " << currentActivePlayer->getName() << " : ISSUE ORDERS PHASE" << std::endl;
+                    std::cout << "===========================================" << std::endl;
+                    std::cout << "Orders placed: " << currentActivePlayer->getOrdersList().size() << std::endl;
+                    std::cout << "Cards in hand: " << currentActivePlayer->getHand().size() << std::endl;
+                    std::cout << "Reinforcements left: " << currentActivePlayer->getReinforcements() << std::endl;
                     break;
 
                 case EXECUTE_ORDERS:
-                    cout << "\n===========================================" << endl;
-                    cout << "       " << currentActivePlayer->getName() << " : EXECUTE ORDERS PHASE" << endl;
-                    cout << "===========================================" << endl;
-                    cout << "Orders left: " << currentActivePlayer->getOrdersList().size() << endl;
-                    cout << "Number of territories controlled: " << currentActivePlayer->getOwnedTerritories().size() << endl;
+                    std::cout << "\n===========================================" << std::endl;
+                    std::cout << "       " << currentActivePlayer->getName() << " : EXECUTE ORDERS PHASE" << std::endl;
+                    std::cout << "===========================================" << std::endl;
+                    std::cout << "Orders left: " << currentActivePlayer->getOrdersList().size() << std::endl;
+                    std::cout << "Number of territories controlled: " << currentActivePlayer->getOwnedTerritories().size() << std::endl;
                     break;
 
                 default:
@@ -257,7 +248,7 @@ void GameStatisticsObserver::update()
 // Output the subject state to console
 void GameStatisticsObserver::display() const
 {
-    vector<Player*> allPlayers = subject_->getCurrentPlayers();
+    std::vector<Player*> allPlayers = subject_->getCurrentPlayers();
 
     int totalNumberOfTerritories = 0;
     for (const auto &player : allPlayers)
@@ -267,28 +258,28 @@ void GameStatisticsObserver::display() const
 
     setBold();
 
-    cout << "\n===========================================" << endl;
-    cout << "              GAME STATISTICS" << endl;
-    cout << "===========================================" << endl;
-    cout << left << setw(20) << setfill(' ') << "Player";
-    cout << left << setw(20) << setfill(' ') << "Territories";
-    cout << left << setw(20) << setfill(' ') << "% Controlled" << endl;
+    std::cout << "\n===========================================" << std::endl;
+    std::cout << "              GAME STATISTICS" << std::endl;
+    std::cout << "===========================================" << std::endl;
+    std::cout << std::left << std::setw(20) << std::setfill(' ') << "Player";
+    std::cout << std::left << std::setw(20) << std::setfill(' ') << "Territories";
+    std::cout << std::left << std::setw(20) << std::setfill(' ') << "% Controlled" << std::endl;
 
     for (const auto &player : allPlayers)
     {
         int territoriesOwned = player->getOwnedTerritories().size();
         double percentControlled = (double)territoriesOwned / totalNumberOfTerritories * 100;
         
-        cout << left << setw(20) << setfill(' ') << player->getName();
-        cout << left << setw(20) << setfill(' ') << territoriesOwned;
-        cout << left << setw(20) << setfill(' ') << fixed << setprecision(2) << percentControlled << endl;
+        std::cout << std::left << std::setw(20) << std::setfill(' ') << player->getName();
+        std::cout << std::left << std::setw(20) << std::setfill(' ') << territoriesOwned;
+        std::cout << std::left << std::setw(20) << std::setfill(' ') << std::fixed << std::setprecision(2) << percentControlled << std::endl;
     }
-    cout << endl;
+    std::cout << std::endl;
 
     if (allPlayers.size() == 1)
     {
         Player* winner = allPlayers.front();
-        cout << winner->getName() << " wins. Congratulations!" << endl;
+        std::cout << winner->getName() << " wins. Congratulations!" << std::endl;
     }
 
     resetColorCode();
@@ -297,7 +288,7 @@ void GameStatisticsObserver::display() const
 // Check if the state of the subject has changed
 bool GameStatisticsObserver::stateChanged_() const
 {
-    vector<Player*> allPlayers = subject_->getCurrentPlayers();
+    std::vector<Player*> allPlayers = subject_->getCurrentPlayers();
     if (lastSetOfPlayers_.size() == allPlayers.size())
     {
         bool changed = false;

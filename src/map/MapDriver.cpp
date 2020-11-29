@@ -1,9 +1,5 @@
 #include "../game_engine/GameEngine.h"
 #include "Map.h"
-#include <iostream>
-using std::boolalpha;
-using std::cout;
-using std::endl;
 
 int main()
 {
@@ -18,7 +14,7 @@ int main()
 
 
         // ====== Create a valid map ======
-        unordered_map<Territory*, vector<Territory*>> adjacencyList{
+        std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList{
             {t1, {t2}},
             {t2, {t1, t3}},
             {t3, {t2, t4}},
@@ -29,10 +25,10 @@ int main()
         c2->setTerritories({ t3, t4 });
 
         Map map1 = Map({c1, c2}, adjacencyList);
-        cout << boolalpha << "Map 1: VALID = " << map1.validate() << endl;
-        cout << "All is good :)" << endl;
+        std::cout << std::boolalpha << "Map 1: VALID = " << map1.validate() << std::endl;
+        std::cout << "All is good :)" << std::endl;
 
-        cout << endl;
+        std::cout << std::endl;
     }
 
     // ====== Create invalid maps ======
@@ -47,7 +43,7 @@ int main()
         Continent* c1 = new Continent("Continent1", 3);
         Continent* c2 = new Continent("Continent2", 4);
 
-        unordered_map<Territory*, vector<Territory*>> adjacencyList{
+        std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList{
             {t1, {t2}},
             {t2, {t1}},
             {t3, {}},
@@ -57,10 +53,10 @@ int main()
         c2->setTerritories({ t3 });
 
         Map map2 = Map({c1, c2}, adjacencyList);
-        cout << boolalpha << "Map 2: VALID = " << map2.validate() << endl;
-        cout << "This map is not a connected graph." << endl;
+        std::cout << std::boolalpha << "Map 2: VALID = " << map2.validate() << std::endl;
+        std::cout << "This map is not a connected graph." << std::endl;
 
-        cout << endl;
+        std::cout << std::endl;
     }
 
     {
@@ -77,7 +73,7 @@ int main()
         c1->setTerritories({t1, t2, t3});
         c2->setTerritories({t4});
 
-        unordered_map<Territory*, vector<Territory*>> adjacencyList{
+        std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList{
             {t1, {t2}},
             {t2, {t1}},
             {t3, {t4}},
@@ -85,10 +81,10 @@ int main()
         };
 
         Map map3 = Map({c1, c2}, adjacencyList);
-        cout << boolalpha << "Map 3: VALID = " << map3.validate() << endl;
-        cout << "A continent in this map is not a connected graph." << endl;
+        std::cout << std::boolalpha << "Map 3: VALID = " << map3.validate() << std::endl;
+        std::cout << "A continent in this map is not a connected graph." << std::endl;
 
-        cout << endl;
+        std::cout << std::endl;
     }
 
     {
@@ -104,17 +100,17 @@ int main()
         c1->setTerritories({t1, t2, t3});
         c2->setTerritories({t4});
 
-        unordered_map<Territory*, vector<Territory*>> adjacencyList{
+        std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList{
             {t1, {t2}},
             {t2, {t1, t4}},
             {t4, {t2}}
         };
 
         Map map4 = Map({c1, c2}, adjacencyList);
-        cout << boolalpha << "Map 4: VALID = " << map4.validate() << endl;
-        cout << "A continent in this map is not a subgraph of the whole map." << endl;
+        std::cout << std::boolalpha << "Map 4: VALID = " << map4.validate() << std::endl;
+        std::cout << "A continent in this map is not a subgraph of the whole map." << std::endl;
 
-        cout << endl;
+        std::cout << std::endl;
 
     }
 
@@ -128,15 +124,15 @@ int main()
         c1->setTerritories({t1});
         c2->setTerritories({t1});
 
-        unordered_map<Territory*, vector<Territory*>> adjacencyList{
+        std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList{
             {t1, {}},
         };
 
         Map map5 = Map({c1, c2}, adjacencyList);
-        cout << boolalpha << "Map 5: VALID = " << map5.validate() << endl;
-        cout << "Multiple continents contain the same territory." << endl;
+        std::cout << std::boolalpha << "Map 5: VALID = " << map5.validate() << std::endl;
+        std::cout << "Multiple continents contain the same territory." << std::endl;
 
-        cout << endl;
+        std::cout << std::endl;
 
         // Set the first continent's territories to empty vector so that the end of this driver can properly clean up this last Map object.
         c1->setTerritories({});

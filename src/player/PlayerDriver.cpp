@@ -1,8 +1,6 @@
 #include "../game_engine/GameEngine.h"
 #include "../orders/Orders.h"
 #include "Player.h"
-using std::cout;
-using std::endl;
 
 int main()
 {
@@ -18,14 +16,14 @@ int main()
     t4->addArmies(1);
     t5->addArmies(1);
 
-    unordered_map<Territory*, vector<Territory*>> adjacencyList{
+    std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList{
         {t2, {t3, t4}},
         {t5, {t4}}
     };
 
     Continent* c1 = new Continent("Continent1", 3);
     c1->setTerritories({ t1, t2, t3, t4, t5 });
-    vector<Continent*> continents{ c1 };
+    std::vector<Continent*> continents{ c1 };
     
     Map* map = new Map(continents, adjacencyList);
     GameEngine::setMap(map);
@@ -42,31 +40,31 @@ int main()
 
 
     // Show the initial Player object
-    cout << p1 << endl;
+    std::cout << p1 << std::endl;
 
     // Show the list of territories to defend
-    cout << "\n-----Calling Player.toDefend(): -----" << endl;
-    vector<Territory*> toDefend = p1.toDefend();
+    std::cout << "\n-----Calling Player.toDefend(): -----" << std::endl;
+    std::vector<Territory*> toDefend = p1.toDefend();
 
-    cout << "\nTerritories to defend: \n" << endl;
+    std::cout << "\nTerritories to defend: \n" << std::endl;
     for (const auto &territory : toDefend)
     {
-        cout << "- " << *territory << endl;
+        std::cout << "- " << *territory << std::endl;
     }
 
     // Show the list of territories to attack
-    cout << "\n-----Calling Player.toAttack(): -----" << endl;
-    vector<Territory*> toAttack = p1.toAttack();
+    std::cout << "\n-----Calling Player.toAttack(): -----" << std::endl;
+    std::vector<Territory*> toAttack = p1.toAttack();
 
-    cout << "\nTerritories to attack: \n" << endl;
+    std::cout << "\nTerritories to attack: \n" << std::endl;
     for (const auto &territory : toAttack)
     {
-        cout << "- " << *territory << endl;
+        std::cout << "- " << *territory << std::endl;
     }
 
-    cout << "\n-----Calling Player.issueOrder(): -----" << endl;
+    std::cout << "\n-----Calling Player.issueOrder(): -----" << std::endl;
     p1.issueOrder();
-    cout << p1 << endl;
+    std::cout << p1 << std::endl;
 
     GameEngine::resetGameEngine();
     

@@ -4,7 +4,6 @@
 #include "../player/Player.h"
 #include <iostream>
 #include <vector>
-using std::vector;
 
 class Player;
 class Territory;
@@ -24,7 +23,7 @@ class Order
 {
 public:
     virtual ~Order();
-    friend ostream &operator<<(ostream &output, const Order &order);
+    friend std::ostream &operator<<(std::ostream &output, const Order &order);
     void execute();
     int getPriority() const;
     virtual Order* clone() const = 0;
@@ -37,7 +36,7 @@ protected:
     Order(Player* issuer, int priority);
     Order(const Order &order);
     const Order &operator=(const Order &order);
-    virtual ostream &print_(ostream &output) const = 0;
+    virtual std::ostream &print_(std::ostream &output) const = 0;
     virtual void execute_() = 0;
     virtual void undo_();
 
@@ -53,9 +52,9 @@ public:
     OrdersList(const OrdersList &orders);
     ~OrdersList();
     const OrdersList &operator=(const OrdersList &orders);
-    friend ostream &operator<<(ostream &output, const OrdersList &orders);
-    vector<Order*> getOrders() const;
-    void setOrders(vector<Order*> orders);
+    friend std::ostream &operator<<(std::ostream &output, const OrdersList &orders);
+    std::vector<Order*> getOrders() const;
+    void setOrders(std::vector<Order*> orders);
     Order* popTopOrder();
     Order* peek();
     int size() const;
@@ -64,7 +63,7 @@ public:
     void remove(int target);
 
 private:
-    vector<Order*> orders_;
+    std::vector<Order*> orders_;
 };
 
 
@@ -83,7 +82,7 @@ public:
 protected:
     void execute_();
     void undo_();
-    ostream &print_(ostream &output) const;
+    std::ostream &print_(std::ostream &output) const;
 
 private:
     int numberOfArmies_;
@@ -105,7 +104,7 @@ public:
 protected:
     void execute_();
     void undo_();
-    ostream &print_(ostream &output) const;
+    std::ostream &print_(std::ostream &output) const;
 
 private:
     int numberOfArmies_;
@@ -127,7 +126,7 @@ public:
 
 protected:
     void execute_();
-    ostream &print_(ostream &output) const;
+    std::ostream &print_(std::ostream &output) const;
 
 private:
     Territory* target_;
@@ -147,7 +146,7 @@ public:
 
 protected:
     void execute_();
-    ostream &print_(ostream &output) const;
+    std::ostream &print_(std::ostream &output) const;
 
 private:
     Territory* territory_;
@@ -168,7 +167,7 @@ public:
 protected:
     void execute_();
     void undo_();
-    ostream &print_(ostream &output) const;
+    std::ostream &print_(std::ostream &output) const;
 
 private:
     int numberOfArmies_;
@@ -190,7 +189,7 @@ public:
 
 protected:
     void execute_();
-    ostream &print_(ostream &output) const;
+    std::ostream &print_(std::ostream &output) const;
     
 private:
     Player* target_;

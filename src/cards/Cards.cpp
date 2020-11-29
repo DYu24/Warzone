@@ -2,19 +2,13 @@
 #include "../game_engine/GameEngine.h"
 #include <algorithm>
 #include <time.h>
-using std::cin;
-using std::cout;
-using std::endl;
-using std::numeric_limits;
-using std::streamsize;
-
 
 namespace
 {
     // Helper method to get the adversaries of the specified player.
-    vector<Player*> getEnemiesOf(Player* player)
+    std::vector<Player*> getEnemiesOf(Player* player)
     {
-        vector<Player*> enemies;
+        std::vector<Player*> enemies;
         for (const auto &p : GameEngine::getPlayers())
         {
             if (p != player)
@@ -37,7 +31,7 @@ namespace
 Card::~Card() {};
 
 // Operator overloading
-ostream &operator<<(ostream &output, const Card &card)
+std::ostream &operator<<(std::ostream &output, const Card &card)
 {
     return card.print_(output);
 }
@@ -88,19 +82,19 @@ const Deck &Deck::operator=(const Deck &deck)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const Deck &deck)
+std::ostream &operator<<(std::ostream &output, const Deck &deck)
 {
     output << "[Deck] Size=" << deck.size();
     return output;
 }
 
 // Getter and setter
-vector<Card*> Deck::getCards() const
+std::vector<Card*> Deck::getCards() const
 {
     return cards_;
 }
 
-void Deck::setCards(vector<Card*> cards)
+void Deck::setCards(std::vector<Card*> cards)
 {
     for (const auto &card : cards_)
     {
@@ -119,7 +113,7 @@ Card* Deck::draw()
 {
     if (cards_.empty())
     {
-        cout << "Deck is empty." << endl;
+        std::cout << "Deck is empty." << std::endl;
         return nullptr;
     }
 
@@ -204,19 +198,19 @@ const Hand &Hand::operator=(const Hand &hand)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const Hand &hand)
+std::ostream &operator<<(std::ostream &output, const Hand &hand)
 {
     output << "[Hand] Size=" << hand.size();
     return output;
 }
 
 // Getter and setter
-vector<Card*> Hand::getCards() const
+std::vector<Card*> Hand::getCards() const
 {
     return cards_;
 }
 
-void Hand::setCards(vector<Card*> cards)
+void Hand::setCards(std::vector<Card*> cards)
 {
     for (const auto &card : cards_)
     {
@@ -271,7 +265,7 @@ Card* Hand::removeCard(int position)
  */
 
 // Operator overloading.
-ostream &BombCard::print_(ostream &output) const
+std::ostream &BombCard::print_(std::ostream &output) const
 {
     output << "[BombCard]";
     return output;
@@ -304,32 +298,32 @@ Order* BombCard::play() const
 Order* BombCard::buildOrder_() const
 {
     // Determine which territories are bombable
-    vector<Territory*> bombableTerritories;
+    std::vector<Territory*> bombableTerritories;
     for (const auto &player : getEnemiesOf(owner_))
     {
-        vector<Territory*> enemyTerritories = player->getOwnedTerritories();
+        std::vector<Territory*> enemyTerritories = player->getOwnedTerritories();
         bombableTerritories.insert(bombableTerritories.end(), enemyTerritories.begin(), enemyTerritories.end());
     }
 
-    cout << "\nWhich territory would you like to bomb?" << endl;
+    std::cout << "\nWhich territory would you like to bomb?" << std::endl;
     for (int i = 0; i < bombableTerritories.size(); i++)
     {
         Territory* territory = bombableTerritories.at(i);
-        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " present)" << endl;
+        std::cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " present)" << std::endl;
     }
 
     Territory* target = nullptr;
-    cout << "\nEnter the territory to bomb: ";
+    std::cout << "\nEnter the territory to bomb: ";
     while (target == nullptr)
     {
         int selection;
-        cin >> selection;
+        std::cin >> selection;
 
-        if (cin.fail() || selection - 1 < 0 || selection - 1 >= bombableTerritories.size())
+        if (std::cin.fail() || selection - 1 < 0 || selection - 1 >= bombableTerritories.size())
         {
-            cout << "That was not a valid option. Please try again:" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            std::cout << "That was not a valid option. Please try again:" << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
 
@@ -347,7 +341,7 @@ Order* BombCard::buildOrder_() const
  */
 
 // Operator overloading.
-ostream &ReinforcementCard::print_(ostream &output) const
+std::ostream &ReinforcementCard::print_(std::ostream &output) const
 {
     output << "[ReinforcementCard]";
     return output;
@@ -383,7 +377,7 @@ Order* ReinforcementCard::buildOrder_() const
  */
 
 // Operator overloading.
-ostream &BlockadeCard::print_(ostream &output) const
+std::ostream &BlockadeCard::print_(std::ostream &output) const
 {
     output << "[BlockadeCard]";
     return output;
@@ -415,27 +409,27 @@ Order* BlockadeCard::play() const
 // Build the BlockadeOrder through user input.
 Order* BlockadeCard::buildOrder_() const
 {
-    vector<Territory*> blockadableTerritories = owner_->getOwnedTerritories();
+    std::vector<Territory*> blockadableTerritories = owner_->getOwnedTerritories();
 
-    cout << "\nWhich territory would you like to blockade?" << endl;
+    std::cout << "\nWhich territory would you like to blockade?" << std::endl;
     for (int i = 0; i < blockadableTerritories.size(); i++)
     {
         Territory* territory = blockadableTerritories.at(i);
-        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " present, " << territory->getPendingIncomingArmies() << " pending)" << endl;
+        std::cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " present, " << territory->getPendingIncomingArmies() << " pending)" << std::endl;
     }
 
     Territory* target = nullptr;
-    cout << "\nEnter the territory to blockade: ";
+    std::cout << "\nEnter the territory to blockade: ";
     while (target == nullptr)
     {
         int selection;
-        cin >> selection;
+        std::cin >> selection;
 
-        if (cin.fail() || selection - 1 < 0 || selection - 1 >= blockadableTerritories.size())
+        if (std::cin.fail() || selection - 1 < 0 || selection - 1 >= blockadableTerritories.size())
         {
-            cout << "That was not a valid option. Please try again:" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            std::cout << "That was not a valid option. Please try again:" << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
 
@@ -453,7 +447,7 @@ Order* BlockadeCard::buildOrder_() const
  */
 
 // Operator overloading.
-ostream &AirliftCard::print_(ostream &output) const
+std::ostream &AirliftCard::print_(std::ostream &output) const
 {
     output << "[AirliftCard]";
     return output;
@@ -510,27 +504,27 @@ Order* AirliftCard::play() const
 // Build the AirliftOrder through user input.
 Order* AirliftCard::buildOrder_() const
 {
-    vector<Territory*> possibleSources = owner_->getOwnTerritoriesWithMovableArmies();
+    std::vector<Territory*> possibleSources = owner_->getOwnTerritoriesWithMovableArmies();
 
-    cout << "\nWhich territory would you like to airlift from?" << endl;
+    std::cout << "\nWhich territory would you like to airlift from?" << std::endl;
     for (int i = 0; i < possibleSources.size(); i++)
     {
         Territory* territory = possibleSources.at(i);
-        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfMovableArmies() << " armies available)" << endl;
+        std::cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfMovableArmies() << " armies available)" << std::endl;
     }
 
     Territory* source = nullptr;
-    cout << "\nEnter the territory to airlift from: ";
+    std::cout << "\nEnter the territory to airlift from: ";
     while (source == nullptr)
     {
         int selection;
-        cin >> selection;
+        std::cin >> selection;
 
-        if (cin.fail() || selection - 1 < 0 || selection - 1 >= possibleSources.size())
+        if (std::cin.fail() || selection - 1 < 0 || selection - 1 >= possibleSources.size())
         {
-            cout << "That was not a valid option. Please try again:" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            std::cout << "That was not a valid option. Please try again:" << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
 
@@ -538,7 +532,7 @@ Order* AirliftCard::buildOrder_() const
     }
 
     // Destinations can only be territories that are not the source
-    vector<Territory*> possibleDestinations;
+    std::vector<Territory*> possibleDestinations;
     for (const auto &destination : owner_->toDefend())
     {
         if (destination != source)
@@ -547,25 +541,25 @@ Order* AirliftCard::buildOrder_() const
         }
     }
 
-    cout << "\nWhich territory would you like to airlift to?" << endl;
+    std::cout << "\nWhich territory would you like to airlift to?" << std::endl;
     for (int i = 0; i < possibleDestinations.size(); i++)
     {
         Territory* territory = possibleDestinations.at(i);
-        cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << endl;
+        std::cout << "[" << i+1 << "] " << territory->getName() << " (" << territory->getNumberOfArmies() << " armies present)" << std::endl;
     }
 
     Territory* destination = nullptr;
-    cout << "\nEnter the territory to airlift to: ";
+    std::cout << "\nEnter the territory to airlift to: ";
     while (destination == nullptr)
     {
         int selection;
-        cin >> selection;
+        std::cin >> selection;
 
-        if (cin.fail() || selection - 1 < 0 || selection - 1 >= possibleDestinations.size())
+        if (std::cin.fail() || selection - 1 < 0 || selection - 1 >= possibleDestinations.size())
         {
-            cout << "That was not a valid option. Please try again:" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            std::cout << "That was not a valid option. Please try again:" << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
 
@@ -574,17 +568,17 @@ Order* AirliftCard::buildOrder_() const
 
     int armiesToMove = 0;
     int movableArmies = source->getNumberOfMovableArmies();
-    cout << "\nHow many armies do you want to move?" << endl;
+    std::cout << "\nHow many armies do you want to move?" << std::endl;
     while (armiesToMove == 0)
     {
         int selection;
-        cin >> selection;
+        std::cin >> selection;
 
-        if (cin.fail() || selection < 1 || selection > movableArmies)
+        if (std::cin.fail() || selection < 1 || selection > movableArmies)
         {
-            cout << "Please enter a number between 1 and " << movableArmies << ": " << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            std::cout << "Please enter a number between 1 and " << movableArmies << ": " << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
 
@@ -603,7 +597,7 @@ Order* AirliftCard::buildOrder_() const
  */
 
 // Operator overloading.
-ostream &DiplomacyCard::print_(ostream &output) const
+std::ostream &DiplomacyCard::print_(std::ostream &output) const
 {
     output << "[DiplomacyCard]";
     return output;
@@ -629,8 +623,8 @@ Order* DiplomacyCard::play() const
     }
 
     Map* map = GameEngine::getMap();
-    vector<Territory*> ownerTerritories = owner_->getOwnedTerritories();
-    vector<Territory*> territoriesToDefend = owner_->toDefend();
+    std::vector<Territory*> ownerTerritories = owner_->getOwnedTerritories();
+    std::vector<Territory*> territoriesToDefend = owner_->toDefend();
 
     // Try to pick an enemy player who has the most armies on an adjacent territory to the highest priority territory in
     // the player's `toDefend()` list
@@ -658,7 +652,7 @@ Order* DiplomacyCard::play() const
 
     // If no suitable target player is found, pick a random enemy
     srand(time(nullptr));
-    vector<Player*> enemyPlayers = getEnemiesOf(owner_);
+    std::vector<Player*> enemyPlayers = getEnemiesOf(owner_);
     Player* targetPlayer = enemyPlayers.at(rand() % enemyPlayers.size());
     return new NegotiateOrder(owner_, targetPlayer);
 }
@@ -666,27 +660,27 @@ Order* DiplomacyCard::play() const
 // Build the NegotiateOrder through user input.
 Order* DiplomacyCard::buildOrder_() const
 {
-    vector<Player*> enemyPlayers = getEnemiesOf(owner_);
+    std::vector<Player*> enemyPlayers = getEnemiesOf(owner_);
 
-    cout << "\nWho would you like to negotiate with?" << endl;
+    std::cout << "\nWho would you like to negotiate with?" << std::endl;
     for (int i = 0; i < enemyPlayers.size(); i++)
     {
         Player* enemy = enemyPlayers.at(i);
-        cout << "[" << i+1 << "] " << enemy->getName() << endl;
+        std::cout << "[" << i+1 << "] " << enemy->getName() << std::endl;
     }
 
     Player* targetPlayer = nullptr;
-    cout << "\nEnter the player to negotiate with: ";
+    std::cout << "\nEnter the player to negotiate with: ";
     while (targetPlayer == nullptr)
     {
         int selection;
-        cin >> selection;
+        std::cin >> selection;
 
-        if (cin.fail() || selection - 1 < 0 || selection - 1 >= enemyPlayers.size())
+        if (std::cin.fail() || selection - 1 < 0 || selection - 1 >= enemyPlayers.size())
         {
-            cout << "That was not a valid option. Please try again:" << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            std::cout << "That was not a valid option. Please try again:" << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
 

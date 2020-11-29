@@ -7,9 +7,6 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-using std::string;
-using std::vector;
-using std::unordered_map;
 
 class AggressivePlayerStrategy;
 class BenevolentPlayerStrategy;
@@ -32,17 +29,17 @@ class Player
 
     public:
         Player();
-        Player(string name);
-        Player(string name, PlayerStrategy* strategy);
+        Player(std::string name);
+        Player(std::string name, PlayerStrategy* strategy);
         Player(const Player &player);
         ~Player();
         const Player &operator=(const Player &player);
-        friend ostream &operator<<(ostream &output, const Player &player);
-        vector<Territory*> getOwnedTerritories() const;
-        string getName() const;
+        friend std::ostream &operator<<(std::ostream &output, const Player &player);
+        std::vector<Territory*> getOwnedTerritories() const;
+        std::string getName() const;
         OrdersList getOrdersList() const;
         Hand getHand() const;
-        vector<Player*> getDiplomaticRelations() const;
+        std::vector<Player*> getDiplomaticRelations() const;
         int getReinforcements() const;
         void setStrategy(PlayerStrategy* strategy);
         void addReinforcements(int reinforcements);
@@ -57,20 +54,20 @@ class Player
         bool isHuman() const;
         bool isNeutral() const;
         bool isDoneIssuingOrders() const;
-        vector<Territory*> getOwnTerritoriesWithMovableArmies() const;
-        vector<Territory*> toDefend() const;
-        vector<Territory*> toAttack() const;
+        std::vector<Territory*> getOwnTerritoriesWithMovableArmies() const;
+        std::vector<Territory*> toDefend() const;
+        std::vector<Territory*> toAttack() const;
         void issueOrder();
 
     private:
-        string name_;
+        std::string name_;
         int reinforcements_;
         bool committed_;
         PlayerStrategy* strategy_;
         OrdersList* orders_;
         Hand* hand_;
-        vector<Territory*> ownedTerritories_;
-        vector<Player*> diplomaticRelations_;
-        unordered_map<Territory*, vector<Territory*>> issuedDeploymentsAndAdvancements_;
+        std::vector<Territory*> ownedTerritories_;
+        std::vector<Player*> diplomaticRelations_;
+        std::unordered_map<Territory*, std::vector<Territory*>> issuedDeploymentsAndAdvancements_;
         bool advancePairingExists_(Territory* source, Territory* destination);
 };

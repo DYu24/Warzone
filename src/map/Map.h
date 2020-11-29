@@ -4,25 +4,21 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-using std::ostream;
-using std::string;
-using std::unordered_map;
-using std::vector;
 
 class Territory
 {
 public:
     Territory();
-    Territory(string name);
+    Territory(std::string name);
     Territory(const Territory &territory);
     const Territory &operator=(const Territory &territory);
     friend bool operator== (const Territory &t1, const Territory &t2);
-    friend ostream &operator<<(ostream &output, const Territory &territory);
-    string getName() const;
+    friend std::ostream &operator<<(std::ostream &output, const Territory &territory);
+    std::string getName() const;
     int getNumberOfArmies() const;
     int getPendingIncomingArmies() const;
     int getPendingOutgoingArmies() const;
-    void setName(string name);
+    void setName(std::string name);
     void setPendingIncomingArmies(int armies);
     void setPendingOutgoingArmies(int armies);
     void removeArmies(int armies);
@@ -32,7 +28,7 @@ public:
     int getNumberOfMovableArmies();
 
 private:
-    string name_;
+    std::string name_;
     int numberOfArmies_;
     int pendingIncomingArmies_;
     int pendingOutgoingArmies_;
@@ -42,43 +38,43 @@ class Continent
 {
 public:
     Continent();
-    Continent(string name, int controlValue);
+    Continent(std::string name, int controlValue);
     Continent(const Continent &continent);
     ~Continent();
     const Continent &operator=(const Continent &continent);
-    friend ostream &operator<<(ostream &output, const Continent &continent);
-    string getName() const;
+    friend std::ostream &operator<<(std::ostream &output, const Continent &continent);
+    std::string getName() const;
     int getControlValue() const;
-    vector<Territory*> getTerritories() const;
-    void setName(string name);
+    std::vector<Territory*> getTerritories() const;
+    void setName(std::string name);
     void setControlValue(int value);
-    void setTerritories(vector<Territory*> territories);
+    void setTerritories(std::vector<Territory*> territories);
     void addTerritory(Territory* territory);
 
 private:
-    string name_;
+    std::string name_;
     int controlValue_;
-    vector<Territory*> territories_;
+    std::vector<Territory*> territories_;
 };
 
 class Map
 {
 public:
     Map();
-    Map(vector<Continent*> continents, unordered_map<Territory*, vector<Territory*>> adjacencyList);
+    Map(std::vector<Continent*> continents, std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList);
     Map(const Map &map);
     ~Map();
     const Map &operator=(const Map &map);
-    friend ostream &operator<<(ostream &output, const Map &map);
-    unordered_map<Territory*, vector<Territory*>> getAdjacencyList() const;
-    vector<Continent*> getContinents() const;
-    vector<Territory*> getTerritories() const;
-    vector<Territory*> getAdjacentTerritories(Territory* territory);
+    friend std::ostream &operator<<(std::ostream &output, const Map &map);
+    std::unordered_map<Territory*, std::vector<Territory*>> getAdjacencyList() const;
+    std::vector<Continent*> getContinents() const;
+    std::vector<Territory*> getTerritories() const;
+    std::vector<Territory*> getAdjacentTerritories(Territory* territory);
     bool validate();
 
 private:
-    vector<Continent*> continents_;
-    unordered_map<Territory*, vector<Territory*>> adjacencyList_;
+    std::vector<Continent*> continents_;
+    std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList_;
     bool checkGraphValidity_();
     bool checkContinentsValidity_();
     bool checkTerritoriesValidity_();

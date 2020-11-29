@@ -1,7 +1,4 @@
 #include "GameEngine.h"
-#include <iostream>
-using std::cout;
-using std::endl;
 
 int main()
 {
@@ -11,19 +8,19 @@ int main()
     // Part 1:
     // ==============================
 
-    cout << "\n********** PART 1 **********" << endl;
+    std::cout << "\n********** PART 1 **********" << std::endl;
     gameEngine.startGame();
 
     // Output the created deck
-    cout << '\n' << *GameEngine::getDeck() << endl;
+    std::cout << '\n' << *GameEngine::getDeck() << std::endl;
 
     // Output the created players
     for (const auto &player : GameEngine::getPlayers())
     {
-        cout << *player << endl;
+        std::cout << *player << std::endl;
     }
 
-    cout << endl;
+    std::cout << std::endl;
 
 
     // ====================================================================================================================
@@ -33,35 +30,35 @@ int main()
     // Part 2:
     // ==============================
 
-    cout << "\n********** PART 2 **********" << endl;
+    std::cout << "\n********** PART 2 **********" << std::endl;
     gameEngine.startupPhase();
 
-    cout << endl;
+    std::cout << std::endl;
 
     Map* map = GameEngine::getMap();
-    vector<Territory*> allTerritoriesInMap = map->getTerritories();
-    vector<Territory*> ownedTerritories;
+    std::vector<Territory*> allTerritoriesInMap = map->getTerritories();
+    std::vector<Territory*> ownedTerritories;
 
     for (const auto &player : GameEngine::getPlayers())
     {
-        cout << *player << endl;
-        vector<Territory*> playerTerritories = player->getOwnedTerritories();
+        std::cout << *player << std::endl;
+        std::vector<Territory*> playerTerritories = player->getOwnedTerritories();
         for (int i = 0; i < playerTerritories.size(); i++)
         {
-            cout << (i+1) << ". " << playerTerritories.at(i)->getName() << endl;
+            std::cout << (i+1) << ". " << playerTerritories.at(i)->getName() << std::endl;
         }
         ownedTerritories.insert(ownedTerritories.end(), playerTerritories.begin(), playerTerritories.end());
-        cout << endl;
+        std::cout << std::endl;
     }
 
-    cout << endl;
+    std::cout << std::endl;
 
     // If every territory is owned by only one player, then the size of `allTerritoriesInMap` and `ownedTerritories` should be the same.
     // (i.e. there are no duplicates/two players do not own a common territory)
-    cout << "Number of territories in the game map: " << allTerritoriesInMap.size() << endl;
-    cout << "Number of territories owned by players: " << ownedTerritories.size() << endl;
+    std::cout << "Number of territories in the game map: " << allTerritoriesInMap.size() << std::endl;
+    std::cout << "Number of territories owned by players: " << ownedTerritories.size() << std::endl;
 
-    cout << endl;
+    std::cout << std::endl;
 
 
     // ====================================================================================================================
@@ -71,7 +68,7 @@ int main()
     // Part 3 & 4 & 5:
     // ==============================
 
-    cout << "\n********** PART 3 & 4 & 5**********" << endl;
+    std::cout << "\n********** PART 3 & 4 & 5**********" << std::endl;
     gameEngine.mainGameLoop();
 
     GameEngine::resetGameEngine();

@@ -1,8 +1,5 @@
 #include "../game_engine/GameEngine.h"
 #include "Orders.h"
-using std::boolalpha;
-using std::cout;
-using std::endl;
 
 int main()
 {
@@ -33,29 +30,29 @@ int main()
 
 
     // Show the OrderList
-    cout << "===== " << "Original orders list: " << ordersList << " =====" << endl;
+    std::cout << "===== " << "Original orders list: " << ordersList << " =====" << std::endl;
     for (const auto &order : ordersList.getOrders())
     {
-        cout << *order << endl;
-        cout << boolalpha << "Order is valid: " << order->validate() << endl;
+        std::cout << *order << std::endl;
+        std::cout << std::boolalpha << "Order is valid: " << order->validate() << std::endl;
         order->execute();
-        cout << endl;
+        std::cout << std::endl;
     }
 
     // Show the OrderList after moving an order from index 1 to index 4
     ordersList.move(1, 4);
-    cout << "===== " << "Orders list after moving an order: " << ordersList << " =====" << endl;
+    std::cout << "===== " << "Orders list after moving an order: " << ordersList << " =====" << std::endl;
     for (const auto &order : ordersList.getOrders())
     {
-        cout << *order << endl;
+        std::cout << *order << std::endl;
     }
 
     // Show the OrderList after deleting an order at index 5
     ordersList.remove(5);
-    cout << "\n===== " << "Orders list after deleting an order: " << ordersList << " =====" << endl;
+    std::cout << "\n===== " << "Orders list after deleting an order: " << ordersList << " =====" << std::endl;
     for (const auto &order : ordersList.getOrders())
     {
-        cout << *order << endl;
+        std::cout << *order << std::endl;
     }
 
     delete t1;

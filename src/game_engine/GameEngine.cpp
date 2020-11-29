@@ -10,14 +10,6 @@
 #include <string>
 #include <time.h>
 #include <unordered_set>
-using std::cin;
-using std::cout;
-using std::endl;
-using std::numeric_limits;
-using std::streamsize;
-using std::default_random_engine;
-using std::time;
-using std::unordered_set;
 
 namespace fs = std::filesystem;
 
@@ -26,14 +18,14 @@ namespace
     // Helper method for debugging/demo. Pauses game execution until the user presses ENTER on the console.
     void pause()
     {
-        cout << "Press [Enter] to Continue..." << endl;
-        cin.ignore(numeric_limits<streamsize>::max(),'\n');
+        std::cout << "Press [Enter] to Continue..." << std::endl;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
     }
 
     // Reads the specified directory and returns a vector of filenames for all the `.map` files.
-    vector<string> getMapFileNames(string directory)
+    std::vector<std::string> getMapFileNames(std::string directory)
     {
-        vector<string> fileNames;
+        std::vector<std::string> fileNames;
         for (const auto &entry : fs::directory_iterator(directory))
         {
             fileNames.push_back(entry.path().filename().string());
@@ -47,40 +39,40 @@ namespace
     {
         MapLoader* loader = nullptr;
         Map* map = nullptr;
-        const string RESOURCES_DIRECTORY = "resources";
+        const std::string RESOURCES_DIRECTORY = "resources";
 
-        cout << "Select a map to play on: " << endl;
-        vector<string> maps = getMapFileNames(RESOURCES_DIRECTORY);
+        std::cout << "Select a map to play on: " << std::endl;
+        std::vector<std::string> maps = getMapFileNames(RESOURCES_DIRECTORY);
         int i = 1;
         for (const auto &map : maps)
         {
-            cout << "[" << i++ << "] " << map << endl;
+            std::cout << "[" << i++ << "] " << map << std::endl;
         }
 
         while (map == nullptr)
         {
             int selection;
-            cin >> selection;
+            std::cin >> selection;
 
-            if (cin.fail() || selection - 1 < 0 || selection - 1 >= maps.size())
+            if (std::cin.fail() || selection - 1 < 0 || selection - 1 >= maps.size())
             {
-                cout << "That was not a valid option. Please try again:" << endl;
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                std::cout << "That was not a valid option. Please try again:" << std::endl;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
             }
 
             try
             {
-                cout << "Loading map..." << endl;
+                std::cout << "Loading map..." << std::endl;
                 loader = new MapLoader();
                 map = loader->loadMap(RESOURCES_DIRECTORY + "/" + maps.at(selection - 1));
             }
             catch (char const *errorMessage)
             {
-                cout << "The selected map was invalid. Please try another option:" << endl;
+                std::cout << "The selected map was invalid. Please try another option:" << std::endl;
             }
-            catch (string const errorMessage)
+            catch (std::string const errorMessage)
             {
                 try
                 {
@@ -90,11 +82,11 @@ namespace
                 }
                 catch(char const *errorMessage)
                 {
-                    cout << "The selected map was invalid. Please try another option:" << endl;
+                    std::cout << "The selected map was invalid. Please try another option:" << std::endl;
                 }
-                catch (string const errorMessage)
+                catch (std::string const errorMessage)
                 {
-                    cout << "The selected map was invalid. Please try another option:" << endl;
+                    std::cout << "The selected map was invalid. Please try another option:" << std::endl;
                 }
                 
             }
@@ -106,21 +98,21 @@ namespace
     }
 
     // Create players based on user's input.
-    vector<Player*> setupPlayers()
+    std::vector<Player*> setupPlayers()
     {
-        cout << "Enter the number of players for this game: ";
+        std::cout << "Enter the number of players for this game: ";
         
         int numberOfPlayers = 0;
 
         while (numberOfPlayers == 0)
         {
-            cin >> numberOfPlayers;
+            std::cin >> numberOfPlayers;
 
-            if (cin.fail() || numberOfPlayers < 2 || numberOfPlayers > 5)
+            if (std::cin.fail() || numberOfPlayers < 2 || numberOfPlayers > 5)
             {
-                cout << "Please enter a valid number of players (2-5): ";
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                std::cout << "Please enter a valid number of players (2-5): ";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 numberOfPlayers = 0;
                 continue;
             }
@@ -128,12 +120,12 @@ namespace
             break;
         }
 
-        vector<Player*> players;
+        std::vector<Player*> players;
         for (int i = 1; i <= numberOfPlayers; i++)
         {
-            cout << "Enter a name for Player " << i << ": ";
-            string name;
-            cin >> name;
+            std::cout << "Enter a name for Player " << i << ": ";
+            std::string name;
+            std::cin >> name;
 
             players.push_back(new Player(name, new HumanPlayerStrategy()));
         }
@@ -150,19 +142,19 @@ namespace
 
         while (selection != 3)
         {
-            cout << "Configure game observers (enter 1 or 2 to toggle):" << endl;
-            cout << "[1] Game Statistics Observer: " << (gameStatsObserverOn ? "ON" : "OFF") << endl;
-            cout << "[2] Phase Observer: " << (phaseObserverOn ? "ON" : "OFF") << endl;
-            cout << "[3] Confirm" << endl;
+            std::cout << "Configure game observers (enter 1 or 2 to toggle):" << std::endl;
+            std::cout << "[1] Game Statistics Observer: " << (gameStatsObserverOn ? "ON" : "OFF") << std::endl;
+            std::cout << "[2] Phase Observer: " << (phaseObserverOn ? "ON" : "OFF") << std::endl;
+            std::cout << "[3] Confirm" << std::endl;
 
             while (true)
             {
-                cin >> selection;
-                if (cin.fail() || selection < 1 || selection > 3)
+                std::cin >> selection;
+                if (std::cin.fail() || selection < 1 || selection > 3)
                 {
-                    cout << "Please select a valid option: ";
-                    cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    std::cout << "Please select a valid option: ";
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                     continue;
                 }
 
@@ -189,7 +181,7 @@ namespace
 // Initialize static members
 Deck* GameEngine::deck_ = new Deck();
 Map* GameEngine::map_ = new Map();
-vector<Player*> GameEngine::players_;
+std::vector<Player*> GameEngine::players_;
 
 
 /* 
@@ -211,7 +203,7 @@ const GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const GameEngine &gameEngine)
+std::ostream &operator<<(std::ostream &output, const GameEngine &gameEngine)
 {
     return output;
 }
@@ -227,9 +219,9 @@ Map* GameEngine::getMap()
     return map_;
 }
 
-vector<Player*> GameEngine::getPlayers()
+std::vector<Player*> GameEngine::getPlayers()
 {
-    vector<Player*> allPlayers;
+    std::vector<Player*> allPlayers;
     for (const auto &player : players_)
     {
         if (!player->isNeutral())
@@ -248,7 +240,7 @@ void GameEngine::setMap(Map* map)
     map_ = map;
 }
 
-void GameEngine::setPlayers(vector<Player*> players)
+void GameEngine::setPlayers(std::vector<Player*> players)
 {
     for (const auto &player : players_)
     {
@@ -269,7 +261,7 @@ Player* GameEngine::getActivePlayer() const
     return activePlayer_;
 }
 
-vector<Player*> GameEngine::getCurrentPlayers() const
+std::vector<Player*> GameEngine::getCurrentPlayers() const
 {
     return players_;
 }
@@ -279,7 +271,7 @@ Player* GameEngine::getOwnerOf(Territory* territory)
 {
     for (const auto &player : players_)
     {
-        vector<Territory*> territories = player->getOwnedTerritories();
+        std::vector<Territory*> territories = player->getOwnedTerritories();
         if (find(territories.begin(), territories.end(), territory) != territories.end())
         {
             return player;
@@ -328,15 +320,15 @@ void GameEngine::resetGameEngine()
 // Setup the map and players to be included in the game based on the user's input
 void GameEngine::startGame()
 {
-    cout << "====================================================" << endl;
-    cout << "                      WARZONE" << endl;
-    cout << "====================================================" << endl;
+    std::cout << "====================================================" << std::endl;
+    std::cout << "                      WARZONE" << std::endl;
+    std::cout << "====================================================" << std::endl;
 
     setMap(selectMap());
-    cout << endl;
+    std::cout << std::endl;
 
     players_ = setupPlayers();
-    cout << endl;
+    std::cout << std::endl;
 
     setupObservers(this);
 
@@ -353,11 +345,11 @@ void GameEngine::startupPhase()
     notify();
 
     // Shuffle the order of players in the game
-    shuffle(players_.begin(), players_.end(), default_random_engine(time(nullptr)));
+    shuffle(players_.begin(), players_.end(), std::default_random_engine(time(nullptr)));
 
     // Assign territories
     int playerIndex = 0;
-    vector<Territory*> assignableTerritories = map_->getTerritories();
+    std::vector<Territory*> assignableTerritories = map_->getTerritories();
     while (!assignableTerritories.empty())
     {
         // Pop out a random territory
@@ -388,14 +380,14 @@ void GameEngine::reinforcementPhase()
 
         activePlayer_ = player;
 
-        vector<Territory*> playerTerritories = player->getOwnedTerritories();
+        std::vector<Territory*> playerTerritories = player->getOwnedTerritories();
         int reinforcements = floor(playerTerritories.size() / 3);
     
         // Check if the player owns all members of any continents
         for (const auto &continent : map_->getContinents())
         {
             int numberOfContinentMembersOwned = 0;
-            vector<Territory*> continentMembers = continent->getTerritories();
+            std::vector<Territory*> continentMembers = continent->getTerritories();
             for (const auto &member : continentMembers)
             {
                 if (find(playerTerritories.begin(), playerTerritories.end(), member) != playerTerritories.end())
@@ -417,14 +409,14 @@ void GameEngine::reinforcementPhase()
 
         player->addReinforcements(reinforcements);
         notify();
-        cout << "[" << player->getName() << "] received " << reinforcements << " reinforcements and now has " << player->getReinforcements() << " in total." << endl;
+        std::cout << "[" << player->getName() << "] received " << reinforcements << " reinforcements and now has " << player->getReinforcements() << " in total." << std::endl;
     }
 }
 
 // Issue orders one-by-one in a round-robin fashion over all the players
 void GameEngine::issueOrdersPhase()
 {
-    unordered_set<Player*> playersFinishedIssuingOrders;
+    std::unordered_set<Player*> playersFinishedIssuingOrders;
     while (playersFinishedIssuingOrders.size() != players_.size())
     {
         for (auto &player : players_)
@@ -438,7 +430,7 @@ void GameEngine::issueOrdersPhase()
             }
 
             notify();
-            cout << "[" << player->getName() << "] ";
+            std::cout << "[" << player->getName() << "] ";
             player->issueOrder();
         }
     }
@@ -447,13 +439,13 @@ void GameEngine::issueOrdersPhase()
 // Executes players' orders in a round-robin fashion until all players have no orders left to execute.
 void GameEngine::executeOrdersPhase()
 {
-    vector<Player*> playersInTurn = players_;
-    unordered_set<Player*> playersFinishedDeploying;
-    unordered_set<Player*> playersFinishedExecutingOrders;
+    std::vector<Player*> playersInTurn = players_;
+    std::unordered_set<Player*> playersFinishedDeploying;
+    std::unordered_set<Player*> playersFinishedExecutingOrders;
 
     // ====== PRE-EXECUTION ======
     // Take a snapshot of the players' owned territories before proceeding with the order executions
-    unordered_map<Player*, vector<Territory*>> preExecuteSnapshot;
+    std::unordered_map<Player*, std::vector<Territory*>> preExecuteSnapshot;
     for (const auto &player : playersInTurn)
     {
         preExecuteSnapshot[player] = player->getOwnedTerritories();
@@ -481,7 +473,7 @@ void GameEngine::executeOrdersPhase()
                 notify();
 
                 order = player->getNextOrder();
-                cout << "[" << player->getName() << "] ";
+                std::cout << "[" << player->getName() << "] ";
                 order->execute();
                 delete order;
                 order = nullptr;
@@ -503,8 +495,8 @@ void GameEngine::executeOrdersPhase()
     // If a player has conquered at least one territory, draw a card
     for (auto &player : playersInTurn)
     {
-        vector<Territory*> preExecuteTerritories = preExecuteSnapshot.at(player);
-        vector<Territory*> postExecuteTerritories = player->getOwnedTerritories();
+        std::vector<Territory*> preExecuteTerritories = preExecuteSnapshot.at(player);
+        std::vector<Territory*> postExecuteTerritories = player->getOwnedTerritories();
         if (preExecuteTerritories.size() <= postExecuteTerritories.size() && preExecuteTerritories != postExecuteTerritories)
         {
             player->drawCardFromDeck();
@@ -520,17 +512,17 @@ void GameEngine::mainGameLoop()
     while (shouldContinueGame)
     {
         pause();
-        cout << "\n================================================= ROUND " << ++round << " =====================================================" << endl;
+        std::cout << "\n================================================= ROUND " << ++round << " =====================================================" << std::endl;
         currentPhase_ = REINFORCEMENT;
         reinforcementPhase();
 
         pause();
-        cout << "\n=====================================================================================================================" << endl;
+        std::cout << "\n=====================================================================================================================" << std::endl;
         currentPhase_ = ISSUE_ORDERS;
         issueOrdersPhase();
 
         pause();
-        cout << "\n=====================================================================================================================" << endl;
+        std::cout << "\n=====================================================================================================================" << std::endl;
         currentPhase_ = EXECUTE_ORDERS;
         executeOrdersPhase();
 
@@ -562,5 +554,5 @@ void GameEngine::mainGameLoop()
         notify();
     }
 
-    cout << "Total rounds played: " << round << endl;
+    std::cout << "Total rounds played: " << round << std::endl;
 }

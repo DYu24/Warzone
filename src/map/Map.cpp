@@ -1,14 +1,7 @@
 #include "Map.h"
 #include <algorithm>
-#include <iostream>
 #include <queue>
 #include <unordered_set>
-using std::cin;
-using std::cout;
-using std::endl;
-using std::queue;
-using std::unordered_set;
-
 
 /* 
 ===================================
@@ -19,7 +12,7 @@ using std::unordered_set;
 // Constructors
 Territory::Territory(): name_("unknown_territory"), numberOfArmies_(0), pendingIncomingArmies_(0), pendingOutgoingArmies_(0) {}
 
-Territory::Territory(string name) : name_(name), numberOfArmies_(0), pendingIncomingArmies_(0), pendingOutgoingArmies_(0) {}
+Territory::Territory(std::string name) : name_(name), numberOfArmies_(0), pendingIncomingArmies_(0), pendingOutgoingArmies_(0) {}
 
 Territory::Territory(const Territory &territory)
     : name_(territory.name_), numberOfArmies_(territory.numberOfArmies_), pendingIncomingArmies_(territory.pendingIncomingArmies_), pendingOutgoingArmies_(territory.pendingOutgoingArmies_) {}
@@ -34,7 +27,7 @@ const Territory &Territory::operator=(const Territory &territory)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const Territory &territory)
+std::ostream &operator<<(std::ostream &output, const Territory &territory)
 {
     output << "[Territory]: " << territory.name_ << ", " << territory.numberOfArmies_ << " Armies";
     return output;
@@ -49,7 +42,7 @@ bool operator==(const Territory &t1, const Territory &t2)
 }
 
 // Getters
-string Territory::getName() const
+std::string Territory::getName() const
 {
     return name_;
 }
@@ -70,7 +63,7 @@ int Territory::getPendingOutgoingArmies() const
 }
 
 // Setters
-void Territory::setName(string name)
+void Territory::setName(std::string name)
 {
     name_ = name;
 }
@@ -129,7 +122,7 @@ int Territory::getNumberOfMovableArmies()
 // Constructors
 Continent::Continent(): name_("unknown_continent"), controlValue_(0) {}
 
-Continent::Continent(string name, int controlValue) : name_(name), controlValue_(controlValue) {}
+Continent::Continent(std::string name, int controlValue) : name_(name), controlValue_(controlValue) {}
 
 Continent::Continent(const Continent &continent) : name_(continent.name_), controlValue_(continent.controlValue_)
 {
@@ -158,14 +151,14 @@ const Continent &Continent::operator=(const Continent &continent)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const Continent &continent)
+std::ostream &operator<<(std::ostream &output, const Continent &continent)
 {
     output << "[Continent]: " << continent.name_ << ", " << continent.controlValue_ << " Control Value, " << continent.territories_.size() << " Territories";
     return output;
 }
 
 // Getters
-string Continent::getName() const
+std::string Continent::getName() const
 {
     return name_;
 }
@@ -175,13 +168,13 @@ int Continent::getControlValue() const
     return controlValue_;
 }
 
-vector<Territory*> Continent::getTerritories() const
+std::vector<Territory*> Continent::getTerritories() const
 {
     return territories_;
 }
 
 // Setters
-void Continent::setName(string name)
+void Continent::setName(std::string name)
 {
     name_ = name;
 }
@@ -191,7 +184,7 @@ void Continent::setControlValue(int value)
     controlValue_ = value;
 }
 
-void Continent::setTerritories(vector<Territory*> territories)
+void Continent::setTerritories(std::vector<Territory*> territories)
 {
     territories_ = territories;
 }
@@ -212,7 +205,7 @@ void Continent::addTerritory(Territory* territory)
 // Constructors
 Map::Map() {}
 
-Map::Map(vector<Continent*> continents, unordered_map<Territory*, vector<Territory*>> adjacencyList) : continents_(continents), adjacencyList_(adjacencyList) {}
+Map::Map(std::vector<Continent*> continents, std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList) : continents_(continents), adjacencyList_(adjacencyList) {}
 
 Map::Map(const Map &map)
 {
@@ -233,27 +226,27 @@ const Map &Map::operator=(const Map &map)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const Map &map)
+std::ostream &operator<<(std::ostream &output, const Map &map)
 {
     output << "[Map]: " << map.adjacencyList_.size() << " Territories, " << map.continents_.size() << " Continents";
     return output;
 }
 
 // Getters
-unordered_map<Territory*, vector<Territory*>> Map::getAdjacencyList() const
+std::unordered_map<Territory*, std::vector<Territory*>> Map::getAdjacencyList() const
 {
     return adjacencyList_;
 }
 
-vector<Continent*> Map::getContinents() const
+std::vector<Continent*> Map::getContinents() const
 {
     return continents_;
 }
 
 // Return a list of all the territories in the Map
-vector<Territory*> Map::getTerritories() const
+std::vector<Territory*> Map::getTerritories() const
 {
-    vector<Territory*> territories;
+    std::vector<Territory*> territories;
     for (const auto &entry : adjacencyList_)
     {
         territories.push_back(entry.first);
@@ -263,7 +256,7 @@ vector<Territory*> Map::getTerritories() const
 }
 
 // Return a list of territories that are adjacent to the one specified
-vector<Territory*> Map::getAdjacentTerritories(Territory* territory)
+std::vector<Territory*> Map::getAdjacentTerritories(Territory* territory)
 {
     return adjacencyList_[territory];
 }
@@ -284,8 +277,8 @@ bool Map::validate()
  // Graph traversal implemented using Breadth-First Search.
 bool Map::checkGraphValidity_()
 {
-    unordered_set<Territory*> visitedTerritories;
-    queue<Territory*> territoryQueue;
+    std::unordered_set<Territory*> visitedTerritories;
+    std::queue<Territory*> territoryQueue;
     territoryQueue.push(adjacencyList_.begin()->first);
 
     while (!territoryQueue.empty())
@@ -313,10 +306,10 @@ bool Map::checkContinentsValidity_()
 {
     for (const auto &continent : getContinents())
     {
-        unordered_set<Territory*> visitedTerritories;
-        queue<Territory*> territoryQueue;
+        std::unordered_set<Territory*> visitedTerritories;
+        std::queue<Territory*> territoryQueue;
 
-        vector<Territory*> continentMembers = continent->getTerritories();
+        std::vector<Territory*> continentMembers = continent->getTerritories();
         territoryQueue.push(continentMembers.front());
 
         while (!territoryQueue.empty())
@@ -355,7 +348,7 @@ bool Map::checkContinentsValidity_()
 // Helper method to validate that the map's territories all belong to only one continent.
 bool Map::checkTerritoriesValidity_()
 {
-    unordered_set<string> visitedTerritories;
+    std::unordered_set<std::string> visitedTerritories;
     for (const auto &continent : getContinents())
     {
         for (const auto &territory : continent->getTerritories())

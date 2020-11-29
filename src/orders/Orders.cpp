@@ -3,14 +3,6 @@
 #include <algorithm>
 #include <iterator>
 #include <math.h>
-using std::cout;
-using std::endl;
-using std::max;
-using std::min;
-using std::next;
-using std::round;
-using std::swap;
-
 
 namespace
 {
@@ -27,12 +19,12 @@ namespace
     bool canAttack(Player* attacker, Territory* target)
     {
         Player* ownerOfTarget = GameEngine::getOwnerOf(target);
-        vector<Player*> diplomaticRelations = attacker->getDiplomaticRelations();
+        std::vector<Player*> diplomaticRelations = attacker->getDiplomaticRelations();
         bool diplomacyWithOwnerOfTarget = find(diplomaticRelations.begin(), diplomaticRelations.end(), ownerOfTarget) != diplomaticRelations.end();
 
         if (diplomacyWithOwnerOfTarget)
         {
-            cout << attacker->getName() << " and " << ownerOfTarget->getName() << " cannot attack each other for the rest of this turn. ";
+            std::cout << attacker->getName() << " and " << ownerOfTarget->getName() << " cannot attack each other for the rest of this turn. ";
         }
 
         return attacker == ownerOfTarget || !diplomacyWithOwnerOfTarget;
@@ -64,7 +56,7 @@ const Order &Order::operator=(const Order &order)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const Order &order)
+std::ostream &operator<<(std::ostream &output, const Order &order)
 {
     return order.print_(output);
 }
@@ -78,7 +70,7 @@ void Order::execute()
     }
     else
     {
-        cout << "Order invalidated. Skipping..." << endl;
+        std::cout << "Order invalidated. Skipping..." << std::endl;
         undo_();
     }
 }
@@ -129,19 +121,19 @@ const OrdersList &OrdersList::operator=(const OrdersList &orders)
     return *this;
 }
 
-ostream &operator<<(ostream &output, const OrdersList &orders)
+std::ostream &operator<<(std::ostream &output, const OrdersList &orders)
 {
     output << "[Orders List] Size=" << orders.size();
     return output;
 }
 
 // Getter and setter
-vector<Order*> OrdersList::getOrders() const
+std::vector<Order*> OrdersList::getOrders() const
 {
     return orders_;
 }
 
-void OrdersList::setOrders(vector<Order*> orders)
+void OrdersList::setOrders(std::vector<Order*> orders)
 {
     for (const auto &order : orders_)
     {
@@ -205,7 +197,7 @@ void OrdersList::move(int source, int destination)
         {
             while (orderPosition != destinationPosition)
             {
-                swap(*orderPosition, *next(orderPosition, 1));
+                std::swap(*orderPosition, *next(orderPosition, 1));
                 orderPosition++;
             }
         }
@@ -215,7 +207,7 @@ void OrdersList::move(int source, int destination)
         {
             while (orderPosition != destinationPosition)
             {
-                swap(*orderPosition, *prev(orderPosition, 1));
+                std::swap(*orderPosition, *prev(orderPosition, 1));
                 orderPosition--;
             }
         }
@@ -253,7 +245,7 @@ const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
     return *this;
 }
 
-ostream &DeployOrder::print_(ostream &output) const
+std::ostream &DeployOrder::print_(std::ostream &output) const
 {
     output << "[DeployOrder]";
 
@@ -285,7 +277,7 @@ bool DeployOrder::validate() const
         return false;
     }
 
-    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
+    std::vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
 }
 
@@ -294,7 +286,7 @@ void DeployOrder::execute_()
 {
     destination_->addArmies(numberOfArmies_);
     destination_->setPendingIncomingArmies(0);
-    cout << "Deployed " << numberOfArmies_ << " armies to " << destination_->getName() << "." << endl;
+    std::cout << "Deployed " << numberOfArmies_ << " armies to " << destination_->getName() << "." << std::endl;
 }
 
 // Reverse the pre-orders-execution game state back to before the order was created.
@@ -337,7 +329,7 @@ const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
     return *this;
 }
 
-ostream &AdvanceOrder::print_(ostream &output) const
+std::ostream &AdvanceOrder::print_(std::ostream &output) const
 {
     output << "[AdvanceOrder]";
 
@@ -363,7 +355,7 @@ bool AdvanceOrder::validate() const
         return false;
     }
 
-    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
+    std::vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     bool hasAnyArmiesToAdvance = source_->getNumberOfArmies() > 0;
 
@@ -377,7 +369,7 @@ void AdvanceOrder::execute_()
     bool offensive = issuer_ != defender;
 
     // Recalculate how many armies could actually be moved (in case the state of the territory has changed due to an attack)
-    int movableArmiesFromSource = min(source_->getNumberOfArmies(), numberOfArmies_); 
+    int movableArmiesFromSource = std::min(source_->getNumberOfArmies(), numberOfArmies_); 
 
     if (offensive)
     {
@@ -387,23 +379,23 @@ void AdvanceOrder::execute_()
         int defendersKilled = round(movableArmiesFromSource * 0.6);
         int attackersKilled = round(destination_->getNumberOfArmies() * 0.7);
 
-        int survivingAttackers = max(movableArmiesFromSource - attackersKilled, 0);
-        int survivingDefenders = max(destination_->getNumberOfArmies() - defendersKilled, 0);
+        int survivingAttackers = std::max(movableArmiesFromSource - attackersKilled, 0);
+        int survivingDefenders = std::max(destination_->getNumberOfArmies() - defendersKilled, 0);
         destination_->removeArmies(defendersKilled);
 
         // Failed attack
         if (survivingDefenders > 0 || survivingAttackers <= 0)
         {
             source_->addArmies(survivingAttackers);
-            cout << "Failed attack on " << destination_->getName() << " with " << survivingDefenders << " enemy armies left standing.";
+            std::cout << "Failed attack on " << destination_->getName() << " with " << survivingDefenders << " enemy armies left standing.";
 
             if (survivingAttackers > 0)
             {
-                cout << " Retreating " << survivingAttackers << " attacking armies back to " << source_->getName() << endl;
+                std::cout << " Retreating " << survivingAttackers << " attacking armies back to " << source_->getName() << std::endl;
             }
             else
             {
-                cout << endl;
+                std::cout << std::endl;
             }
         }
         // Successful attack
@@ -412,14 +404,14 @@ void AdvanceOrder::execute_()
             issuer_->addOwnedTerritory(destination_);
             defender->removeOwnedTerritory(destination_);
             destination_->addArmies(survivingAttackers);
-            cout << "Successful attack on " << destination_->getName() << ". " << survivingAttackers << " armies now occupy this territory." << endl;
+            std::cout << "Successful attack on " << destination_->getName() << ". " << survivingAttackers << " armies now occupy this territory." << std::endl;
         }
     }
     else
     {
         source_->removeArmies(movableArmiesFromSource);
         destination_->addArmies(movableArmiesFromSource);
-        cout << "Advanced " << movableArmiesFromSource << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;
+        std::cout << "Advanced " << movableArmiesFromSource << " armies from " << source_->getName() << " to " << destination_->getName() << "." << std::endl;
     }
 
     source_->setPendingOutgoingArmies(0);
@@ -461,7 +453,7 @@ const BombOrder &BombOrder::operator=(const BombOrder &order)
     return *this;
 }
 
-ostream &BombOrder::print_(ostream &output) const
+std::ostream &BombOrder::print_(std::ostream &output) const
 {
     output << "[BombOrder]";
 
@@ -487,7 +479,7 @@ bool BombOrder::validate() const
         return false;
     }
 
-    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
+    std::vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
     bool validTargetTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), target_) == currentPlayerTerritories.end();
     return validTargetTerritory && canAttack(issuer_, target_);
 }
@@ -497,8 +489,8 @@ void BombOrder::execute_()
 {
     int armiesOnTarget = target_->getNumberOfArmies();
     target_->removeArmies(armiesOnTarget / 2);
-    cout << "Bombed " << armiesOnTarget / 2 << " enemy armies on " << target_->getName() << ". ";
-    cout << target_->getNumberOfArmies() << " remaining." << endl;
+    std::cout << "Bombed " << armiesOnTarget / 2 << " enemy armies on " << target_->getName() << ". ";
+    std::cout << target_->getNumberOfArmies() << " remaining." << std::endl;
 }
 
 // Get the type of the Order sub-class
@@ -529,7 +521,7 @@ const BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order)
     return *this;
 }
 
-ostream &BlockadeOrder::print_(ostream &output) const
+std::ostream &BlockadeOrder::print_(std::ostream &output) const
 {
     output << "[BlockadeOrder]";
 
@@ -555,7 +547,7 @@ bool BlockadeOrder::validate() const
         return false;
     }
 
-    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
+    std::vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
     return find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), territory_) != currentPlayerTerritories.end();
 }
 
@@ -564,8 +556,8 @@ void BlockadeOrder::execute_()
 {
     territory_->addArmies(territory_->getNumberOfArmies());
     GameEngine::assignToNeutralPlayer(territory_);
-    cout << "Blockade called on " << territory_->getName() << ". ";
-    cout << territory_->getNumberOfArmies() << " neutral armies now occupy this territory." << endl;
+    std::cout << "Blockade called on " << territory_->getName() << ". ";
+    std::cout << territory_->getNumberOfArmies() << " neutral armies now occupy this territory." << std::endl;
 }
 
 // Get the type of the Order sub-class
@@ -599,7 +591,7 @@ const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
     return *this;
 }
 
-ostream &AirliftOrder::print_(ostream &output) const
+std::ostream &AirliftOrder::print_(std::ostream &output) const
 {
     output << "[AirliftOrder]";
 
@@ -625,7 +617,7 @@ bool AirliftOrder::validate() const
         return false;
     }
 
-    vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
+    std::vector<Territory*> currentPlayerTerritories = issuer_->getOwnedTerritories();
 
     bool validSourceTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), source_) != currentPlayerTerritories.end();
     bool validDestinationTerritory = find(currentPlayerTerritories.begin(), currentPlayerTerritories.end(), destination_) != currentPlayerTerritories.end();
@@ -638,13 +630,13 @@ bool AirliftOrder::validate() const
 void AirliftOrder::execute_()
 {
     // Recalculate how many armies could actually be moved in case the state of the territory has changed due to an attack
-    int movableArmiesFromSource = min(source_->getNumberOfArmies(), numberOfArmies_); 
+    int movableArmiesFromSource = std::min(source_->getNumberOfArmies(), numberOfArmies_); 
 
     destination_->addArmies(movableArmiesFromSource);
     source_->removeArmies(movableArmiesFromSource);
     source_->setPendingOutgoingArmies(0);
 
-    cout << "Airlifted " << movableArmiesFromSource << " armies from " << source_->getName() << " to " << destination_->getName() << "." << endl;
+    std::cout << "Airlifted " << movableArmiesFromSource << " armies from " << source_->getName() << " to " << destination_->getName() << "." << std::endl;
 }
 
 // Reverse the pre-orders-execution game state back to before the order was created.
@@ -683,7 +675,7 @@ const NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order)
     return *this;
 }
 
-ostream &NegotiateOrder::print_(ostream &output) const
+std::ostream &NegotiateOrder::print_(std::ostream &output) const
 {
     output << "[NegotiateOrder]";
 
@@ -717,7 +709,7 @@ void NegotiateOrder::execute_()
 {
     issuer_->addDiplomaticRelation(target_);
     target_->addDiplomaticRelation(issuer_);
-    cout << "Negotiated diplomacy between " << issuer_->getName() << " and " << target_->getName() << "." << endl;
+    std::cout << "Negotiated diplomacy between " << issuer_->getName() << " and " << target_->getName() << "." << std::endl;
 }
 
 // Get the type of the Order sub-class

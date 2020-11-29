@@ -4,30 +4,27 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-using std::ifstream;
-using std::ostream;
-using std::unordered_map;
-using std::vector;
+
 
 class MapLoader
 {
     public:
-        virtual Map* loadMap(string filename);
+        virtual Map* loadMap(std::string filename);
 
     private:
-        vector<Continent*> getContinents(ifstream &stream);
-        vector<Territory*> getTerritories(ifstream &stream, vector<Continent*> &continents);
-        unordered_map<Territory*, vector<Territory*>> buildAdjacencyList(ifstream &stream, vector<Territory*> territories);
+        std::vector<Continent*> getContinents(std::ifstream &stream);
+        std::vector<Territory*> getTerritories(std::ifstream &stream, std::vector<Continent*> &continents);
+        std::unordered_map<Territory*, std::vector<Territory*>> buildAdjacencyList(std::ifstream &stream, std::vector<Territory*> territories);
 };
 
 class ConquestFileReader
 {
     public:
-        Map* readConquestFile(string filename);
+        Map* readConquestFile(std::string filename);
 
     private:
-        unordered_map<string, Continent*> getContinents(ifstream &stream);
-        unordered_map<Territory*, vector<Territory*>> buildAdjacencyList(ifstream &stream, unordered_map<string, Continent*> &continents);
+        std::unordered_map<std::string, Continent*> getContinents(std::ifstream &stream);
+        std::unordered_map<Territory*, std::vector<Territory*>> buildAdjacencyList(std::ifstream &stream, std::unordered_map<std::string, Continent*> &continents);
 };
 
 class ConquestFileReaderAdapter : public MapLoader
@@ -37,7 +34,7 @@ class ConquestFileReaderAdapter : public MapLoader
         ConquestFileReaderAdapter(const ConquestFileReaderAdapter &adapter);
         ~ConquestFileReaderAdapter();
         const ConquestFileReaderAdapter &operator=(const ConquestFileReaderAdapter &adapter);
-        Map* loadMap(string filename);
+        Map* loadMap(std::string filename);
 
     private:
         ConquestFileReader* fileReader_;

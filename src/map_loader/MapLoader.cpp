@@ -3,16 +3,13 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-using std::cout;
-using std::endl;
-using std::istringstream;
 
 namespace
 {
     // Skips lines of the input stream until the specified section is reached.
-    void skipToSection(string section, ifstream &stream)
+    void skipToSection(std::string section, std::ifstream &stream)
     {
-        string line;
+        std::string line;
         while (getline(stream, line) && line != section) {}
         if (stream.eof())
         {
@@ -21,10 +18,10 @@ namespace
     }
 
     // Trims whitespaces from a string
-    string trim(const string& str)
+    std::string trim(const std::string& str)
     {
         size_t first = str.find_first_not_of(' ');
-        if (string::npos == first)
+        if (std::string::npos == first)
         {
             return str;
         }
@@ -33,9 +30,9 @@ namespace
     }
 
     // Capitalize all characters in the provided string
-    string capitalize(string str)
+    std::string capitalize(std::string str)
     {
-        transform(str.begin(), str.end(),str.begin(), ::toupper);
+        std::transform(str.begin(), str.end(),str.begin(), ::toupper);
         return str;
     }
 }
@@ -48,11 +45,11 @@ namespace
  */
 
 // Reads the input `.map` file and returns a list continents.
-vector<Continent*> MapLoader::getContinents(ifstream &stream)
+std::vector<Continent*> MapLoader::getContinents(std::ifstream &stream)
 {
-    vector<Continent*> continents;
-    string line;
-    istringstream ss;
+    std::vector<Continent*> continents;
+    std::string line;
+    std::istringstream ss;
 
     skipToSection("[continents]", stream);
 
@@ -67,9 +64,9 @@ vector<Continent*> MapLoader::getContinents(ifstream &stream)
         ss.clear();
         ss.str(line);
 
-        string name;
+        std::string name;
         int continentValue;
-        string color;
+        std::string color;
         ss >> name >> continentValue >> color;
 
         continents.push_back(new Continent(name, continentValue));
@@ -79,11 +76,11 @@ vector<Continent*> MapLoader::getContinents(ifstream &stream)
 }
 
 // Reads the input `.map` file and returns a list of territories.
-vector<Territory*> MapLoader::getTerritories(ifstream &stream, vector<Continent*> &continents)
+std::vector<Territory*> MapLoader::getTerritories(std::ifstream &stream, std::vector<Continent*> &continents)
 {
-    vector<Territory*> territories;
-    string line;
-    istringstream ss;
+    std::vector<Territory*> territories;
+    std::string line;
+    std::istringstream ss;
 
     skipToSection("[countries]", stream);
     while (getline(stream, line) && line != "")
@@ -98,7 +95,7 @@ vector<Territory*> MapLoader::getTerritories(ifstream &stream, vector<Continent*
         ss.str(line);
 
         int index;
-        string name;
+        std::string name;
         int continent;
         ss >> index >> name >> continent;
 
@@ -112,11 +109,11 @@ vector<Territory*> MapLoader::getTerritories(ifstream &stream, vector<Continent*
 }
 
 // Reads the input `.map` file and connects the territories to each other.
-unordered_map<Territory*, vector<Territory*>> MapLoader::buildAdjacencyList(ifstream &stream, vector<Territory*> territories)
+std::unordered_map<Territory*, std::vector<Territory*>> MapLoader::buildAdjacencyList(std::ifstream &stream, std::vector<Territory*> territories)
 {
-    unordered_map<Territory*, vector<Territory*>> adjacencyList;
-    string line;
-    istringstream ss;
+    std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList;
+    std::string line;
+    std::istringstream ss;
 
     skipToSection("[borders]", stream);
     while (getline(stream, line) && line != "")
@@ -146,15 +143,15 @@ unordered_map<Territory*, vector<Territory*>> MapLoader::buildAdjacencyList(ifst
 }
 
 // Read the input `.map` file and generate a Map instance.
-Map* MapLoader::loadMap(string filename)
+Map* MapLoader::loadMap(std::string filename)
 {
-    ifstream mapFile(filename);
+    std::ifstream mapFile(filename);
 
     if (mapFile.is_open())
     {
-        vector<Continent*> continents = getContinents(mapFile);
-        vector<Territory*> territories = getTerritories(mapFile, continents);
-        unordered_map<Territory*, vector<Territory*>> adjacencyList = buildAdjacencyList(mapFile, territories);
+        std::vector<Continent*> continents = getContinents(mapFile);
+        std::vector<Territory*> territories = getTerritories(mapFile, continents);
+        std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList = buildAdjacencyList(mapFile, territories);
 
         Map* map = new Map(continents, adjacencyList);
 
@@ -167,7 +164,7 @@ Map* MapLoader::loadMap(string filename)
             throw "Invalid map structure.";
         }
 
-        cout << "Map successfully loaded." << endl;
+        std::cout << "Map successfully loaded." << std::endl;
         return map;
     }
 
@@ -182,11 +179,11 @@ Map* MapLoader::loadMap(string filename)
  */
 
 // Reads the input `.map` file and returns a list continents.
-unordered_map<string, Continent*> ConquestFileReader::getContinents(ifstream &stream)
+std::unordered_map<std::string, Continent*> ConquestFileReader::getContinents(std::ifstream &stream)
 {
-    unordered_map<string, Continent*> continents;
-    string line;
-    istringstream ss;
+    std::unordered_map<std::string, Continent*> continents;
+    std::string line;
+    std::istringstream ss;
 
     skipToSection("[Continents]", stream);
     while (getline(stream, line) && line != "")
@@ -194,8 +191,8 @@ unordered_map<string, Continent*> ConquestFileReader::getContinents(ifstream &st
         ss.clear();
         ss.str(line);
 
-        string token;
-        string name;
+        std::string token;
+        std::string name;
         int continentValue;
 
         while (getline(ss, token, '='))
@@ -218,13 +215,13 @@ unordered_map<string, Continent*> ConquestFileReader::getContinents(ifstream &st
 }
 
 // Reads the input `.map` file and returns an adjacency list of all the territories.
-unordered_map<Territory*, vector<Territory*>> ConquestFileReader::buildAdjacencyList(ifstream &stream, unordered_map<string, Continent*> &continents)
+std::unordered_map<Territory*, std::vector<Territory*>> ConquestFileReader::buildAdjacencyList(std::ifstream &stream, std::unordered_map<std::string, Continent*> &continents)
 {
-    unordered_map<Territory*, vector<Territory*>> adjacencyList;
-    unordered_map<Territory*, vector<string>> adjacentTerritories;
-    unordered_map<string, Territory*> territoryPointers;
-    string line;
-    istringstream ss;
+    std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList;
+    std::unordered_map<Territory*, std::vector<std::string>> adjacentTerritories;
+    std::unordered_map<std::string, Territory*> territoryPointers;
+    std::istringstream ss;
+    std::string line;
 
     skipToSection("[Territories]", stream);
     while (getline(stream, line))
@@ -233,7 +230,7 @@ unordered_map<Territory*, vector<Territory*>> ConquestFileReader::buildAdjacency
         ss.str(line);
 
         int column = 0;
-        string token;
+        std::string token;
         Territory* currentTerritory;
         while (getline(ss, token, ','))
         {
@@ -277,16 +274,16 @@ unordered_map<Territory*, vector<Territory*>> ConquestFileReader::buildAdjacency
 
 
 // Read the input `.map` conquest file and generate a Map instance.
-Map* ConquestFileReader::readConquestFile(string filename)
+Map* ConquestFileReader::readConquestFile(std::string filename)
 {
-    ifstream mapFile(filename);
+    std::ifstream mapFile(filename);
 
     if (mapFile.is_open())
     {
-        unordered_map<string, Continent*> continentMap = getContinents(mapFile);
-        unordered_map<Territory*, vector<Territory*>> adjacencyList = buildAdjacencyList(mapFile, continentMap);
+        std::unordered_map<std::string, Continent*> continentMap = getContinents(mapFile);
+        std::unordered_map<Territory*, std::vector<Territory*>> adjacencyList = buildAdjacencyList(mapFile, continentMap);
 
-        vector<Continent*> continents;
+        std::vector<Continent*> continents;
         for (const auto &entry : continentMap)
         {
             continents.push_back(entry.second);
@@ -303,7 +300,7 @@ Map* ConquestFileReader::readConquestFile(string filename)
             throw "Invalid map structure.";
         }
 
-        cout << "Map successfully loaded." << endl;
+        std::cout << "Map successfully loaded." << std::endl;
         return map;
     }
 
@@ -338,7 +335,7 @@ const ConquestFileReaderAdapter &ConquestFileReaderAdapter::operator=(const Conq
 }
 
 // Read the input `.map` file and generate a Map instance.
-Map* ConquestFileReaderAdapter::loadMap(string filename)
+Map* ConquestFileReaderAdapter::loadMap(std::string filename)
 {
     return fileReader_->readConquestFile(filename);
 }
