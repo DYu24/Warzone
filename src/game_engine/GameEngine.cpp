@@ -3,19 +3,13 @@
 #include "../map_loader/MapLoader.h"
 #include "../orders/Orders.h"
 #include <algorithm>
+#include <filesystem>
 #include <limits>
 #include <math.h>
 #include <random>
 #include <string>
 #include <time.h>
 #include <unordered_set>
-
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <sys/types.h>
-#include <dirent.h>
-#endif
 
 namespace
 {
@@ -30,37 +24,10 @@ namespace
     vector<string> getMapFileNames(string directory)
     {
         vector<string> fileNames;
-
-        #ifdef WIN32
-            string pattern(directory);
-            pattern.append("\\*");
-            WIN32_FIND_DATA data;
-            HANDLE hFind;
-            if ((hFind = FindFirstFile(pattern.c_str(), &data)) != INVALID_HANDLE_VALUE)
-            {
-                do
-                {
-                    string filename = data.cFileName;
-                    if (filename.find(".map") != string::npos)
-                    {
-                        fileNames.push_back(data.cFileName);
-                    }
-                } while (FindNextFile(hFind, &data) != 0);
-                FindClose(hFind);
-            }
-        #else
-            DIR *dirp = opendir(directory.c_str());
-            struct dirent *dp;
-            while ((dp = readdir(dirp)) != nullptr)
-            {
-                string filename = dp->d_name;
-                if (filename.find(".map") != string::npos)
-                {
-                    fileNames.push_back(filename);
-                }
-            }
-            closedir(dirp);
-        #endif
+        for (const auto &entry : filesystem::directory_iterator(directory))
+        {
+            fileNames.push_back(entry.path().filename().string());
+        }
 
         return fileNames;
     }
