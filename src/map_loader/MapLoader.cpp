@@ -44,6 +44,9 @@ namespace
 ===================================
  */
 
+// Destructor
+MapLoader::~MapLoader() {}
+
 // Reads the input `.map` file and returns a list continents.
 std::vector<Continent*> MapLoader::getContinents(std::ifstream &stream)
 {

@@ -9,6 +9,7 @@
 class MapLoader
 {
     public:
+        virtual ~MapLoader();
         virtual Map* loadMap(std::string filename);
 
     private:
