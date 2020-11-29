@@ -1,6 +1,8 @@
 #include "../game_engine/GameEngine.h"
 #include "../orders/Orders.h"
 #include "Player.h"
+using std::cout;
+using std::endl;
 
 int main()
 {

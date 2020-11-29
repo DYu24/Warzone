@@ -2,7 +2,12 @@
 
 #include "../map/Map.h"
 #include <iostream>
-using namespace std;
+#include <vector>
+#include <unordered_map>
+using std::ifstream;
+using std::ostream;
+using std::unordered_map;
+using std::vector;
 
 class MapLoader
 {

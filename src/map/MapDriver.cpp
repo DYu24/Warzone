@@ -1,7 +1,9 @@
 #include "../game_engine/GameEngine.h"
 #include "Map.h"
 #include <iostream>
-using namespace std;
+using std::boolalpha;
+using std::cout;
+using std::endl;
 
 int main()
 {

@@ -10,6 +10,16 @@
 #include <string>
 #include <time.h>
 #include <unordered_set>
+using std::cin;
+using std::cout;
+using std::endl;
+using std::numeric_limits;
+using std::streamsize;
+using std::default_random_engine;
+using std::time;
+using std::unordered_set;
+
+namespace fs = std::filesystem;
 
 namespace
 {
@@ -24,7 +34,7 @@ namespace
     vector<string> getMapFileNames(string directory)
     {
         vector<string> fileNames;
-        for (const auto &entry : filesystem::directory_iterator(directory))
+        for (const auto &entry : fs::directory_iterator(directory))
         {
             fileNames.push_back(entry.path().filename().string());
         }

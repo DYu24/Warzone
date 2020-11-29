@@ -2,6 +2,11 @@
 #include "../game_engine/GameEngine.h"
 #include <algorithm>
 #include <time.h>
+using std::cin;
+using std::cout;
+using std::endl;
+using std::numeric_limits;
+using std::streamsize;
 
 
 namespace

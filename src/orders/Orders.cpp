@@ -3,6 +3,14 @@
 #include <algorithm>
 #include <iterator>
 #include <math.h>
+using std::cout;
+using std::endl;
+using std::max;
+using std::min;
+using std::next;
+using std::round;
+using std::swap;
+
 
 namespace
 {

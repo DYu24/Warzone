@@ -3,7 +3,7 @@
 #include "../map/Map.h"
 #include "../player/Player.h"
 #include <vector>
-using namespace std;
+using std::vector;
 
 class Player;
 

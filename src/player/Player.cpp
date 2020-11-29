@@ -7,6 +7,8 @@
 #include <set>
 #include <sstream>
 #include <unordered_set>
+using std::cout;
+using std::endl;
 
 
 // Constructors

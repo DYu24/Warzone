@@ -1,9 +1,13 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
-using namespace std;
+using std::ostream;
+using std::string;
+using std::unordered_map;
+using std::vector;
 
 class Territory
 {

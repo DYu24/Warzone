@@ -4,7 +4,7 @@
 #include "../player/Player.h"
 #include <iostream>
 #include <vector>
-using namespace std;
+using std::vector;
 
 class Player;
 class Territory;

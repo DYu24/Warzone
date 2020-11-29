@@ -5,7 +5,7 @@
 #include "../observers/GameObservers.h"
 #include "../player/Player.h"
 #include <vector>
-using namespace std;
+using std::vector;
 
 class GameEngine : public Subject
 {

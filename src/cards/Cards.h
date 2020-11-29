@@ -3,9 +3,9 @@
 #include "../orders/Orders.h"
 #include "../player/Player.h"
 #include <iostream>
-#include <list>
 #include <vector>
-using namespace std;
+using std::ostream;
+using std::vector;
 
 class Order;
 class Player;

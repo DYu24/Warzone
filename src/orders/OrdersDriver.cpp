@@ -1,5 +1,8 @@
 #include "../game_engine/GameEngine.h"
 #include "Orders.h"
+using std::boolalpha;
+using std::cout;
+using std::endl;
 
 int main()
 {

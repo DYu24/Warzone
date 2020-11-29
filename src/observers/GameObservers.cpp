@@ -6,7 +6,13 @@
 #include <windows.h>
 #endif
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::fixed;
+using std::left;
+using std::setfill;
+using std::setprecision;
+using std::setw;
 
 
 namespace

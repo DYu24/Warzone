@@ -3,7 +3,11 @@
 #include <iostream>
 #include <queue>
 #include <unordered_set>
-using namespace std;
+using std::cin;
+using std::cout;
+using std::endl;
+using std::queue;
+using std::unordered_set;
 
 
 /* 

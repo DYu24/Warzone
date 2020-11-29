@@ -2,7 +2,8 @@
 #include "../game_engine/GameEngine.h"
 #include "../map_loader/MapLoader.h"
 #include <iostream>
-using namespace std;
+using std::cout;
+using std::endl;
 
 int main()
 {

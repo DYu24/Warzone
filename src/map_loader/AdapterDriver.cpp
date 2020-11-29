@@ -1,5 +1,7 @@
 #include "../game_engine/GameEngine.h"
 #include "MapLoader.h"
+using std::cout;
+using std::endl;
 
 int main()
 {

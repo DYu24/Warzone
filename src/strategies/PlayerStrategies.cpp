@@ -5,6 +5,13 @@
 #include <math.h>
 #include <time.h>
 #include <unordered_set>
+using std::cin;
+using std::cout;
+using std::endl;
+using std::min;
+using std::numeric_limits;
+using std::streamsize;
+using std::unordered_set;
 
 
 namespace
