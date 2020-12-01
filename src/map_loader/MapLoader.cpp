@@ -332,8 +332,11 @@ ConquestFileReaderAdapter::~ConquestFileReaderAdapter()
 // Operator overloading
 const ConquestFileReaderAdapter &ConquestFileReaderAdapter::operator=(const ConquestFileReaderAdapter &adapter)
 {
-    delete fileReader_;
-    fileReader_ = new ConquestFileReader();
+    if (this != &adapter)
+    {
+        delete fileReader_;
+        fileReader_ = new ConquestFileReader();
+    }
     return *this;
 }
 

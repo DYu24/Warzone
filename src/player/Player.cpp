@@ -55,15 +55,18 @@ Player::~Player()
 // Operator overloading
 const Player &Player::operator=(const Player &player)
 {
-    delete orders_;
-    delete hand_;
-    delete strategy_;
-    orders_ = new OrdersList(*player.orders_);
-    hand_ = new Hand(*player.hand_);
-    strategy_ = player.strategy_->clone();
-    reinforcements_ = player.reinforcements_;
-    name_ = player.name_;
-    ownedTerritories_ = player.ownedTerritories_;
+    if (this != &player)
+    {
+        delete orders_;
+        delete hand_;
+        delete strategy_;
+        orders_ = new OrdersList(*player.orders_);
+        hand_ = new Hand(*player.hand_);
+        strategy_ = player.strategy_->clone();
+        reinforcements_ = player.reinforcements_;
+        name_ = player.name_;
+        ownedTerritories_ = player.ownedTerritories_;
+    }
     return *this;
 }
 

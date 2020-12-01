@@ -51,8 +51,11 @@ Order::~Order() {}
 // Operator overloading
 const Order &Order::operator=(const Order &order)
 {
-    issuer_ = order.issuer_;
-    priority_ = order.priority_;
+    if (this != &order)
+    {
+        issuer_ = order.issuer_;
+        priority_ = order.priority_;
+    }
     return *this;
 }
 
@@ -117,7 +120,10 @@ OrdersList::~OrdersList()
 // Operator overloading
 const OrdersList &OrdersList::operator=(const OrdersList &orders)
 {
-    setOrders(orders.orders_);
+    if (this != &orders)
+    {
+        setOrders(orders.orders_);
+    }
     return *this;
 }
 
@@ -239,9 +245,12 @@ DeployOrder::DeployOrder(const DeployOrder &order) : Order(order), numberOfArmie
 // Operator overloading
 const DeployOrder &DeployOrder::operator=(const DeployOrder &order)
 {
-    Order::operator=(order);
-    numberOfArmies_ = order.numberOfArmies_;
-    destination_ = order.destination_;
+    if (this != &order)
+    {
+        Order::operator=(order);
+        numberOfArmies_ = order.numberOfArmies_;
+        destination_ = order.destination_;
+    }
     return *this;
 }
 
@@ -322,10 +331,13 @@ AdvanceOrder::AdvanceOrder(const AdvanceOrder &order)
 // Operator overloading
 const AdvanceOrder &AdvanceOrder::operator=(const AdvanceOrder &order)
 {
-    Order::operator=(order);
-    numberOfArmies_ = order.numberOfArmies_;
-    source_ = order.source_;
-    destination_ = order.destination_;
+    if (this != &order)
+    {
+        Order::operator=(order);
+        numberOfArmies_ = order.numberOfArmies_;
+        source_ = order.source_;
+        destination_ = order.destination_;
+    }
     return *this;
 }
 
@@ -448,8 +460,11 @@ BombOrder::BombOrder(const BombOrder &order) : Order(order), target_(order.targe
 // Operator overloading
 const BombOrder &BombOrder::operator=(const BombOrder &order)
 {
-    Order::operator=(order);
-    target_ = order.target_;
+    if (this != &order)
+    {
+        Order::operator=(order);
+        target_ = order.target_;
+    }
     return *this;
 }
 
@@ -516,8 +531,11 @@ BlockadeOrder::BlockadeOrder(const BlockadeOrder &order) : Order(order), territo
 // Operator overloading
 const BlockadeOrder &BlockadeOrder::operator=(const BlockadeOrder &order)
 {
-    Order::operator=(order);
-    territory_ = order.territory_;
+    if (this != &order)
+    {
+        Order::operator=(order);
+        territory_ = order.territory_;
+    }
     return *this;
 }
 
@@ -584,10 +602,13 @@ AirliftOrder::AirliftOrder(const AirliftOrder &order) : Order(order), numberOfAr
 // Operator overloading
 const AirliftOrder &AirliftOrder::operator=(const AirliftOrder &order)
 {
-    Order::operator=(order);
-    numberOfArmies_ = order.numberOfArmies_;
-    source_ = order.source_;
-    destination_ = order.destination_;
+    if (this != &order)
+    {
+        Order::operator=(order);
+        numberOfArmies_ = order.numberOfArmies_;
+        source_ = order.source_;
+        destination_ = order.destination_;
+    }
     return *this;
 }
 
@@ -670,8 +691,11 @@ NegotiateOrder::NegotiateOrder(const NegotiateOrder &order) : Order(order), targ
 // Operator overloading
 const NegotiateOrder &NegotiateOrder::operator=(const NegotiateOrder &order)
 {
-    Order::operator=(order);
-    target_ = order.target_;
+    if (this != &order)
+    {
+        Order::operator=(order);
+        target_ = order.target_;
+    }
     return *this;
 }
 

@@ -20,10 +20,13 @@ Territory::Territory(const Territory &territory)
 // Operator overloading
 const Territory &Territory::operator=(const Territory &territory)
 {
-    name_ = territory.name_;
-    numberOfArmies_ = territory.numberOfArmies_;
-    pendingIncomingArmies_ = territory.pendingIncomingArmies_;
-    pendingOutgoingArmies_ = territory.pendingOutgoingArmies_;
+    if (this != &territory)
+    {
+        name_ = territory.name_;
+        numberOfArmies_ = territory.numberOfArmies_;
+        pendingIncomingArmies_ = territory.pendingIncomingArmies_;
+        pendingOutgoingArmies_ = territory.pendingOutgoingArmies_;
+    }
     return *this;
 }
 
@@ -145,9 +148,12 @@ Continent::~Continent()
 // Operator overloading
 const Continent &Continent::operator=(const Continent &continent)
 {
-    name_ = continent.name_;
-    controlValue_ = continent.controlValue_;
-    territories_ = continent.territories_;
+    if (this != &continent)
+    {
+        name_ = continent.name_;
+        controlValue_ = continent.controlValue_;
+        territories_ = continent.territories_;
+    }
     return *this;
 }
 
@@ -221,8 +227,11 @@ Map::~Map()
 // Operator overloading
 const Map &Map::operator=(const Map &map)
 {
-    destroyMapContents_();
-    copyMapContents_(map);
+    if (this != &map)
+    {
+        destroyMapContents_();
+        copyMapContents_(map);
+    }
     return *this;
 }
 

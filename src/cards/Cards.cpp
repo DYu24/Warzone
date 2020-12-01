@@ -78,7 +78,10 @@ Deck::~Deck()
 // Operator overloading
 const Deck &Deck::operator=(const Deck &deck)
 {
-    setCards(deck.cards_);
+    if (this != &deck)
+    {
+        setCards(deck.cards_);
+    }
     return *this;
 }
 
@@ -194,7 +197,10 @@ Hand::~Hand()
 // Operator overloading
 const Hand &Hand::operator=(const Hand &hand)
 {
-    setCards(hand.cards_);
+    if (this != &hand)
+    {
+        setCards(hand.cards_);
+    }
     return *this;
 }
 

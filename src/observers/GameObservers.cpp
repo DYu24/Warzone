@@ -99,7 +99,10 @@ Observer::~Observer() {}
 // Assignment operator overloading
 const Observer &Observer::operator=(const Observer &observer)
 {
-    subject_ = observer.subject_;
+    if (this != &observer)
+    {
+        subject_ = observer.subject_;
+    }
     return *this;
 }
 
@@ -120,9 +123,12 @@ PhaseObserver::PhaseObserver(const PhaseObserver &observer)
 // Assignment operator overloading
 const PhaseObserver &PhaseObserver::operator=(const PhaseObserver &observer)
 {
-    Observer::operator=(observer);
-    lastPhase_ = observer.lastPhase_;
-    lastActivePlayer_ = observer.lastActivePlayer_;
+    if (this != &observer)
+    {
+        Observer::operator=(observer);
+        lastPhase_ = observer.lastPhase_;
+        lastActivePlayer_ = observer.lastActivePlayer_;
+    }
     return *this;
 }
 
@@ -230,8 +236,11 @@ GameStatisticsObserver::GameStatisticsObserver(const GameStatisticsObserver &obs
 // Assignment operator overloading
 const GameStatisticsObserver &GameStatisticsObserver::operator=(const GameStatisticsObserver &observer)
 {
-    Observer::operator=(observer);
-    lastSetOfPlayers_ = observer.lastSetOfPlayers_;
+    if (this != &observer)
+    {
+        Observer::operator=(observer);
+        lastSetOfPlayers_ = observer.lastSetOfPlayers_;
+    }
     return *this;
 }
 

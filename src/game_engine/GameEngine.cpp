@@ -198,8 +198,11 @@ GameEngine::GameEngine(const GameEngine &gameEngine) : currentPhase_(gameEngine.
 // Operator overloading
 const GameEngine &GameEngine::operator=(const GameEngine &gameEngine)
 {
-    currentPhase_ = gameEngine.currentPhase_;
-    activePlayer_ = gameEngine.activePlayer_;
+    if (this != &gameEngine)
+    {
+        currentPhase_ = gameEngine.currentPhase_;
+        activePlayer_ = gameEngine.activePlayer_;
+    }
     return *this;
 }
 
